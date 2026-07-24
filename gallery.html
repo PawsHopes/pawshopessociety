@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adoption & Photo Gallery | Paws Hopes Society</title>
+  <meta name="description" content="Browse our rescue stories, photos, and pets available for adoption at Paws Hopes Society.">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
+
+  <div id="scroll-progress"></div>
+
+  <!-- Navigation -->
+  <header id="site-header" class="fixed w-full top-0 z-50 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange">
+        <span class="text-xl font-bold">Paws Hopes Society</span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
+        <a href="index.html" class="hover:text-brandOrange">Home</a>
+        <a href="about.html" class="hover:text-brandOrange">About</a>
+        <a href="rescue.html" class="hover:text-brandOrange">Rescue</a>
+        <a href="gallery.html" class="text-brandOrange">Gallery</a>
+        <a href="volunteer.html" class="hover:text-brandOrange">Volunteer</a>
+        <a href="contact.html" class="hover:text-brandOrange">Contact</a>
+      </nav>
+      <a href="donate.html" class="hidden lg:inline-block bg-brandOrange text-white font-semibold px-6 py-2.5 rounded-full">Donate</a>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="pt-32 pb-16 bg-slate-900 text-white text-center">
+    <div class="max-w-4xl mx-auto px-4">
+      <h1 class="text-4xl sm:text-5xl font-extrabold">Photo Gallery & Adoption</h1>
+      <p class="text-orange-200 mt-4 text-lg">Click on any image to open lightbox preview. Adopt, don't shop!</p>
+    </div>
+  </section>
+
+  <!-- Gallery Masonry Grid -->
+  <section class="py-20 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="gallery-item group relative overflow-hidden rounded-3xl cursor-pointer shadow-md" data-src="assets/images/hero.jpg" data-caption="Rescue Dog Recovering Peacefully">
+          <img src="assets/images/hero.jpg" alt="Rescue Dog" class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white p-4 text-center">
+            <div>
+              <i class="fas fa-search-plus fa-2x mb-2"></i>
+              <p class="font-bold">Rescue Dog Recovering</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-item group relative overflow-hidden rounded-3xl cursor-pointer shadow-md" data-src="assets/images/rescue1.jpg" data-caption="Volunteer with Rescued Puppy">
+          <img src="assets/images/rescue1.jpg" alt="Puppy Care" class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white p-4 text-center">
+            <div>
+              <i class="fas fa-search-plus fa-2x mb-2"></i>
+              <p class="font-bold">Volunteer & Rescued Puppy</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-item group relative overflow-hidden rounded-3xl cursor-pointer shadow-md" data-src="assets/images/rescue2.jpg" data-caption="Medical Examination at Shelter">
+          <img src="assets/images/rescue2.jpg" alt="Medical Rehab" class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white p-4 text-center">
+            <div>
+              <i class="fas fa-search-plus fa-2x mb-2"></i>
+              <p class="font-bold">Shelter Medical Checkup</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-item group relative overflow-hidden rounded-3xl cursor-pointer shadow-md" data-src="assets/images/rescue3.jpg" data-caption="Mother dog and puppies sheltered from monsoon">
+          <img src="assets/images/rescue3.jpg" alt="Mother dog shelter" class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white p-4 text-center">
+            <div>
+              <i class="fas fa-search-plus fa-2x mb-2"></i>
+              <p class="font-bold">Safe Monsoon Shelter</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox Modal Component -->
+  <div id="lightbox" class="fixed inset-0 z-50 bg-slate-950/90 hidden items-center justify-center p-4">
+    <button id="lightbox-close" class="absolute top-6 right-6 text-white text-3xl hover:text-brandOrange" aria-label="Close Lightbox">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="max-w-4xl max-h-[85vh] text-center">
+      <img id="lightbox-img" src="" alt="Enlarged gallery preview" class="max-h-[75vh] mx-auto rounded-2xl shadow-2xl object-contain">
+      <p id="lightbox-caption" class="text-white font-medium mt-4 text-lg"></p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
+    <p>© 2026 Paws Hopes Society. All Rights Reserved.</p>
+  </footer>
+
+  <script src="assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | Paws Hopes Society</title>
+  <meta name="description" content="Learn about Paws Hopes Society, our mission, vision, core values, and journey as a registered Indian animal welfare NGO.">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
+
+  <div id="scroll-progress"></div>
+
+  <!-- Header Navigation -->
+  <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/images/logo.jpeg" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange object-cover">
+        <div>
+          <span class="text-xl font-bold block leading-tight">Paws Hopes Society</span>
+          <span class="text-xs text-brandOrange font-medium">Registered Animal NGO</span>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
+        <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
+        <a href="about.html" class="text-brandOrange transition-colors">About</a>
+        <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
+        <a href="gallery.html" class="hover:text-brandOrange transition-colors">Gallery</a>
+        <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
+        <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
+      </nav>
+
+      <div class="hidden lg:flex items-center gap-4">
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg">
+          <i class="fas fa-heart mr-2"></i> Donate Now
+        </a>
+      </div>
+
+      <div class="lg:hidden flex items-center gap-3">
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900 px-4 pt-4 pb-6 space-y-3 font-medium">
+      <a href="index.html" class="block py-2 text-white">Home</a>
+      <a href="about.html" class="block py-2 text-brandOrange">About</a>
+      <a href="rescue.html" class="block py-2 text-white">Rescue</a>
+      <a href="gallery.html" class="block py-2 text-white">Gallery</a>
+      <a href="volunteer.html" class="block py-2 text-white">Volunteer</a>
+      <a href="contact.html" class="block py-2 text-white">Contact</a>
+      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold">Donate Now</a>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="pt-32 pb-16 bg-slate-900 text-white text-center relative">
+    <div class="max-w-4xl mx-auto px-4">
+      <h1 class="text-4xl sm:text-5xl font-extrabold">About Paws Hopes Society</h1>
+      <p class="text-orange-200 mt-4 text-lg">Learn about our journey, core values, and unwavering commitment to street animal welfare across India.</p>
+    </div>
+  </section>
+
+  <!-- Deep Mission & Vision -->
+  <section class="py-20 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-8">
+      
+      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up">
+        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-950 text-brandOrange rounded-xl flex items-center justify-center text-xl mb-4">
+          <i class="fas fa-bullseye"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Our Mission</h3>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">To provide swift medical response, shelter, nutrition, and rehabilitation for injured, sick, and abandoned animals while promoting adoption over buying.</p>
+      </div>
+
+      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-950 text-brandGreen rounded-xl flex items-center justify-center text-xl mb-4">
+          <i class="fas fa-eye"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Our Vision</h3>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">A nation where street animals are protected by laws and respected by communities, free from hunger, abuse, and preventable suffering.</p>
+      </div>
+
+      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
+        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-950 text-brandAmber rounded-xl flex items-center justify-center text-xl mb-4">
+          <i class="fas fa-heart"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Core Values</h3>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Unconditional compassion, complete financial transparency, relentless rescue action, and community education.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Timeline Journey -->
+  <section class="py-20 bg-slate-50 dark:bg-slate-950">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Our Evolution</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">The NGO Journey Timeline</h2>
+      </div>
+
+      <div class="space-y-8 relative before:absolute before:inset-0 before:left-1/2 before:-translate-x-px before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+        
+        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandOrange text-white font-bold shrink-0 z-10">1</div>
+          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-brandOrange">2021 - Humble Beginnings</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Small Feeding Drive</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Started as a group of 3 passionate animal lovers feeding 20 street dogs daily out of pocket.</p>
+          </div>
+        </div>
+
+        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandGreen text-white font-bold shrink-0 z-10">2</div>
+          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-brandGreen">2022 - Official NGO Registration</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Paws Hopes Society Established</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Formally registered as a society in India, launching our first mobile rescue vehicle and basic medical facility.</p>
+          </div>
+        </div>
+
+        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandAmber text-white font-bold shrink-0 z-10">3</div>
+          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-brandAmber">2024 - Medical Care Facility</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Shelter & OPD Clinic</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Expanded shelter capacity to house 100+ recovering animals simultaneously with full-time veterinary doctors.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 text-slate-400 pt-12 pb-8 border-t border-slate-800 text-center text-xs">
+    <p>© 2026 Paws Hopes Society. All Rights Reserved. "Let Them Know... Someone Cares."</p>
+  </footer>
+
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="assets/js/script.js"></script>
+</body>
+</html>
