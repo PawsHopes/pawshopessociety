@@ -3,109 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Become A Volunteer | Paws Hopes Society</title>
-  <meta name="description" content="Join Paws Hopes Society as a volunteer or foster parent. Give your time and love to help street animals.">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
-    }
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Volunteer & Foster Application | Paws Hopes Society Lucknow</title>
+  <meta name="description" content="Apply to volunteer or foster shelter animals with Paws Hopes Society in Lucknow. Offer your weekend time, foster kittens/puppies, or assist feeding drives.">
+  <link rel="canonical" href="https://pawshopessociety.org/volunteer.html">
+
+  <meta property="og:title" content="Volunteer | Paws Hopes Society">
+  <meta property="og:description" content="Join our volunteer team in Lucknow to care for dogs, cats, birds and wildlife.">
+  <meta property="og:url" content="https://pawshopessociety.org/volunteer.html">
+  <meta property="og:image" content="https://pawshopessociety.org/assets/images/hero.jpg">
+
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
+<body class="bg-warm-white text-slate-800 transition-colors duration-300">
 
-  <div id="scroll-progress"></div>
+  <div id="scroll-progress" aria-hidden="true"></div>
 
   <!-- Header -->
-  <header id="site-header" class="fixed w-full top-0 z-50 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+  <header id="site-header" class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange">
+        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brand-orange" width="48" height="48">
         <span class="text-xl font-bold">Paws Hopes Society</span>
       </a>
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
-        <a href="index.html" class="hover:text-brandOrange">Home</a>
-        <a href="about.html" class="hover:text-brandOrange">About</a>
-        <a href="rescue.html" class="hover:text-brandOrange">Rescue</a>
-        <a href="gallery.html" class="hover:text-brandOrange">Gallery</a>
-        <a href="volunteer.html" class="text-brandOrange">Volunteer</a>
-        <a href="contact.html" class="hover:text-brandOrange">Contact</a>
+      <nav class="hidden lg:flex items-center gap-7 font-semibold text-sm">
+        <a href="index.html" class="hover:text-brand-orange">Home</a>
+        <a href="about.html" class="hover:text-brand-orange">About</a>
+        <a href="rescue.html" class="hover:text-brand-orange">Rescue</a>
+        <a href="gallery.html" class="hover:text-brand-orange">Gallery</a>
+        <a href="volunteer.html" class="text-brand-orange" aria-current="page">Volunteer</a>
+        <a href="donate.html" class="hover:text-brand-orange">Donate</a>
+        <a href="contact.html" class="hover:text-brand-orange">Contact</a>
       </nav>
-      <a href="donate.html" class="hidden lg:inline-block bg-brandOrange text-white font-semibold px-6 py-2.5 rounded-full">Donate</a>
+      <a href="donate.html" class="hidden lg:inline-block bg-brand-orange text-white font-bold px-6 py-2.5 rounded-full">Donate</a>
     </div>
   </header>
 
-  <section class="pt-32 pb-16 bg-slate-900 text-white text-center">
-    <div class="max-w-4xl mx-auto px-4">
-      <h1 class="text-4xl sm:text-5xl font-extrabold">Become A Volunteer</h1>
-      <p class="text-orange-200 mt-4 text-lg">Your time and passion can save hundreds of voiceless lives.</p>
-    </div>
-  </section>
+  <main>
+    <section class="py-16 bg-slate-950 text-white text-center">
+      <div class="max-w-4xl mx-auto px-4">
+        <h1 class="text-4xl sm:text-5xl font-extrabold">Join Our Volunteer Family</h1>
+        <p class="text-slate-300 mt-4 text-base sm:text-lg">Your hands and heart can transform the life of a recovering shelter resident.</p>
+      </div>
+    </section>
 
-  <!-- Volunteer Roles & Form -->
-  <section class="py-20 bg-white dark:bg-slate-900">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="grid md:grid-cols-2 gap-12">
-        
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Why Join Our Volunteer Network?</h2>
-          <div class="space-y-4">
-            <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
-              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">On-field Rescue Support:</strong> Assist our rescue team during emergency calls and animal transportation.</p>
-            </div>
-            <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
-              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Shelter & Feeding Drives:</strong> Help feed, bathe, and socialize recovering rescue dogs at our shelter.</p>
-            </div>
-            <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
-              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Foster Parenting:</strong> Provide temporary home care for newborn puppies or recovering animals.</p>
+    <section class="py-20 bg-warm-white dark:bg-slate-900">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12">
+          
+          <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Ways You Can Serve</h2>
+            <div class="space-y-4">
+              <div class="flex gap-4">
+                <i class="fas fa-check-circle text-brand-green text-xl mt-1" aria-hidden="true"></i>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white">Shelter Weekend Care</h3>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Help feed, groom, walk and spend affection time with recovering animals at Bakshi Ka Talab.</p>
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <i class="fas fa-check-circle text-brand-green text-xl mt-1" aria-hidden="true"></i>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white">Temporary Foster Parenting</h3>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Open your home to orphaned newborn puppies, kittens, or surgical cases requiring quiet home rest.</p>
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <i class="fas fa-check-circle text-brand-green text-xl mt-1" aria-hidden="true"></i>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white">Rescue Vehicle Escort</h3>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Assist our rescue drivers during emergency dispatch and transport to veterinary hospitals.</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Registration Form -->
-        <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800">
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Volunteer Registration Form</h3>
-          <form class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold uppercase mb-1">Full Name *</label>
-              <input type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase mb-1">Email Address *</label>
-              <input type="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase mb-1">Phone / WhatsApp *</label>
-              <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase mb-1">Preferred Volunteer Role</label>
-              <select class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-                <option>On-field Rescue</option>
-                <option>Shelter Animal Care</option>
-                <option>Temporary Foster Parent</option>
-                <option>Social Media & Photography</option>
-              </select>
-            </div>
-            <button type="submit" class="w-full bg-brandGreen hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all">
-              Register As Volunteer
-            </button>
-          </form>
-        </div>
+          <!-- Application Form -->
+          <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xl">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Volunteer Registration</h3>
+            
+            <form class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold uppercase mb-1">Full Name *</label>
+                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brand-orange">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase mb-1">Phone / WhatsApp Number *</label>
+                <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brand-orange">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase mb-1">Preferred Role *</label>
+                <select class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brand-orange">
+                  <option>Shelter Care & Feeding</option>
+                  <option>Temporary Foster Parent</option>
+                  <option>Emergency Rescue Escort</option>
+                  <option>Photography & Social Media</option>
+                </select>
+              </div>
+              <button type="submit" class="w-full bg-brand-green hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all">
+                Submit Volunteer Form
+              </button>
+            </form>
+          </div>
 
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
-  <!-- Footer -->
   <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
     <p>© 2026 Paws Hopes Society. All Rights Reserved.</p>
   </footer>

@@ -1,110 +1,66 @@
 /* ==========================================================================
    Paws Hopes Society - Master Stylesheet
-   Tailwind Extension & Custom UX/UI Styles
+   Designed for High Performance, Dark Mode & Cloudflare Pages Static Hosting
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
-
+/* Tailwind CSS Directive Base Fallbacks & Variables */
 :root {
-  --primary: #ea580c;       /* Deep Orange */
-  --primary-dark: #c2410c;
-  --secondary: #15803d;     /* Forest Green */
-  --secondary-dark: #166534;
-  --accent-amber: #f59e0b;  /* Amber */
-  --accent-red: #ef4444;    /* Soft Red */
-  --bg-light: #fdfbf7;      /* Warm Gray/Off-white */
-  --bg-dark: #0f172a;       /* Dark Mode Slate */
-  --card-light: rgba(255, 255, 255, 0.85);
-  --card-dark: rgba(30, 41, 59, 0.85);
-  --text-light: #1e293b;
-  --text-dark: #f8fafc;
+  --brand-orange: #ea580c;
+  --brand-green: #15803d;
+  --brand-amber: #f59e0b;
+  --warm-white: #fdfbf7;
+  --bg-dark: #020617;
+  --card-light: #ffffff;
+  --card-dark: #0f172a;
 }
 
+/* Custom Color Classes for Utility Fallbacks */
+.bg-warm-white { background-color: var(--warm-white); }
+.bg-brand-orange { background-color: var(--brand-orange); }
+.bg-brand-green { background-color: var(--brand-green); }
+.text-brand-orange { color: var(--brand-orange); }
+.text-brand-green { color: var(--brand-green); }
+.border-brand-orange { border-color: var(--brand-orange); }
+
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--bg-light);
-  color: var(--text-light);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--warm-white);
+  color: #1e293b;
   overflow-x: hidden;
 }
 
-/* Dark Mode Overrides */
+/* Dark Mode Transitions */
 body.dark {
   background-color: var(--bg-dark);
-  color: var(--text-dark);
+  color: #f8fafc;
 }
 
-body.dark .glass-card {
-  background: var(--card-dark);
-  border-color: rgba(255, 255, 255, 0.1);
-}
+body.dark .bg-warm-white { background-color: var(--bg-dark); }
+body.dark .text-slate-900 { color: #f8fafc !important; }
+body.dark .text-slate-800 { color: #f1f5f9 !important; }
+body.dark .text-slate-700 { color: #e2e8f0 !important; }
+body.dark .text-slate-600 { color: #cbd5e1 !important; }
+body.dark .bg-white { background-color: #0f172a !important; }
+body.dark .bg-slate-50 { background-color: #020617 !important; }
+body.dark .border-slate-200 { border-color: #1e293b !important; }
 
-body.dark .site-header.scrolled {
-  background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-body.dark .text-slate-800 { color: #f1f5f9; }
-body.dark .text-slate-700 { color: #e2e8f0; }
-body.dark .text-slate-600 { color: #cbd5e1; }
-body.dark .bg-white { background-color: #1e293b; }
-body.dark .bg-slate-50 { background-color: #0f172a; }
-body.dark .border-slate-200 { border-color: #334155; }
-
-/* Custom Scroll Progress Bar */
+/* Scroll Progress Bar */
 #scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  background: linear-gradient(90deg, var(--brand-orange), var(--brand-green));
   z-index: 1000;
   width: 0%;
-  transition: width 0.1s ease-out;
+  transition: width 0.1s linear;
 }
 
 /* Glassmorphism Styles */
-.glass-card {
-  background: var(--card-light);
+.glass-nav {
+  background: rgba(15, 23, 42, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
-}
-
-.glass-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* Loader Screen */
-#loader {
-  position: fixed;
-  inset: 0;
-  background-color: #ffffff;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.paw-spinner {
-  width: 60px;
-  height: 60px;
-  animation: pulse-paw 1.2s infinite ease-in-out;
-}
-
-@keyframes pulse-paw {
-  0%, 100% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.1); opacity: 1; }
-}
-
-/* Lightbox Modal */
-#lightbox {
-  transition: opacity 0.3s ease;
 }
 
 /* Custom Scrollbar */
@@ -115,12 +71,12 @@ body.dark .border-slate-200 { border-color: #334155; }
   background: #f1f1f1;
 }
 body.dark ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #020617;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--primary);
+  background: var(--brand-orange);
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+  background: #c2410c;
 }
