@@ -4,8 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us | Paws Hopes Society</title>
-  <meta name="description" content="Learn about Paws Hopes Society, our mission, vision, core values, and journey as a registered Indian animal welfare NGO.">
-  
+  <meta name="description" content="Learn how Paws Hopes Society began in 2020, became a registered NGO in 2022, and cares for dogs, cats, monkeys, birds, squirrels, and guinea pigs in Lucknow today.">
+  <link rel="canonical" href="https://pawshopessociety.org/about.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Paws Hopes Society">
+  <meta property="og:title" content="About Us | Paws Hopes Society">
+  <meta property="og:description" content="Our journey from a single person feeding strays in 2020 to a registered animal welfare NGO caring for six+ species today.">
+  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
+  <meta property="og:url" content="https://pawshopessociety.org/about.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="About Us | Paws Hopes Society">
+  <meta name="twitter:description" content="Our journey from a single person feeding strays in 2020 to a registered animal welfare NGO.">
+  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
+
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,22 +38,23 @@
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
 
   <!-- Header Navigation -->
   <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/images/logo.jpeg" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange object-cover">
+      <a href="index.html" class="flex items-center gap-3 group" aria-label="Paws Hopes Society Home">
+        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-12 w-12 rounded-full object-cover border-2 border-brandOrange group-hover:scale-105 transition-transform">
         <div>
-          <span class="text-xl font-bold block leading-tight">Paws Hopes Society</span>
-          <span class="text-xs text-brandOrange font-medium">Registered Animal NGO</span>
+          <span class="text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
+          <span class="text-xs text-brandOrange font-medium tracking-wide">Registered Animal NGO</span>
         </div>
       </a>
 
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
         <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
-        <a href="about.html" class="text-brandOrange transition-colors">About</a>
+        <a href="about.html" class="text-brandOrange transition-colors" aria-current="page">About</a>
         <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
         <a href="gallery.html" class="hover:text-brandOrange transition-colors">Gallery</a>
         <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
@@ -42,105 +62,126 @@
       </nav>
 
       <div class="hidden lg:flex items-center gap-4">
-        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle Dark Mode">
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
           <i class="fas fa-moon"></i>
         </button>
-        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg">
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
           <i class="fas fa-heart mr-2"></i> Donate Now
         </a>
       </div>
 
       <div class="lg:hidden flex items-center gap-3">
-        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open Menu">
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
           <i class="fas fa-bars"></i>
         </button>
       </div>
     </div>
 
-    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900 px-4 pt-4 pb-6 space-y-3 font-medium">
-      <a href="index.html" class="block py-2 text-white">Home</a>
-      <a href="about.html" class="block py-2 text-brandOrange">About</a>
-      <a href="rescue.html" class="block py-2 text-white">Rescue</a>
-      <a href="gallery.html" class="block py-2 text-white">Gallery</a>
-      <a href="volunteer.html" class="block py-2 text-white">Volunteer</a>
-      <a href="contact.html" class="block py-2 text-white">Contact</a>
-      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold">Donate Now</a>
+    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
+      <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
+      <a href="about.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">About</a>
+      <a href="rescue.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Rescue</a>
+      <a href="gallery.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Gallery</a>
+      <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
+      <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
+      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md">
+        <i class="fas fa-heart mr-2"></i> Donate Now
+      </a>
     </div>
   </header>
+
+  <main id="main-content">
 
   <!-- Page Header -->
   <section class="pt-32 pb-16 bg-slate-900 text-white text-center relative">
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">About Paws Hopes Society</h1>
-      <p class="text-orange-200 mt-4 text-lg">Learn about our journey, core values, and unwavering commitment to street animal welfare across India.</p>
+      <p class="text-orange-200 mt-4 text-lg">Our journey, our mission, and our unwavering commitment to street animal welfare in Lucknow.</p>
+    </div>
+  </section>
+
+  <!-- Our Story -->
+  <section class="py-20 bg-white dark:bg-slate-900">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" data-aos="fade-up">
+      <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Our Story</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 mb-6">How It All Began</h2>
+      <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+        Paws Hopes Society began in 2020, after our founder saw stray dogs eating garbage and drinking dirty drainage water on the streets of Lucknow. Moved by what they witnessed, one person began rescuing and feeding animals — alone, without any organization behind them.
+      </p>
+      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+        In 2022, that individual effort became an officially registered NGO. Today, our shelter cares for dogs, cats, monkeys, birds, squirrels, and guinea pigs, and we assist with reptile rescues whenever required — carrying the same commitment that started it all: that every animal deserves to know someone cares.
+      </p>
     </div>
   </section>
 
   <!-- Deep Mission & Vision -->
-  <section class="py-20 bg-white dark:bg-slate-900">
+  <section class="py-20 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-8">
-      
-      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up">
+
+      <div class="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up">
         <div class="w-12 h-12 bg-orange-100 dark:bg-orange-950 text-brandOrange rounded-xl flex items-center justify-center text-xl mb-4">
-          <i class="fas fa-bullseye"></i>
+          <i class="fas fa-bullseye" aria-hidden="true"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Our Mission</h3>
-        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">To provide swift medical response, shelter, nutrition, and rehabilitation for injured, sick, and abandoned animals while promoting adoption over buying.</p>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">To rescue, treat, shelter, and find loving homes for street animals, while building community awareness and empathy toward them.</p>
       </div>
 
-      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
+      <div class="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
         <div class="w-12 h-12 bg-green-100 dark:bg-green-950 text-brandGreen rounded-xl flex items-center justify-center text-xl mb-4">
-          <i class="fas fa-eye"></i>
+          <i class="fas fa-eye" aria-hidden="true"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Our Vision</h3>
-        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">A nation where street animals are protected by laws and respected by communities, free from hunger, abuse, and preventable suffering.</p>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">A compassionate world where no animal suffers from cruelty, neglect, or preventable disease on the streets.</p>
       </div>
 
-      <div class="p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
+      <div class="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
         <div class="w-12 h-12 bg-amber-100 dark:bg-amber-950 text-brandAmber rounded-xl flex items-center justify-center text-xl mb-4">
-          <i class="fas fa-heart"></i>
+          <i class="fas fa-heart" aria-hidden="true"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Core Values</h3>
-        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Unconditional compassion, complete financial transparency, relentless rescue action, and community education.</p>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Unconditional compassion, honesty in our work, relentless rescue action, and care for every species — not just dogs and cats.</p>
       </div>
 
     </div>
   </section>
 
   <!-- Timeline Journey -->
-  <section class="py-20 bg-slate-50 dark:bg-slate-950">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="py-20 bg-white dark:bg-slate-900">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16">
-        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Our Evolution</span>
-        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">The NGO Journey Timeline</h2>
+        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Our Journey</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">2020 &rarr; 2022 &rarr; 2026</h2>
       </div>
 
-      <div class="space-y-8 relative before:absolute before:inset-0 before:left-1/2 before:-translate-x-px before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
-        
-        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
-          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandOrange text-white font-bold shrink-0 z-10">1</div>
-          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
-            <span class="text-xs font-bold text-brandOrange">2021 - Humble Beginnings</span>
-            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Small Feeding Drive</h3>
-            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Started as a group of 3 passionate animal lovers feeding 20 street dogs daily out of pocket.</p>
+      <div class="space-y-8 relative before:absolute before:inset-0 before:left-6 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800 md:before:left-1/2 md:before:-translate-x-px">
+
+        <div class="relative flex items-start gap-6 md:justify-center" data-aos="fade-up">
+          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-brandOrange text-white font-bold shrink-0 z-10">1</div>
+          <div class="flex-1 md:absolute md:left-[calc(50%+2rem)] md:w-[22rem] p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-brandOrange uppercase tracking-wide">2020</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">One Person Starts Rescuing</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Seeing stray dogs eating garbage and drinking dirty drainage water, our founder began rescuing and feeding animals independently.</p>
           </div>
         </div>
 
-        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
-          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandGreen text-white font-bold shrink-0 z-10">2</div>
-          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
-            <span class="text-xs font-bold text-brandGreen">2022 - Official NGO Registration</span>
-            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Paws Hopes Society Established</h3>
-            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Formally registered as a society in India, launching our first mobile rescue vehicle and basic medical facility.</p>
+        <div class="relative flex items-start gap-6 md:justify-center" data-aos="fade-up">
+          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-brandGreen text-white font-bold shrink-0 z-10">2</div>
+          <div class="flex-1 md:absolute md:right-[calc(50%+2rem)] md:w-[22rem] p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl shadow border border-slate-100 dark:border-slate-800 md:text-right">
+            <span class="text-xs font-bold text-brandGreen uppercase tracking-wide">2022</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Officially Registered</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">That individual effort became a formally registered animal welfare NGO in India.</p>
           </div>
         </div>
 
-        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
-          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-brandAmber text-white font-bold shrink-0 z-10">3</div>
-          <div class="w-[calc(100%-4rem)] md:w-[26rem] p-6 bg-white dark:bg-slate-900 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
-            <span class="text-xs font-bold text-brandAmber">2024 - Medical Care Facility</span>
-            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Shelter & OPD Clinic</h3>
-            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Expanded shelter capacity to house 100+ recovering animals simultaneously with full-time veterinary doctors.</p>
+        <div class="relative flex items-start gap-6 md:justify-center" data-aos="fade-up">
+          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-brandAmber text-white font-bold shrink-0 z-10">3</div>
+          <div class="flex-1 md:absolute md:left-[calc(50%+2rem)] md:w-[22rem] p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl shadow border border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-brandAmber uppercase tracking-wide">2026 &mdash; Today</span>
+            <h3 class="font-bold text-slate-900 dark:text-white mt-1">Caring For Six+ Species</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">Our shelter now cares for dogs, cats, monkeys, birds, squirrels, and guinea pigs, and we assist with reptile rescues whenever required.</p>
           </div>
         </div>
 
@@ -148,10 +189,71 @@
     </div>
   </section>
 
+  </main>
+
   <!-- Footer -->
-  <footer class="bg-slate-950 text-slate-400 pt-12 pb-8 border-t border-slate-800 text-center text-xs">
-    <p>© 2026 Paws Hopes Society. All Rights Reserved. "Let Them Know... Someone Cares."</p>
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="assets/images/logo.png" alt="Paws Hopes Society" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
+          <span class="text-xl font-bold text-white">Paws Hopes Society</span>
+        </div>
+        <p class="text-xs italic text-brandOrange">"Let Them Know... Someone Cares."</p>
+        <p class="text-sm leading-relaxed">A registered Indian animal welfare NGO in Lucknow, rescuing injured street animals and providing medical care, shelter, and adoption since 2020.</p>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Quick Navigation</h3>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="about.html" class="hover:text-brandOrange transition-colors">About Our NGO</a></li>
+          <li><a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue Helpline & Stories</a></li>
+          <li><a href="gallery.html" class="hover:text-brandOrange transition-colors">Adoption & Photo Gallery</a></li>
+          <li><a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer Opportunities</a></li>
+          <li><a href="donate.html" class="hover:text-brandOrange transition-colors">Donate</a></li>
+          <li><a href="contact.html" class="hover:text-brandOrange transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-3">
+            <i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i>
+            <span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
+        <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
+        <div class="flex gap-3">
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on Instagram">
+            <i class="fab fa-instagram" aria-hidden="true"></i>
+          </a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on YouTube">
+            <i class="fab fa-youtube" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+      <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
+      <p class="mt-2 sm:mt-0">Designed with compassion for voiceless animals.</p>
+    </div>
   </footer>
+
+  <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>

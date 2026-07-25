@@ -4,8 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Become A Volunteer | Paws Hopes Society</title>
-  <meta name="description" content="Join Paws Hopes Society as a volunteer or foster parent. Give your time and love to help street animals.">
-  
+  <meta name="description" content="Join Paws Hopes Society as a volunteer or foster parent in Lucknow. Give your time and love to help street animals.">
+  <link rel="canonical" href="https://pawshopessociety.org/volunteer.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Paws Hopes Society">
+  <meta property="og:title" content="Become A Volunteer | Paws Hopes Society">
+  <meta property="og:description" content="Join our volunteer network in Lucknow and help save street animals.">
+  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
+  <meta property="og:url" content="https://pawshopessociety.org/volunteer.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Become A Volunteer | Paws Hopes Society">
+  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
+
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -14,81 +31,124 @@
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
 
-  <!-- Header -->
-  <header id="site-header" class="fixed w-full top-0 z-50 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange">
-        <span class="text-xl font-bold">Paws Hopes Society</span>
+  <!-- Header Navigation -->
+  <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group" aria-label="Paws Hopes Society Home">
+        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-12 w-12 rounded-full object-cover border-2 border-brandOrange group-hover:scale-105 transition-transform">
+        <div>
+          <span class="text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
+          <span class="text-xs text-brandOrange font-medium tracking-wide">Registered Animal NGO</span>
+        </div>
       </a>
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
-        <a href="index.html" class="hover:text-brandOrange">Home</a>
-        <a href="about.html" class="hover:text-brandOrange">About</a>
-        <a href="rescue.html" class="hover:text-brandOrange">Rescue</a>
-        <a href="gallery.html" class="hover:text-brandOrange">Gallery</a>
-        <a href="volunteer.html" class="text-brandOrange">Volunteer</a>
-        <a href="contact.html" class="hover:text-brandOrange">Contact</a>
+
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
+        <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
+        <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
+        <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
+        <a href="gallery.html" class="hover:text-brandOrange transition-colors">Gallery</a>
+        <a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt</a>
+        <a href="volunteer.html" class="text-brandOrange transition-colors" aria-current="page">Volunteer</a>
+        <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
       </nav>
-      <a href="donate.html" class="hidden lg:inline-block bg-brandOrange text-white font-semibold px-6 py-2.5 rounded-full">Donate</a>
+
+      <div class="hidden lg:flex items-center gap-4">
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
+          <i class="fas fa-heart mr-2"></i> Donate Now
+        </a>
+      </div>
+
+      <div class="lg:hidden flex items-center gap-3">
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
+      <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
+      <a href="about.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">About</a>
+      <a href="rescue.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Rescue</a>
+      <a href="gallery.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Gallery</a>
+      <a href="adopt.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Adopt</a>
+      <a href="volunteer.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">Volunteer</a>
+      <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
+      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md">
+        <i class="fas fa-heart mr-2"></i> Donate Now
+      </a>
     </div>
   </header>
+
+  <main id="main-content">
 
   <section class="pt-32 pb-16 bg-slate-900 text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">Become A Volunteer</h1>
-      <p class="text-orange-200 mt-4 text-lg">Your time and passion can save hundreds of voiceless lives.</p>
+      <p class="text-orange-200 mt-4 text-lg">Your time and passion can help save street animals in Lucknow.</p>
     </div>
   </section>
 
   <!-- Volunteer Roles & Form -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      
+
       <div class="grid md:grid-cols-2 gap-12">
-        
-        <div>
+
+        <div data-aos="fade-right">
           <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Why Join Our Volunteer Network?</h2>
           <div class="space-y-4">
             <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
+              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1" aria-hidden="true"></i>
               <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">On-field Rescue Support:</strong> Assist our rescue team during emergency calls and animal transportation.</p>
             </div>
             <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
-              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Shelter & Feeding Drives:</strong> Help feed, bathe, and socialize recovering rescue dogs at our shelter.</p>
+              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1" aria-hidden="true"></i>
+              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Shelter & Feeding Drives:</strong> Help feed and care for recovering dogs, cats, and other rescued animals at our shelter.</p>
             </div>
             <div class="flex gap-4">
-              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1"></i>
+              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1" aria-hidden="true"></i>
               <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Foster Parenting:</strong> Provide temporary home care for newborn puppies or recovering animals.</p>
+            </div>
+            <div class="flex gap-4">
+              <i class="fas fa-check-circle text-brandGreen fa-xl mt-1" aria-hidden="true"></i>
+              <p class="text-sm text-slate-600 dark:text-slate-300"><strong class="text-slate-900 dark:text-white">Social Media Support:</strong> Help us document and share rescue stories on Instagram and YouTube.</p>
             </div>
           </div>
         </div>
 
         <!-- Registration Form -->
-        <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800">
+        <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800" data-aos="fade-left">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Volunteer Registration Form</h3>
-          <form class="space-y-4">
+          <form class="space-y-4" data-async-form aria-label="Volunteer registration form">
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Full Name *</label>
-              <input type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="vol-name" class="block text-xs font-bold uppercase mb-1">Full Name *</label>
+              <input id="vol-name" name="name" type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Email Address *</label>
-              <input type="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="vol-email" class="block text-xs font-bold uppercase mb-1">Email Address *</label>
+              <input id="vol-email" name="email" type="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Phone / WhatsApp *</label>
-              <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="vol-phone" class="block text-xs font-bold uppercase mb-1">Phone Number *</label>
+              <input id="vol-phone" name="phone" type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Preferred Volunteer Role</label>
-              <select class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="vol-role" class="block text-xs font-bold uppercase mb-1">Preferred Volunteer Role</label>
+              <select id="vol-role" name="role" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
                 <option>On-field Rescue</option>
                 <option>Shelter Animal Care</option>
                 <option>Temporary Foster Parent</option>
@@ -98,6 +158,7 @@
             <button type="submit" class="w-full bg-brandGreen hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all">
               Register As Volunteer
             </button>
+            <p class="text-xs text-slate-500 dark:text-slate-400 text-center pt-1">Prefer to talk first? <a href="tel:+919313293693" class="text-brandOrange font-semibold hover:underline">Call us directly</a>.</p>
           </form>
         </div>
 
@@ -105,11 +166,74 @@
     </div>
   </section>
 
+  </main>
+
   <!-- Footer -->
-  <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
-    <p>© 2026 Paws Hopes Society. All Rights Reserved.</p>
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="assets/images/logo.png" alt="Paws Hopes Society" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
+          <span class="text-xl font-bold text-white">Paws Hopes Society</span>
+        </div>
+        <p class="text-xs italic text-brandOrange">"Let Them Know... Someone Cares."</p>
+        <p class="text-sm leading-relaxed">A registered Indian animal welfare NGO in Lucknow, rescuing injured street animals and providing medical care, shelter, and adoption since 2020.</p>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Quick Navigation</h3>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="about.html" class="hover:text-brandOrange transition-colors">About Our NGO</a></li>
+          <li><a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue Helpline & Stories</a></li>
+          <li><a href="gallery.html" class="hover:text-brandOrange transition-colors">Photo Gallery</a></li>
+          <li><a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt A Pet</a></li>
+          <li><a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer Opportunities</a></li>
+          <li><a href="donate.html" class="hover:text-brandOrange transition-colors">Donate</a></li>
+          <li><a href="contact.html" class="hover:text-brandOrange transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-3">
+            <i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i>
+            <span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
+        <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
+        <div class="flex gap-3">
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on Instagram">
+            <i class="fab fa-instagram" aria-hidden="true"></i>
+          </a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on YouTube">
+            <i class="fab fa-youtube" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+      <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
+      <p class="mt-2 sm:mt-0">Designed with compassion for voiceless animals.</p>
+    </div>
   </footer>
 
+  <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>
 </body>
 </html>

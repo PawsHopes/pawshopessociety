@@ -4,8 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Emergency Rescue & Helpline | Paws Hopes Society</title>
-  <meta name="description" content="Report an injured or sick animal to Paws Hopes Society. Learn about our rescue protocol and medical care services.">
-  
+  <meta name="description" content="Report an injured or distressed animal to Paws Hopes Society's rescue helpline in Lucknow. We rescue dogs, cats, monkeys, birds, squirrels, and guinea pigs.">
+  <link rel="canonical" href="https://pawshopessociety.org/rescue.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Paws Hopes Society">
+  <meta property="og:title" content="Emergency Rescue & Helpline | Paws Hopes Society">
+  <meta property="og:description" content="Report an injured or distressed animal to our rescue helpline in Lucknow.">
+  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
+  <meta property="og:url" content="https://pawshopessociety.org/rescue.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Emergency Rescue & Helpline | Paws Hopes Society">
+  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
+
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,38 +36,143 @@
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
 
-  <!-- Header -->
-  <header id="site-header" class="fixed w-full top-0 z-50 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange">
-        <span class="text-xl font-bold">Paws Hopes Society</span>
+  <!-- Header Navigation -->
+  <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group" aria-label="Paws Hopes Society Home">
+        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-12 w-12 rounded-full object-cover border-2 border-brandOrange group-hover:scale-105 transition-transform">
+        <div>
+          <span class="text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
+          <span class="text-xs text-brandOrange font-medium tracking-wide">Registered Animal NGO</span>
+        </div>
       </a>
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
-        <a href="index.html" class="hover:text-brandOrange">Home</a>
-        <a href="about.html" class="hover:text-brandOrange">About</a>
-        <a href="rescue.html" class="text-brandOrange">Rescue</a>
-        <a href="gallery.html" class="hover:text-brandOrange">Gallery</a>
-        <a href="volunteer.html" class="hover:text-brandOrange">Volunteer</a>
-        <a href="contact.html" class="hover:text-brandOrange">Contact</a>
+
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
+        <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
+        <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
+        <a href="rescue.html" class="text-brandOrange transition-colors" aria-current="page">Rescue</a>
+        <a href="gallery.html" class="hover:text-brandOrange transition-colors">Gallery</a>
+        <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
+        <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
       </nav>
-      <a href="donate.html" class="hidden lg:inline-block bg-brandOrange text-white font-semibold px-6 py-2.5 rounded-full">Donate</a>
+
+      <div class="hidden lg:flex items-center gap-4">
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
+          <i class="fas fa-heart mr-2"></i> Donate Now
+        </a>
+      </div>
+
+      <div class="lg:hidden flex items-center gap-3">
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
+      <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
+      <a href="about.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">About</a>
+      <a href="rescue.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">Rescue</a>
+      <a href="gallery.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Gallery</a>
+      <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
+      <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
+      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md">
+        <i class="fas fa-heart mr-2"></i> Donate Now
+      </a>
     </div>
   </header>
+
+  <main id="main-content">
 
   <!-- Rescue Hero -->
   <section class="pt-32 pb-16 bg-red-900 text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
       <span class="px-3 py-1 bg-white/20 text-white text-xs rounded-full font-bold uppercase tracking-widest">24/7 Helpline Active</span>
       <h1 class="text-4xl sm:text-5xl font-extrabold mt-4">Emergency Animal Rescue</h1>
-      <p class="text-red-100 mt-4 text-lg">Spot an injured, sick, or trapped animal? Here is how to report and get immediate help.</p>
-      
+      <p class="text-red-100 mt-4 text-lg">Spot an injured, sick, or trapped animal? Call us directly or fill out the form below.</p>
+
       <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-        <a href="tel:+919876543210" class="bg-white text-red-700 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl hover:bg-slate-100">
-          <i class="fas fa-phone-alt mr-2"></i> Call Helpline: +91 98765 43210
+        <a href="tel:+919313293693" class="bg-white text-red-700 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl hover:bg-slate-100 transition-colors">
+          <i class="fas fa-phone-alt mr-2" aria-hidden="true"></i> Call Helpline: +91 93132 93693
         </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Animal Categories -->
+  <section class="py-20 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
+        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Who We Rescue</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">Every Animal, Every Time</h2>
+        <p class="text-slate-600 dark:text-slate-400 mt-4">We respond to rescue calls for a wide range of species — not just dogs and cats.</p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up">
+          <i class="fas fa-dog fa-2x text-brandOrange mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Dogs</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="50">
+          <i class="fas fa-cat fa-2x text-brandOrange mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Cats</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
+          <i class="fas fa-monument fa-2x text-brandGreen mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Monkeys</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="150">
+          <i class="fas fa-dove fa-2x text-brandGreen mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Birds</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
+          <i class="fas fa-paw fa-2x text-brandAmber mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Squirrels</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="250">
+          <i class="fas fa-paw fa-2x text-brandAmber mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Guinea Pigs</p>
+        </div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 col-span-2 md:col-span-2" data-aos="fade-up" data-aos-delay="300">
+          <i class="fas fa-hand-holding-heart fa-2x text-red-500 mb-3" aria-hidden="true"></i>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">Reptile Rescue Assistance (as needed)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Rescue Process -->
+  <section class="py-20 bg-slate-50 dark:bg-slate-950">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
+        <span class="text-brandGreen font-bold text-sm tracking-widest uppercase">How It Works</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">Our Rescue Process</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center" data-aos="fade-up">
+          <div class="w-14 h-14 mx-auto bg-brandOrange text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">1</div>
+          <h3 class="font-bold text-slate-900 dark:text-white mb-2">You Report</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">Call our helpline or fill in the form with the animal's location and condition.</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+          <div class="w-14 h-14 mx-auto bg-brandGreen text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">2</div>
+          <h3 class="font-bold text-slate-900 dark:text-white mb-2">We Respond</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">Our team assesses the situation and dispatches help as quickly as possible.</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+          <div class="w-14 h-14 mx-auto bg-brandAmber text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">3</div>
+          <h3 class="font-bold text-slate-900 dark:text-white mb-2">Care & Recovery</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">The animal receives treatment and shelter until it can be released or rehomed.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -58,35 +180,35 @@
   <!-- Report Form Section -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Report An Animal In Distress</h2>
-        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Please provide accurate location details and photos to help our rescue team act fast.</p>
 
-        <form class="space-y-4">
+      <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl" data-aos="fade-up">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Report An Animal In Distress</h2>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Please provide accurate location details to help our rescue team act fast. For urgent cases, call the helpline directly instead of waiting for a form response.</p>
+
+        <form class="space-y-4" data-async-form aria-label="Animal rescue report form">
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Your Name *</label>
-              <input type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="rescue-name" class="block text-xs font-bold uppercase mb-1">Your Name *</label>
+              <input id="rescue-name" name="name" type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase mb-1">Contact Phone Number *</label>
-              <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+              <label for="rescue-phone" class="block text-xs font-bold uppercase mb-1">Contact Phone Number *</label>
+              <input id="rescue-phone" name="phone" type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase mb-1">Exact Location / Google Map Link *</label>
-            <input type="text" required placeholder="Street address, landmark..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
+            <label for="rescue-location" class="block text-xs font-bold uppercase mb-1">Exact Location / Google Maps Link *</label>
+            <input id="rescue-location" name="location" type="text" required placeholder="Street address, landmark..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase mb-1">Animal Condition / Injury Description *</label>
-            <textarea rows="4" required placeholder="Describe injuries, animal type (dog/cat/cow), and behavior..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange"></textarea>
+            <label for="rescue-description" class="block text-xs font-bold uppercase mb-1">Animal & Condition Description *</label>
+            <textarea id="rescue-description" name="description" rows="4" required placeholder="Animal type (dog, cat, monkey, bird, squirrel, guinea pig...) and the injury or situation..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange"></textarea>
           </div>
 
           <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all">
-            <i class="fas fa-paper-plane mr-2"></i> Submit Urgent Rescue Alert
+            <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i> Submit Urgent Rescue Alert
           </button>
         </form>
       </div>
@@ -94,11 +216,73 @@
     </div>
   </section>
 
+  </main>
+
   <!-- Footer -->
-  <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
-    <p>© 2026 Paws Hopes Society. All Rights Reserved.</p>
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="assets/images/logo.png" alt="Paws Hopes Society" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
+          <span class="text-xl font-bold text-white">Paws Hopes Society</span>
+        </div>
+        <p class="text-xs italic text-brandOrange">"Let Them Know... Someone Cares."</p>
+        <p class="text-sm leading-relaxed">A registered Indian animal welfare NGO in Lucknow, rescuing injured street animals and providing medical care, shelter, and adoption since 2020.</p>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Quick Navigation</h3>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="about.html" class="hover:text-brandOrange transition-colors">About Our NGO</a></li>
+          <li><a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue Helpline & Stories</a></li>
+          <li><a href="gallery.html" class="hover:text-brandOrange transition-colors">Adoption & Photo Gallery</a></li>
+          <li><a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer Opportunities</a></li>
+          <li><a href="donate.html" class="hover:text-brandOrange transition-colors">Donate</a></li>
+          <li><a href="contact.html" class="hover:text-brandOrange transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-3">
+            <i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i>
+            <span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
+        <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
+        <div class="flex gap-3">
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on Instagram">
+            <i class="fab fa-instagram" aria-hidden="true"></i>
+          </a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on YouTube">
+            <i class="fab fa-youtube" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+      <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
+      <p class="mt-2 sm:mt-0">Designed with compassion for voiceless animals.</p>
+    </div>
   </footer>
 
+  <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>
 </body>
 </html>

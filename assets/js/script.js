@@ -1,6 +1,7 @@
 /* ==========================================================================
-   Paws Hopes Society - Master Interactive Script
+   Paws Hopes Society — Master Interactive Script
    Handles UI, Navigation, Counter Animations, Forms & Lightbox
+   Version 2.0
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,17 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 800,
       easing: 'ease-in-out',
       once: true,
-      offset: 100
+      offset: 100,
+      disable: window.matchMedia('(prefers-reduced-motion: reduce)').matches
     });
   }
 
   // 3. Scroll Progress Bar & Header Scroll Effect
   const scrollProgress = document.getElementById('scroll-progress');
   const header = document.getElementById('site-header');
+  const backToTopBtn = document.getElementById('backToTop');
 
-  window.addEventListener('scroll', () => {
+  function onScroll() {
     const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = (window.scrollY / totalHeight) * 100;
+    const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
     if (scrollProgress) {
       scrollProgress.style.width = `${progress}%`;
     }
@@ -46,8 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Back To Top Button Visiblity
-    const backToTopBtn = document.getElementById('backToTop');
+    // Back To Top Button Visibility
     if (backToTopBtn) {
       if (window.scrollY > 300) {
         backToTopBtn.classList.remove('hidden', 'opacity-0');
@@ -60,44 +62,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
       }
     }
-  });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
 
-  // 4. Mobile Menu Toggle
+  // 4. Mobile Menu Toggle (works on any page that includes these elements)
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
 
   if (mobileMenuBtn && mobileMenu) {
     mobileMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-      const expanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true' || false;
-      mobileMenuBtn.setAttribute('aria-expanded', !expanded);
+      const isHidden = mobileMenu.classList.toggle('hidden');
+      mobileMenuBtn.setAttribute('aria-expanded', String(!isHidden));
+    });
+
+    // Close mobile menu with Escape key for accessibility
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenuBtn.focus();
+      }
     });
   }
 
-  // 5. Dark Mode Toggle
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  // 5. Dark Mode Toggle (supports desktop + mobile buttons on every page)
+  const darkModeToggles = document.querySelectorAll('#dark-mode-toggle, #dark-mode-toggle-mobile');
   const currentTheme = localStorage.getItem('theme');
 
   if (currentTheme === 'dark') {
     document.body.classList.add('dark');
   }
 
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
-      const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-      localStorage.setItem('theme', theme);
+  function updateDarkModeIcons() {
+    const isDark = document.body.classList.contains('dark');
+    darkModeToggles.forEach((btn) => {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-moon', !isDark);
+        icon.classList.toggle('fa-sun', isDark);
+      }
+      btn.setAttribute('aria-pressed', String(isDark));
     });
   }
 
-  // 6. Animated Counter Strategy
-  const counters = document.querySelectorAll('.counter-val');
+  darkModeToggles.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('theme', theme);
+      updateDarkModeIcons();
+    });
+  });
+  updateDarkModeIcons();
+
+  // 6. Animated Counter (only runs on stat blocks with a real data-target > 0)
+  const counters = document.querySelectorAll('.counter-val[data-target]');
   let animated = false;
 
   function runCounters() {
-    counters.forEach(counter => {
+    counters.forEach((counter) => {
       const target = +counter.getAttribute('data-target');
-      const duration = 2000;
+      if (!target) return;
+      const duration = 1800;
       const stepTime = 20;
       const steps = duration / stepTime;
       const increment = target / steps;
@@ -115,9 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Trigger counters when counter section is in viewport
   const counterSection = document.getElementById('statistics-section');
-  if (counterSection) {
+  if (counterSection && counters.length) {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !animated) {
         runCounters();
@@ -135,21 +160,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const lightboxClose = document.getElementById('lightbox-close');
 
   if (galleryItems.length > 0 && lightbox) {
-    galleryItems.forEach(item => {
+    galleryItems.forEach((item) => {
       item.addEventListener('click', () => {
-        const imgSrc = item.getAttribute('data-src') || item.querySelector('img').src;
-        const caption = item.getAttribute('data-caption') || item.querySelector('img').alt;
-        
-        lightboxImg.src = imgSrc;
-        lightboxCaption.innerText = caption;
+        const imgEl = item.querySelector('img');
+        const imgSrc = item.getAttribute('data-src') || (imgEl && imgEl.src);
+        const caption = item.getAttribute('data-caption') || (imgEl && imgEl.alt) || '';
+
+        if (lightboxImg && imgSrc) lightboxImg.src = imgSrc;
+        if (lightboxCaption) lightboxCaption.innerText = caption;
         lightbox.classList.remove('hidden');
         lightbox.classList.add('flex');
       });
     });
 
-    lightboxClose.addEventListener('click', closeLightbox);
+    if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => {
       if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) closeLightbox();
     });
 
     function closeLightbox() {
@@ -159,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 8. Back to Top Smooth Scroll
-  const backToTopBtn = document.getElementById('backToTop');
   if (backToTopBtn) {
     backToTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -167,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 9. Generic Dynamic Form Submission Handlers
-  const forms = document.querySelectorAll('form');
-  forms.forEach(form => {
+  const forms = document.querySelectorAll('form[data-async-form]');
+  forms.forEach((form) => {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -176,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const origText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
-        
+
         setTimeout(() => {
           alert('Thank you! Your submission has been received successfully. Our team at Paws Hopes Society will contact you shortly.');
           form.reset();
@@ -186,4 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // Run once on load in case the page is already scrolled (e.g. anchor link)
+  onScroll();
 });

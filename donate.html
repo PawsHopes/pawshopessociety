@@ -4,8 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Donate & Save Lives | Paws Hopes Society</title>
-  <meta name="description" content="Support Paws Hopes Society through UPI, Razorpay, or Monthly Subscriptions. Every rupee goes directly toward medical treatment and food for street animals.">
-  
+  <meta name="description" content="Support Paws Hopes Society via UPI, QR code, or direct bank transfer. Every rupee goes toward medical treatment, shelter, and food for street animals in Lucknow.">
+  <link rel="canonical" href="https://pawshopessociety.org/donate.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Paws Hopes Society">
+  <meta property="og:title" content="Donate & Save Lives | Paws Hopes Society">
+  <meta property="og:description" content="Support our animal rescue work via UPI, QR code, or bank transfer.">
+  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
+  <meta property="og:url" content="https://pawshopessociety.org/donate.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Donate & Save Lives | Paws Hopes Society">
+  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
+
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -14,108 +31,231 @@
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
 
-  <!-- Header -->
-  <header id="site-header" class="fixed w-full top-0 z-50 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/images/logo.png" alt="Logo" class="h-12 w-12 rounded-full border-2 border-brandOrange">
-        <span class="text-xl font-bold">Paws Hopes Society</span>
+  <!-- Header Navigation -->
+  <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group" aria-label="Paws Hopes Society Home">
+        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-12 w-12 rounded-full object-cover border-2 border-brandOrange group-hover:scale-105 transition-transform">
+        <div>
+          <span class="text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
+          <span class="text-xs text-brandOrange font-medium tracking-wide">Registered Animal NGO</span>
+        </div>
       </a>
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
-        <a href="index.html" class="hover:text-brandOrange">Home</a>
-        <a href="about.html" class="hover:text-brandOrange">About</a>
-        <a href="rescue.html" class="hover:text-brandOrange">Rescue</a>
-        <a href="gallery.html" class="hover:text-brandOrange">Gallery</a>
-        <a href="volunteer.html" class="hover:text-brandOrange">Volunteer</a>
-        <a href="contact.html" class="hover:text-brandOrange">Contact</a>
+
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
+        <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
+        <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
+        <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
+        <a href="gallery.html" class="hover:text-brandOrange transition-colors">Gallery</a>
+        <a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt</a>
+        <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
+        <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
       </nav>
-      <a href="donate.html" class="hidden lg:inline-block bg-brandOrange text-white font-semibold px-6 py-2.5 rounded-full">Donate</a>
+
+      <div class="hidden lg:flex items-center gap-4">
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5" aria-current="page">
+          <i class="fas fa-heart mr-2"></i> Donate Now
+        </a>
+      </div>
+
+      <div class="lg:hidden flex items-center gap-3">
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
+      <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
+      <a href="about.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">About</a>
+      <a href="rescue.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Rescue</a>
+      <a href="gallery.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Gallery</a>
+      <a href="adopt.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Adopt</a>
+      <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
+      <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
+      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md" aria-current="page">
+        <i class="fas fa-heart mr-2"></i> Donate Now
+      </a>
     </div>
   </header>
+
+  <main id="main-content">
 
   <!-- Page Header -->
   <section class="pt-32 pb-16 bg-brandOrange text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">Support Our Mission</h1>
-      <p class="text-orange-100 mt-4 text-lg">Your generosity directly buys medicines, surgeries, and daily meals for voiceless street animals.</p>
+      <p class="text-orange-100 mt-4 text-lg">Your generosity helps fund medicine, shelter, and daily meals for voiceless street animals in Lucknow.</p>
     </div>
   </section>
 
   <!-- Donation Impact Cards & Payment Details -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
+
       <!-- Impact tier cards -->
       <div class="grid md:grid-cols-3 gap-8 mb-16">
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
+        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up">
           <p class="text-3xl font-extrabold text-brandOrange">₹500</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Feed 10 Stray Dogs</h3>
-          <p class="text-xs text-slate-500 mt-2">Provides wholesome cooked meals, milk, and fresh water for 10 animals for a day.</p>
+          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Feed Street Animals</h3>
+          <p class="text-xs text-slate-500 mt-2">Helps cover a day of meals and fresh water for animals in our care.</p>
         </div>
 
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border-2 border-brandOrange text-center relative shadow-lg">
+        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border-2 border-brandOrange text-center relative shadow-lg" data-aos="fade-up" data-aos-delay="100">
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandOrange text-white px-3 py-1 rounded-full text-xs font-bold uppercase">Most Popular</span>
           <p class="text-3xl font-extrabold text-brandOrange">₹1,500</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Emergency First Aid Kit</h3>
-          <p class="text-xs text-slate-500 mt-2">Sponsors bandages, antiseptics, maggot powders, and pain medication for 5 rescues.</p>
+          <h3 class="font-bold text-slate-900 dark:text-white mt-2">First Aid & Medicine</h3>
+          <p class="text-xs text-slate-500 mt-2">Helps cover bandages, antiseptics, and basic medication for injured rescues.</p>
         </div>
 
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
-          <p class="text-3xl font-extrabold text-brandOrange">₹3,500</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Sponsor A Surgery</h3>
-          <p class="text-xs text-slate-500 mt-2">Covers orthopedic surgery, sterilization, or post-accident rehab for a severe rescue case.</p>
+        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up" data-aos-delay="200">
+          <p class="text-3xl font-extrabold text-brandOrange">₹3,500+</p>
+          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Sponsor Treatment</h3>
+          <p class="text-xs text-slate-500 mt-2">Contributes toward larger medical needs like surgery or extended rehab care.</p>
         </div>
       </div>
 
       <!-- Payment Section -->
-      <div class="grid md:grid-cols-2 gap-12 items-center bg-slate-50 dark:bg-slate-950 p-8 sm:p-12 rounded-3xl border border-slate-200 dark:border-slate-800">
-        
+      <div class="grid md:grid-cols-2 gap-12 items-start bg-slate-50 dark:bg-slate-950 p-8 sm:p-12 rounded-3xl border border-slate-200 dark:border-slate-800" data-aos="fade-up">
+
         <div>
           <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Donate via UPI / QR Code</h2>
-          <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Scan the UPI QR code using Google Pay, PhonePe, Paytm, or BHIM to contribute instantly with zero gateway fees.</p>
-          
+          <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Scan the QR code with Google Pay, PhonePe, Paytm, or BHIM to contribute instantly with zero gateway fees.</p>
+
           <div class="p-6 bg-white rounded-2xl inline-block border border-slate-200 shadow-md mb-4 text-center">
-            <!-- UPI QR Placeholder -->
-            <div class="w-48 h-48 bg-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-400 mx-auto border-2 border-dashed border-slate-300">
-              <i class="fas fa-qrcode fa-4x mb-2 text-brandOrange"></i>
-              <span class="text-xs font-bold text-slate-600">Scan QR Code</span>
-            </div>
-            <p class="text-xs font-mono font-bold text-slate-800 mt-3">UPI ID: pawshopes@upi (TODO)</p>
+            <img src="assets/images/donation-qr.png" alt="UPI QR code to donate to Paws Hopes Society" width="220" height="266" class="w-56 mx-auto rounded-lg" loading="lazy">
+            <p class="text-xs font-mono font-bold text-slate-800 mt-3">UPI ID: phs706@hdfcbank</p>
           </div>
         </div>
 
         <div>
           <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Direct Bank Transfer (NEFT/RTGS)</h2>
           <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-            <p><strong class="text-slate-900 dark:text-white">Account Name:</strong> Paws Hopes Society</p>
-            <p><strong class="text-slate-900 dark:text-white">Account Number:</strong> XXXXXXXXXXX (TODO)</p>
-            <p><strong class="text-slate-900 dark:text-white">IFSC Code:</strong> SBIN000XXXX (TODO)</p>
-            <p><strong class="text-slate-900 dark:text-white">Bank:</strong> State Bank of India (TODO)</p>
+            <p><strong class="text-slate-900 dark:text-white">Account Name:</strong> Paws Hopez Society</p>
+            <p><strong class="text-slate-900 dark:text-white">Account Number:</strong> 50200109395706</p>
+            <p><strong class="text-slate-900 dark:text-white">IFSC Code:</strong> HDFC0009487</p>
+            <p><strong class="text-slate-900 dark:text-white">Branch:</strong> Kalli Paschim, Lucknow</p>
+            <p><strong class="text-slate-900 dark:text-white">Bank:</strong> HDFC Bank</p>
           </div>
-
-          <div class="mt-8">
-            <button onclick="alert('Redirecting to secure Razorpay gateway placeholder...')" class="w-full bg-brandOrange hover:bg-orange-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-              <i class="fas fa-shield-alt"></i> Pay via Razorpay (Cards / Netbanking)
-            </button>
-          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-500 mt-6 flex items-center gap-2">
+            <i class="fas fa-shield-alt text-brandGreen" aria-hidden="true"></i> UPI payments are processed securely via Razorpay.
+          </p>
         </div>
 
+      </div>
+
+      <!-- Transparency Note -->
+      <div class="mt-12 p-8 rounded-3xl bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900" data-aos="fade-up">
+        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
+          <i class="fas fa-hand-holding-heart text-brandGreen" aria-hidden="true"></i> Our Commitment To Transparency
+        </h3>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Every donation goes directly toward feeding, medical treatment, and shelter for the animals in our care. If you have questions about how funds are used, please reach out to us directly via phone.</p>
+      </div>
+
+      <!-- FAQ -->
+      <div class="mt-16 max-w-3xl mx-auto" data-aos="fade-up">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
+        <div class="space-y-4">
+          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Is my donation secure?</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Yes. UPI payments are processed through your banking app or UPI provider directly — we never see or store your payment credentials.</p>
+          </div>
+          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Can I donate monthly?</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Yes, you can set up a recurring UPI autopay through most banking apps using our UPI ID above.</p>
+          </div>
+          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Will I get a donation receipt or tax exemption?</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Please contact us directly by phone for the current status of receipts and tax-exemption documentation.</p>
+          </div>
+        </div>
       </div>
 
     </div>
   </section>
 
+  </main>
+
   <!-- Footer -->
-  <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
-    <p>© 2026 Paws Hopes Society. All Rights Reserved.</p>
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="assets/images/logo.png" alt="Paws Hopes Society" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
+          <span class="text-xl font-bold text-white">Paws Hopes Society</span>
+        </div>
+        <p class="text-xs italic text-brandOrange">"Let Them Know... Someone Cares."</p>
+        <p class="text-sm leading-relaxed">A registered Indian animal welfare NGO in Lucknow, rescuing injured street animals and providing medical care, shelter, and adoption since 2020.</p>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Quick Navigation</h3>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="about.html" class="hover:text-brandOrange transition-colors">About Our NGO</a></li>
+          <li><a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue Helpline & Stories</a></li>
+          <li><a href="gallery.html" class="hover:text-brandOrange transition-colors">Photo Gallery</a></li>
+          <li><a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt A Pet</a></li>
+          <li><a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer Opportunities</a></li>
+          <li><a href="donate.html" class="hover:text-brandOrange transition-colors">Donate</a></li>
+          <li><a href="contact.html" class="hover:text-brandOrange transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-3">
+            <i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i>
+            <span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
+        <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
+        <div class="flex gap-3">
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on Instagram">
+            <i class="fab fa-instagram" aria-hidden="true"></i>
+          </a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on YouTube">
+            <i class="fab fa-youtube" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+      <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
+      <p class="mt-2 sm:mt-0">Designed with compassion for voiceless animals.</p>
+    </div>
   </footer>
 
+  <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>
 </body>
 </html>
