@@ -1,22 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found | Paws Hopes Society</title>
+  <meta name="robots" content="noindex, follow">
+
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4 text-center">
-  <div class="max-w-md">
+
+  <div class="max-w-lg">
+    <img src="assets/images/logo.png" alt="Paws Hopes Society" width="72" height="72" class="h-18 w-18 mx-auto rounded-full border-2 border-brandOrange mb-6">
+
     <div class="text-brandOrange text-7xl font-black mb-4">404</div>
-    <i class="fas fa-paw fa-3x text-slate-600 mb-4 animate-bounce"></i>
+    <i class="fas fa-paw fa-3x text-slate-600 mb-4 animate-bounce" aria-hidden="true"></i>
     <h1 class="text-2xl font-bold mb-2">Oops! Page Lost In The Rescue Field</h1>
-    <p class="text-slate-400 text-sm mb-6">The page you are looking for might have been moved or doesn't exist.</p>
-    <a href="index.html" class="inline-block bg-brandOrange text-white font-bold px-6 py-3 rounded-full hover:bg-orange-700 transition-colors">
-      Return To Homepage
-    </a>
+    <p class="text-slate-400 text-sm mb-8">The page you're looking for might have been moved or doesn't exist. Here are some places you might be looking for instead:</p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+      <a href="index.html" class="w-full sm:w-auto bg-brandOrange text-white font-bold px-6 py-3 rounded-full hover:bg-orange-700 transition-colors">
+        <i class="fas fa-home mr-2" aria-hidden="true"></i> Homepage
+      </a>
+      <a href="rescue.html" class="w-full sm:w-auto bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/20 transition-colors">
+        <i class="fas fa-phone-alt mr-2" aria-hidden="true"></i> Report a Rescue
+      </a>
+      <a href="contact.html" class="w-full sm:w-auto bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/20 transition-colors">
+        <i class="fas fa-envelope mr-2" aria-hidden="true"></i> Contact Us
+      </a>
+    </div>
+
+    <p class="text-xs text-slate-500">
+      Need urgent help for an animal? Call our helpline directly:
+      <a href="tel:+919313293693" class="text-brandOrange font-semibold hover:underline">+91 93132 93693</a>
+    </p>
   </div>
+
 </body>
 </html>
