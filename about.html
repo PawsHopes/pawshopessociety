@@ -44,11 +44,10 @@
   <!-- Header Navigation -->
   <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 group" aria-label="Paws Hopes Society Home">
-        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-12 w-12 rounded-full object-cover border-2 border-brandOrange group-hover:scale-105 transition-transform">
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0" aria-label="Paws Hopes Society Home">
+        <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-9 w-9 sm:h-12 sm:w-12 rounded-full object-cover group-hover:scale-105 transition-transform">
         <div>
-          <span class="text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
-          <span class="text-xs text-brandOrange font-medium tracking-wide">Registered Animal NGO</span>
+          <span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
         </div>
       </a>
 
@@ -191,6 +190,38 @@
     </div>
   </section>
 
+  <!-- Founder Section -->
+  <section class="py-20 bg-slate-50 dark:bg-slate-950">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
+        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Meet Our Founder</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-2">Prachi &mdash; Founder & President</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="relative rounded-3xl overflow-hidden shadow-2xl h-[420px] bg-slate-200 dark:bg-slate-800" data-aos="fade-right">
+          <img src="assets/images/Prachi.jpeg" alt="Prachi, Founder and President of Paws Hopes Society" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="photo-placeholder w-full h-full" style="display:none;">
+            <i class="fas fa-user fa-3x" aria-hidden="true"></i>
+            <span>Founder Photo Coming Soon</span>
+          </div>
+        </div>
+
+        <div data-aos="fade-left">
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            Prachi is the Founder and President of Paws Hopes Society, and she personally leads every part of the organization's work. What began with her riding a bicycle through the streets of Lucknow to feed hungry strays has grown into a full rescue mission &mdash; one she still leads from the front lines herself.
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            For years, Prachi was the only person out in the field, working long days and nights to rescue and care for animals with very little support around her. That relentless, hands-on dedication slowly earned her the trust and respect of people in her community &mdash; trust that today brings volunteers and well-wishers to stand alongside her.
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            The organization's work is currently sustained through the generosity of Prachi's relatives, friends, and family, along with a local reporter who has helped share their story and rally support for the cause.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   </main>
 
   <!-- Footer -->
@@ -228,7 +259,8 @@
           </li>
           <li class="flex items-center gap-3">
             <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
-            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a>
+            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> /
+            <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
           </li>
         </ul>
       </div>
@@ -248,9 +280,12 @@
 
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-3">
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
-      <p class="mt-2 sm:mt-0">Designed with compassion for voiceless animals.</p>
+      <p>Designed with compassion for voiceless animals.</p>
+    </div>
+    <div class="text-center mt-6">
+      <img src="https://visitor-badge.laobi.icu/badge?page_id=pawshopessociety.org" alt="Visitor count" class="inline-block h-5 opacity-80" loading="lazy">
     </div>
   </footer>
 
