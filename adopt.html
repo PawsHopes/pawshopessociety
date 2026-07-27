@@ -99,16 +99,41 @@
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">Adopt A Pet</h1>
       <p class="text-orange-200 mt-4 text-lg">Meet the dogs and cats currently looking for a forever home. Adopt, don't shop.</p>
+      <!-- Update this date whenever you add/remove animals in assets/data/animals.js -->
+      <p class="text-xs text-orange-300/80 mt-4 uppercase tracking-wide">Listings last updated: 27 July 2026</p>
     </div>
   </section>
 
   <!-- Available For Adoption -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
+      <div class="text-center max-w-2xl mx-auto mb-10" data-aos="fade-up">
         <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Looking For A Home</span>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-2">Available For Adoption</h2>
         <p class="text-slate-600 dark:text-slate-400 mt-4">Interested in one of these animals? Call our helpline to arrange a visit.</p>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-12" role="group" aria-label="Filter animals available for adoption">
+        <button type="button" data-filter-species="all" class="filter-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandOrange bg-brandOrange text-white transition-colors">
+          All
+        </button>
+        <button type="button" data-filter-species="Dog" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors">
+          <i class="fas fa-dog mr-1" aria-hidden="true"></i> Dogs
+        </button>
+        <button type="button" data-filter-species="Cat" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors">
+          <i class="fas fa-cat mr-1" aria-hidden="true"></i> Cats
+        </button>
+        <span class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1 hidden sm:block"></span>
+        <button type="button" data-filter-gender="all" class="gender-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandGreen bg-brandGreen text-white transition-colors">
+          Any Gender
+        </button>
+        <button type="button" data-filter-gender="Male" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">
+          Male
+        </button>
+        <button type="button" data-filter-gender="Female" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">
+          Female
+        </button>
       </div>
 
       <div id="adoptable-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -117,7 +142,7 @@
 
       <div id="adoptable-empty" class="hidden text-center py-12 px-6 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800">
         <i class="fas fa-paw fa-3x text-brandOrange/40 mb-4" aria-hidden="true"></i>
-        <p class="text-slate-600 dark:text-slate-400">No animals are listed for adoption right now &mdash; check back soon, or follow us on
+        <p class="text-slate-600 dark:text-slate-400" id="adoptable-empty-text">No animals are listed for adoption right now &mdash; check back soon, or follow us on
           <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="text-brandOrange font-semibold hover:underline">Instagram</a>
           for the latest updates.
         </p>
@@ -198,6 +223,11 @@
             <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> /
             <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
           </li>
+          <li class="flex items-center gap-3 flex-wrap">
+            <i class="fab fa-whatsapp text-green-500" aria-hidden="true"></i>
+            <a href="https://wa.me/919313293693" target="_blank" rel="noopener noreferrer" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> /
+            <a href="https://wa.me/917307070741" target="_blank" rel="noopener noreferrer" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
+          </li>
         </ul>
       </div>
 
@@ -220,8 +250,9 @@
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
       <p>Designed with compassion for voiceless animals.</p>
     </div>
-    <div class="text-center mt-6">
-      <img src="https://visitor-badge.laobi.icu/badge?page_id=pawshopessociety.org" alt="Visitor count" class="inline-block h-5 opacity-80" loading="lazy">
+    <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
+      <i class="fas fa-eye" aria-hidden="true"></i>
+      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">110,357</span></span>
     </div>
   </footer>
 
@@ -237,10 +268,7 @@
     // Edit assets/data/animals.js to change what appears here — this script never needs editing.
     (function () {
       function speciesIcon(species) {
-        const map = {
-          Dog: 'fa-dog', Cat: 'fa-cat', Monkey: 'fa-monument',
-          Bird: 'fa-dove', Squirrel: 'fa-paw', 'Guinea Pig': 'fa-paw'
-        };
+        const map = { Dog: 'fa-dog', Cat: 'fa-cat' };
         return map[species] || 'fa-paw';
       }
 
@@ -251,20 +279,21 @@
 
         const badgeColor = isAdopted ? 'bg-green-100 dark:bg-green-950 text-brandGreen' : 'bg-orange-100 dark:bg-orange-950 text-brandOrange';
         const badgeText = isAdopted ? 'Adopted' : 'Available';
+        const breedText = animal.breed ? `${animal.breed} &middot; ` : '';
 
         const noteBlock = animal.adoptedNote
           ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${animal.adoptedNote}</p>`
           : '';
 
         return `
-          <div class="bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-slate-100 dark:border-slate-800" data-aos="fade-up">
+          <div class="adoption-card bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-species="${animal.species}" data-gender="${animal.gender}">
             ${photoBlock}
             <div class="p-6">
               <div class="flex items-center justify-between mb-2">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white">${animal.name}</h3>
                 <span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase">${badgeText}</span>
               </div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${animal.species} &middot; ${animal.gender} &middot; ${animal.age}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${breedText}${animal.species} &middot; ${animal.gender} &middot; ${animal.age}</p>
               <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">${animal.description}</p>
               ${noteBlock}
             </div>
@@ -285,6 +314,52 @@
 
       render('adoptable-grid', 'adoptable-empty', window.AVAILABLE_FOR_ADOPTION, false);
       render('adopted-grid', 'adopted-empty', window.ADOPTED_ANIMALS, true);
+
+      // Filter logic — species + gender, works together, defaults to showing all
+      let currentSpecies = 'all';
+      let currentGender = 'all';
+
+      function applyFilters() {
+        const cards = document.querySelectorAll('#adoptable-grid .adoption-card');
+        const emptyBlock = document.getElementById('adoptable-empty');
+        const emptyText = document.getElementById('adoptable-empty-text');
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const speciesMatch = currentSpecies === 'all' || card.dataset.species === currentSpecies;
+          const genderMatch = currentGender === 'all' || card.dataset.gender === currentGender;
+          const show = speciesMatch && genderMatch;
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
+        });
+
+        if (visibleCount === 0 && cards.length > 0) {
+          emptyBlock.classList.remove('hidden');
+          if (emptyText) emptyText.innerHTML = 'No animals match this filter right now — try a different combination, or call our helpline to ask directly.';
+        } else {
+          emptyBlock.classList.add('hidden');
+        }
+      }
+
+      function wireFilterGroup(selector, dataAttr, setter) {
+        const buttons = document.querySelectorAll(selector);
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            buttons.forEach((b) => {
+              b.classList.remove('active-filter', 'bg-brandOrange', 'bg-brandGreen', 'text-white', 'border-brandOrange', 'border-brandGreen');
+              b.classList.add('border-slate-200', 'dark:border-slate-700', 'text-slate-700', 'dark:text-slate-300');
+            });
+            const isSpecies = dataAttr === 'filterSpecies';
+            btn.classList.add('active-filter', isSpecies ? 'bg-brandOrange' : 'bg-brandGreen', 'text-white', isSpecies ? 'border-brandOrange' : 'border-brandGreen');
+            btn.classList.remove('border-slate-200', 'dark:border-slate-700', 'text-slate-700', 'dark:text-slate-300');
+            setter(btn.dataset[dataAttr]);
+            applyFilters();
+          });
+        });
+      }
+
+      wireFilterGroup('.filter-btn', 'filterSpecies', (v) => { currentSpecies = v; });
+      wireFilterGroup('.gender-btn', 'filterGender', (v) => { currentGender = v; });
 
       if (typeof AOS !== 'undefined') AOS.refreshHard();
     })();
