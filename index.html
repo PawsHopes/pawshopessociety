@@ -78,7 +78,6 @@
       "addressCountry": "IN"
     },
     "telephone": "+91-9313293693",
-    "alternateName": "Paw's Hopez Society",
     "sameAs": [
       "https://instagram.com/PawsHopesSociety",
       "https://youtube.com/@PawsHopesSociety"
@@ -201,7 +200,7 @@
     </a>
   </section>
 
-  <!-- Highlights Section (honest, non-numeric — replaces unverifiable statistics) -->
+  <!-- Highlights Section -->
   <section id="highlights-section" class="py-16 bg-gradient-to-r from-brandOrange to-orange-700 text-white relative z-20 shadow-2xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -358,7 +357,7 @@
 
         <!-- Service Card 6 -->
         <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-800 group" data-aos="fade-up" data-aos-delay="600">
-          <div class="w-14 h-14 bg-green-100 dark:bg-green-950/60 text-brandGreen rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-brandGreen group-hover:text-white transition-colors">
+          <div class="w-14 h-14 bg-green-100 dark:bg-green-950/60 text-brandGreen rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-green-500 group-hover:text-white transition-colors">
             <i class="fas fa-hands-helping" aria-hidden="true"></i>
           </div>
           <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Volunteer Network</h3>
@@ -370,7 +369,7 @@
     </div>
   </section>
 
-  <!-- Our Rescue Work Section (replaces unverified case-study stories) -->
+  <!-- Our Rescue Work Section -->
   <section class="py-24 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -426,16 +425,10 @@
         </div>
 
       </div>
-
-      <p class="text-center text-sm text-slate-500 dark:text-slate-400 mt-10">
-        Follow our <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="text-brandOrange font-semibold hover:underline">Instagram</a>
-        and <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="text-brandOrange font-semibold hover:underline">YouTube</a>
-        for real, day-to-day rescue updates.
-      </p>
     </div>
   </section>
 
-  <!-- Adoptable Animals Teaser -->
+  <!-- Adoptable Animals Teaser (Now dynamic from animals.js) -->
   <section class="py-24 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-16" data-aos="fade-up">
@@ -448,23 +441,8 @@
         </a>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up">
-          <img src="assets/images/adoption/kaali.jpg" alt="Kaali, available for adoption" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-          <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">Kaali</span>
-        </a>
-        <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up" data-aos-delay="100">
-          <img src="assets/images/adoption/rocky.jpg" alt="Rocky, available for adoption" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-          <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">Rocky</span>
-        </a>
-        <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up" data-aos-delay="200">
-          <img src="assets/images/adoption/bagheera.jpg" alt="Bagheera, available for adoption" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-          <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">Bagheera</span>
-        </a>
-        <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up" data-aos-delay="300">
-          <img src="assets/images/adoption/panther.jpg" alt="Panther, available for adoption" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-          <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">Panther</span>
-        </a>
+      <div id="homepage-adopt-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <!-- Dynamically populated via script at the bottom -->
       </div>
     </div>
   </section>
@@ -569,19 +547,6 @@
           <p class="text-xs text-slate-400 group-hover:text-white/80 mt-1">Share on social media</p>
         </a>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- Testimonials Section (placeholder — no verified testimonials yet) -->
-  <section class="py-24 bg-white dark:bg-slate-900">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center" data-aos="fade-up">
-      <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Community Love</span>
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-2 mb-6">What Supporters Say</h2>
-      <div class="bg-slate-50 dark:bg-slate-950 p-10 rounded-3xl border border-slate-100 dark:border-slate-800">
-        <i class="fas fa-quote-left fa-2x text-brandOrange/40 mb-4" aria-hidden="true"></i>
-        <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">We're collecting stories from our volunteers, donors, and adopters. Real testimonials will appear here soon.</p>
-        <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="text-brandOrange font-bold text-sm hover:underline">See real updates on Instagram &rarr;</a>
       </div>
     </div>
   </section>
@@ -712,7 +677,27 @@
 
   <!-- AOS Script -->
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <!-- Import Animal Data -->
+  <script src="assets/data/animals.js"></script>
   <!-- Custom JS -->
   <script src="assets/js/script.js"></script>
+  <script>
+    // Auto-load first 4 pets into the homepage teaser grid from animals.js
+    window.addEventListener('DOMContentLoaded', () => {
+      const teaserGrid = document.getElementById('homepage-adopt-grid');
+      if(teaserGrid && window.AVAILABLE_FOR_ADOPTION) {
+        const topPets = window.AVAILABLE_FOR_ADOPTION.slice(0, 4);
+        teaserGrid.innerHTML = topPets.map(pet => {
+          const firstImg = pet.images && pet.images.length > 0 ? pet.images[0] : (pet.photo || '');
+          return `
+            <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up">
+              <img src="${firstImg}" alt="${pet.name}, available for adoption" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">${pet.name}</span>
+            </a>
+          `;
+        }).join('');
+      }
+    });
+  </script>
 </body>
 </html>

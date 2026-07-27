@@ -27,12 +27,46 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
+      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    /* Premium Modal Styles */
+    #animal-modal {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #animal-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+    #animal-modal.active .modal-content {
+      transform: scale(1);
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .thumbnail-img {
+      transition: all 0.2s ease;
+    }
+    .thumbnail-img.active {
+      border: 3px solid #ea580c;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
@@ -99,8 +133,7 @@
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">Adopt A Pet</h1>
       <p class="text-orange-200 mt-4 text-lg">Meet the dogs and cats currently looking for a forever home. Adopt, don't shop.</p>
-      <!-- Update this date whenever you add/remove animals in assets/data/animals.js -->
-      <p class="text-xs text-orange-300/80 mt-4 uppercase tracking-wide">Listings last updated: 27 July 2026</p>
+      <p class="text-xs text-orange-300/80 mt-4 uppercase tracking-wide">Listings last updated: July 2026</p>
     </div>
   </section>
 
@@ -110,7 +143,7 @@
       <div class="text-center max-w-2xl mx-auto mb-10" data-aos="fade-up">
         <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">Looking For A Home</span>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-2">Available For Adoption</h2>
-        <p class="text-slate-600 dark:text-slate-400 mt-4">Interested in one of these animals? Call our helpline to arrange a visit.</p>
+        <p class="text-slate-600 dark:text-slate-400 mt-4">Click on any animal to view their full photo gallery and details!</p>
       </div>
 
       <!-- Filter Bar -->
@@ -137,15 +170,12 @@
       </div>
 
       <div id="adoptable-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Cards are rendered here automatically from assets/data/animals.js -->
+        <!-- Cards rendered dynamically -->
       </div>
 
       <div id="adoptable-empty" class="hidden text-center py-12 px-6 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800">
         <i class="fas fa-paw fa-3x text-brandOrange/40 mb-4" aria-hidden="true"></i>
-        <p class="text-slate-600 dark:text-slate-400" id="adoptable-empty-text">No animals are listed for adoption right now &mdash; check back soon, or follow us on
-          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="text-brandOrange font-semibold hover:underline">Instagram</a>
-          for the latest updates.
-        </p>
+        <p class="text-slate-600 dark:text-slate-400" id="adoptable-empty-text">No animals match this filter right now.</p>
       </div>
     </div>
   </section>
@@ -154,12 +184,14 @@
   <section class="py-10 bg-brandOrange text-white text-center">
     <div class="max-w-3xl mx-auto px-4">
       <p class="font-semibold">Ready to meet one of our animals?</p>
-      <a href="tel:+919313293693" class="inline-flex items-center gap-2 mt-3 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
-        <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 93132 93693
-      </a>
-      <a href="tel:+917307070741" class="inline-flex items-center gap-2 mt-3 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
-        <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 73070 70741
-      </a>
+      <div class="flex flex-wrap justify-center gap-4 mt-3">
+        <a href="tel:+919313293693" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
+          <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 93132 93693
+        </a>
+        <a href="tel:+917307070741" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
+          <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 73070 70741
+        </a>
+      </div>
     </div>
   </section>
 
@@ -173,7 +205,7 @@
       </div>
 
       <div id="adopted-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Cards are rendered here automatically from assets/data/animals.js -->
+        <!-- Success stories rendered dynamically -->
       </div>
 
       <div id="adopted-empty" class="hidden text-center py-12 px-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800">
@@ -184,6 +216,71 @@
   </section>
 
   </main>
+
+  <!-- Full Screen Modal / Photo Gallery Carousel -->
+  <div id="animal-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/90 backdrop-blur-sm">
+    <div class="modal-content bg-white dark:bg-slate-900 w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[90vh] relative">
+      
+      <!-- Close Button -->
+      <button onclick="closeModal()" class="absolute top-4 right-4 z-50 w-10 h-10 bg-slate-900/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Close modal">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+
+      <!-- Left Column: Image Carousel -->
+      <div class="w-full lg:w-1/2 bg-slate-100 dark:bg-slate-950 flex flex-col relative">
+        <div class="relative flex-1 bg-black overflow-hidden flex items-center justify-center aspect-square lg:aspect-auto min-h-[300px]">
+          <img id="modal-main-img" src="" alt="Animal Gallery Image" class="w-full h-full object-contain">
+          
+          <button onclick="prevImage()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Previous image">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Next image">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Thumbnail Strip -->
+        <div id="modal-thumbnails" class="h-24 bg-slate-800 p-2 flex gap-2 overflow-x-auto hide-scrollbar snap-x">
+          <!-- Thumbnails loaded here -->
+        </div>
+      </div>
+
+      <!-- Right Column: Details & Story -->
+      <div class="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col overflow-y-auto">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <span id="modal-species" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full uppercase tracking-wide"></span>
+            <span id="modal-gender" class="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-brandBlue text-xs font-bold rounded-full uppercase tracking-wide"></span>
+          </div>
+          
+          <h2 id="modal-name" class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-2"></h2>
+          <p id="modal-breed" class="text-lg text-slate-500 dark:text-slate-400 font-medium mb-6"></p>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <span class="block text-xs text-slate-400 uppercase font-bold mb-1">Age</span>
+              <span id="modal-age" class="font-semibold text-slate-900 dark:text-white"></span>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <span class="block text-xs text-slate-400 uppercase font-bold mb-1">Health & Care</span>
+              <span id="modal-health" class="font-semibold text-slate-900 dark:text-white text-sm"></span>
+            </div>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">About</h3>
+          <p id="modal-story" class="text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <a id="adopt-btn" href="#" target="_blank" rel="noopener noreferrer" class="w-full block text-center bg-brandOrange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1">
+            <i class="fab fa-whatsapp mr-2 text-lg"></i> Inquire / Apply via WhatsApp
+          </a>
+          <p class="text-center text-xs text-slate-400 mt-4">Adoptions require a quick verification process to ensure a safe home.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
@@ -250,9 +347,10 @@
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
       <p>Designed with compassion for voiceless animals.</p>
     </div>
+    
     <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
       <i class="fas fa-eye" aria-hidden="true"></i>
-      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">110,357</span></span>
+      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">206,485</span></span>
     </div>
   </footer>
 
@@ -264,8 +362,9 @@
   <script src="assets/data/animals.js"></script>
   <script src="assets/js/script.js"></script>
   <script>
-    // Renders adoption cards from window.AVAILABLE_FOR_ADOPTION / window.ADOPTED_ANIMALS.
-    // Edit assets/data/animals.js to change what appears here — this script never needs editing.
+    // ==========================================
+    // Dynamic Adoption Gallery + Filter + Modal Logic
+    // ==========================================
     (function () {
       function speciesIcon(species) {
         const map = { Dog: 'fa-dog', Cat: 'fa-cat' };
@@ -273,8 +372,12 @@
       }
 
       function buildCard(animal, isAdopted) {
-        const photoBlock = animal.photo
-          ? `<img src="${animal.photo}" alt="${animal.name}, a ${animal.species.toLowerCase()} available for adoption" loading="lazy" class="w-full h-64 object-cover">`
+        // Fallback to empty array if images aren't defined
+        const imgList = animal.images && animal.images.length > 0 ? animal.images : (animal.photo ? [animal.photo] : []);
+        const firstPhoto = imgList.length > 0 ? imgList[0] : '';
+
+        const photoBlock = firstPhoto
+          ? `<img src="${firstPhoto}" alt="${animal.name}, a ${animal.species.toLowerCase()} available for adoption" loading="lazy" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">`
           : `<div class="photo-placeholder w-full h-64"><i class="fas ${speciesIcon(animal.species)} fa-3x" aria-hidden="true"></i><span>Photo Coming Soon</span></div>`;
 
         const badgeColor = isAdopted ? 'bg-green-100 dark:bg-green-950 text-brandGreen' : 'bg-orange-100 dark:bg-orange-950 text-brandOrange';
@@ -285,17 +388,27 @@
           ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${animal.adoptedNote}</p>`
           : '';
 
+        // Store animal id in data attribute to trigger modal click
         return `
-          <div class="adoption-card bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-species="${animal.species}" data-gender="${animal.gender}">
-            ${photoBlock}
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">${animal.name}</h3>
-                <span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase">${badgeText}</span>
+          <div class="adoption-card bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer group flex flex-col" data-aos="fade-up" data-species="${animal.species}" data-gender="${animal.gender}" data-id="${animal.id || animal.name}" onclick="openModal('${animal.id || animal.name}')">
+            <div class="overflow-hidden relative">
+              ${photoBlock}
+              <div class="absolute top-4 left-4">
+                <span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase shadow-md">${badgeText}</span>
               </div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${breedText}${animal.species} &middot; ${animal.gender} &middot; ${animal.age}</p>
-              <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">${animal.description}</p>
+            </div>
+            <div class="p-6 flex-1 flex flex-col">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-brandOrange transition-colors">${animal.name}</h3>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">${animal.gender}</span>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${breedText}${animal.species} &middot; ${animal.age}</p>
+              <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">${animal.description}</p>
               ${noteBlock}
+              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brandOrange">
+                <span><i class="fas fa-images mr-1"></i> View Gallery (${imgList.length} photos)</span>
+                <i class="fas fa-arrow-right"></i>
+              </div>
             </div>
           </div>`;
       }
@@ -315,7 +428,7 @@
       render('adoptable-grid', 'adoptable-empty', window.AVAILABLE_FOR_ADOPTION, false);
       render('adopted-grid', 'adopted-empty', window.ADOPTED_ANIMALS, true);
 
-      // Filter logic — species + gender, works together, defaults to showing all
+      // Filter logic — species + gender combined
       let currentSpecies = 'all';
       let currentGender = 'all';
 
@@ -335,7 +448,7 @@
 
         if (visibleCount === 0 && cards.length > 0) {
           emptyBlock.classList.remove('hidden');
-          if (emptyText) emptyText.innerHTML = 'No animals match this filter right now — try a different combination, or call our helpline to ask directly.';
+          if (emptyText) emptyText.innerHTML = 'No animals match this filter right now — try a different combination, or call our helpline.';
         } else {
           emptyBlock.classList.add('hidden');
         }
@@ -363,6 +476,114 @@
 
       if (typeof AOS !== 'undefined') AOS.refreshHard();
     })();
+
+    // ==========================================
+    // Modal & Photo Carousel Global Functions
+    // ==========================================
+    let currentModalAnimal = null;
+    let currentImageIndex = 0;
+
+    function openModal(identifier) {
+      // Find animal in AVAILABLE or ADOPTED arrays
+      const allAnimals = [...window.AVAILABLE_FOR_ADOPTION, ...window.ADOPTED_ANIMALS];
+      currentModalAnimal = allAnimals.find(a => (a.id === identifier || a.name === identifier));
+      
+      if(!currentModalAnimal) return;
+
+      currentImageIndex = 0;
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
+        ? currentModalAnimal.images 
+        : (currentModalAnimal.photo ? [currentModalAnimal.photo] : []);
+
+      // Populate text details
+      document.getElementById('modal-name').textContent = currentModalAnimal.name;
+      document.getElementById('modal-species').textContent = currentModalAnimal.species;
+      document.getElementById('modal-gender').textContent = currentModalAnimal.gender;
+      document.getElementById('modal-breed').textContent = currentModalAnimal.breed || currentModalAnimal.species;
+      document.getElementById('modal-age').textContent = currentModalAnimal.age;
+      document.getElementById('modal-health').textContent = currentModalAnimal.health || "Vaccinated & cared for";
+      document.getElementById('modal-story').textContent = currentModalAnimal.description;
+      
+      // WhatsApp inquiry link
+      const adoptBtn = document.getElementById('adopt-btn');
+      const waMessage = encodeURIComponent(`Hi! I am interested in adopting ${currentModalAnimal.name} (${currentModalAnimal.breed || currentModalAnimal.species}). Please share more details.`);
+      adoptBtn.href = `https://wa.me/919313293693?text=${waMessage}`;
+
+      // Build Thumbnails strip
+      const thumbContainer = document.getElementById('modal-thumbnails');
+      thumbContainer.innerHTML = '';
+      
+      if(imgList.length > 1) {
+        thumbContainer.style.display = 'flex';
+        imgList.forEach((imgSrc, index) => {
+          const thumb = document.createElement('img');
+          thumb.src = imgSrc;
+          thumb.className = `thumbnail-img w-20 h-20 object-cover rounded-lg cursor-pointer flex-shrink-0 opacity-50 hover:opacity-100 ${index === 0 ? 'active' : ''}`;
+          thumb.onclick = () => setMainImage(index);
+          thumbContainer.appendChild(thumb);
+        });
+      } else {
+        thumbContainer.style.display = 'none'; // Hide if only 1 photo
+      }
+
+      // Set initial main image
+      if(imgList.length > 0) {
+        setMainImage(0);
+      }
+
+      // Open Modal overlay
+      document.body.style.overflow = 'hidden';
+      document.getElementById('animal-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('animal-modal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    function setMainImage(index) {
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
+        ? currentModalAnimal.images 
+        : [currentModalAnimal.photo];
+
+      currentImageIndex = index;
+      document.getElementById('modal-main-img').src = imgList[currentImageIndex];
+      
+      const thumbs = document.querySelectorAll('.thumbnail-img');
+      thumbs.forEach((t, i) => {
+        if(i === index) t.classList.add('active');
+        else t.classList.remove('active');
+      });
+      
+      if(thumbs[index]) {
+        thumbs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    function nextImage() {
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
+        ? currentModalAnimal.images 
+        : [currentModalAnimal.photo];
+
+      let newIndex = currentImageIndex + 1;
+      if (newIndex >= imgList.length) newIndex = 0;
+      setMainImage(newIndex);
+    }
+
+    function prevImage() {
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
+        ? currentModalAnimal.images 
+        : [currentModalAnimal.photo];
+
+      let newIndex = currentImageIndex - 1;
+      if (newIndex < 0) newIndex = imgList.length - 1;
+      setMainImage(newIndex);
+    }
+
+    // Close modal on background click
+    document.getElementById('animal-modal').addEventListener('click', function(e) {
+      if(e.target === this) closeModal();
+    });
   </script>
 </body>
 </html>

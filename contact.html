@@ -33,6 +33,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- Tally Embed Script -->
+  <script async src="https://tally.so/widgets/embed.js"></script>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
@@ -103,8 +106,9 @@
 
   <!-- Contact Details & Form -->
   <section class="py-20 bg-white dark:bg-slate-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-start">
 
+      <!-- Left Column: Details & Map -->
       <div data-aos="fade-right">
         <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Get In Touch</h2>
         <div class="space-y-6">
@@ -158,31 +162,21 @@
         </a>
       </div>
 
-      <!-- General Contact Form -->
-      <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800" data-aos="fade-left">
-        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Send Us A Message</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">For urgent rescue cases, please call our helpline instead of using this form.</p>
-        <form class="space-y-4" data-async-form aria-label="General contact form">
-          <div>
-            <label for="contact-name" class="block text-xs font-bold uppercase mb-1">Your Name *</label>
-            <input id="contact-name" name="name" type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-          </div>
-          <div>
-            <label for="contact-email" class="block text-xs font-bold uppercase mb-1">Email Address *</label>
-            <input id="contact-email" name="email" type="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-          </div>
-          <div>
-            <label for="contact-subject" class="block text-xs font-bold uppercase mb-1">Subject</label>
-            <input id="contact-subject" name="subject" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-          </div>
-          <div>
-            <label for="contact-message" class="block text-xs font-bold uppercase mb-1">Message *</label>
-            <textarea id="contact-message" name="message" rows="4" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange"></textarea>
-          </div>
-          <button type="submit" class="w-full bg-brandOrange hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all">
-            Send Message
-          </button>
-        </form>
+      <!-- Right Column: Tally.so Embedded Form -->
+      <div class="bg-slate-50 dark:bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl" data-aos="fade-left">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 text-center">Send Us A Message</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 text-center">For urgent rescue cases, please call our helpline instead of using this form.</p>
+        
+        <!-- Tally Embed Iframe -->
+        <iframe 
+          src="https://tally.so/r/eq8ePQ?transparentBackground=1" 
+          width="100%" 
+          height="550" 
+          frameborder="0" 
+          marginheight="0" 
+          marginwidth="0" 
+          title="Contact Us Form">
+        </iframe>
       </div>
 
     </div>

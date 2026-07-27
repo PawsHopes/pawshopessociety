@@ -33,6 +33,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- Tally Embed Script -->
+  <script async src="https://tally.so/widgets/embed.js"></script>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
@@ -184,40 +187,24 @@
     </div>
   </section>
 
-  <!-- Report Form Section -->
+  <!-- Report Form Section (Tally.so Embedded Form) -->
   <section class="py-20 bg-white dark:bg-slate-900">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div class="bg-slate-50 dark:bg-slate-950 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl" data-aos="fade-up">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Report An Animal In Distress</h2>
-        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Please provide accurate location details to help our rescue team act fast. For urgent cases, call the helpline directly instead of waiting for a form response.</p>
+      <div class="bg-slate-50 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl" data-aos="fade-up">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2 text-center">Report An Animal In Distress</h2>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mb-8 text-center">Please provide accurate location details to help our rescue team act fast. For urgent cases, call the helpline directly instead of waiting for a form response.</p>
 
-        <form class="space-y-4" data-async-form aria-label="Animal rescue report form">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label for="rescue-name" class="block text-xs font-bold uppercase mb-1">Your Name *</label>
-              <input id="rescue-name" name="name" type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-            </div>
-            <div>
-              <label for="rescue-phone" class="block text-xs font-bold uppercase mb-1">Contact Phone Number *</label>
-              <input id="rescue-phone" name="phone" type="tel" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-            </div>
-          </div>
-
-          <div>
-            <label for="rescue-location" class="block text-xs font-bold uppercase mb-1">Exact Location / Google Maps Link *</label>
-            <input id="rescue-location" name="location" type="text" required placeholder="Street address, landmark..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange">
-          </div>
-
-          <div>
-            <label for="rescue-description" class="block text-xs font-bold uppercase mb-1">Animal & Condition Description *</label>
-            <textarea id="rescue-description" name="description" rows="4" required placeholder="Animal type (dog, cat, monkey, bird, squirrel, guinea pig...) and the injury or situation..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-brandOrange"></textarea>
-          </div>
-
-          <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all">
-            <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i> Submit Urgent Rescue Alert
-          </button>
-        </form>
+        <!-- Tally Embed Iframe -->
+        <iframe 
+          src="https://tally.so/r/68G29N?transparentBackground=1" 
+          width="100%" 
+          height="600" 
+          frameborder="0" 
+          marginheight="0" 
+          marginwidth="0" 
+          title="Animal Rescue Alert Form">
+        </iframe>
       </div>
 
     </div>

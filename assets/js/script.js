@@ -218,3 +218,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Run once on load in case the page is already scrolled (e.g. anchor link)
   onScroll();
 });
+
+
+// ==========================================
+// Global Live Visitor Counter
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const baseCount = 206485;
+  const counterElement = document.getElementById('visitor-count');
+  
+  if (counterElement) {
+    // Show base count with formatting while the API loads
+    counterElement.textContent = baseCount.toLocaleString('en-IN') + "...";
+    
+    // Call the free Counter API to increment and get the live count
+    fetch('https://api.counterapi.dev/v1/pawshopessociety/global_visits/up')
+      .then(response => response.json())
+      .then(data => {
+        // Add the live API count to your base number
+        const totalVisits = baseCount + data.count;
+        counterElement.textContent = totalVisits.toLocaleString('en-IN');
+      })
+      .catch(error => {
+        // Fallback to base count if API is blocked by adblockers
+        counterElement.textContent = baseCount.toLocaleString('en-IN');
+        console.error("Counter API blocked or unavailable:", error);
+      });
+  }
+});

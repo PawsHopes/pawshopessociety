@@ -5,17 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Donate & Save Lives | Paws Hopes Society</title>
   <meta name="description" content="Support Paws Hopes Society via UPI, QR code, or direct bank transfer. Every rupee goes toward medical treatment, shelter, and food for street animals in Lucknow.">
-  <link rel="canonical" href="https://pawshopessociety.org/donate.html">
+  <link rel="canonical" href="https://pawshopessociety.pages.dev/donate.html">
 
+  <!-- OpenGraph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Paws Hopes Society">
   <meta property="og:title" content="Donate & Save Lives | Paws Hopes Society">
-  <meta property="og:description" content="Support our animal rescue work via UPI, QR code, or bank transfer.">
-  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
-  <meta property="og:url" content="https://pawshopessociety.org/donate.html">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:description" content="Support our animal rescue work via UPI, QR code, or bank transfer. Let Them Know... Someone Cares.">
+  <meta property="og:image" content="https://pawshopessociety.pages.dev/assets/images/logo.png">
+  <meta property="og:url" content="https://pawshopessociety.pages.dev/donate.html">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Donate & Save Lives | Paws Hopes Society">
-  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
+  <meta name="twitter:description" content="Support our animal rescue work via UPI, QR code, or bank transfer. Let Them Know... Someone Cares.">
+  <meta name="twitter:image" content="https://pawshopessociety.pages.dev/assets/images/logo.png">
+
+  <!-- JSON-LD Schema Markup for NGO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    "name": "Paws Hopes Society",
+    "url": "https://pawshopessociety.pages.dev",
+    "logo": "https://pawshopessociety.pages.dev/assets/images/logo.png",
+    "description": "A registered animal rescue NGO in Lucknow, dedicated to rescuing, treating, and sheltering street animals.",
+    "foundingDate": "2022",
+    "telephone": "+91-9313293693",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "NH-24, Sitapur Rd, Bakshi Ka Talab, Bhaisamau",
+      "addressLocality": "Lucknow",
+      "addressRegion": "Uttar Pradesh",
+      "postalCode": "226202",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://instagram.com/PawsHopesSociety",
+      "https://youtube.com/@PawsHopesSociety"
+    ]
+  }
+  </script>
 
   <link rel="icon" type="image/png" href="assets/images/favicon.png">
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
@@ -27,12 +57,56 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
+      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
+  
+  <style>
+    /* Custom styles for FAQ accordion */
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+    }
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+      padding-top: 1rem;
+      padding-bottom: 0.5rem;
+    }
+    .faq-item.active .faq-icon {
+      transform: rotate(180deg);
+    }
+    .faq-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    /* Toast Notification */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      margin-left: -125px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 12px;
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 30px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
+    }
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 50px;
+    }
+  </style>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
@@ -94,92 +168,219 @@
 
   <main id="main-content">
 
-  <!-- Page Header -->
-  <section class="pt-32 pb-16 bg-brandOrange text-white text-center">
-    <div class="max-w-4xl mx-auto px-4">
-      <h1 class="text-4xl sm:text-5xl font-extrabold">Support Our Mission</h1>
-      <p class="text-orange-100 mt-4 text-lg">Your generosity helps fund medicine, shelter, and daily meals for voiceless street animals in Lucknow.</p>
+  <!-- Premium Hero Section -->
+  <section class="pt-32 pb-20 bg-slate-900 text-white relative overflow-hidden">
+    <!-- Abstract Background Pattern -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ea580c 1.5px, transparent 1.5px); background-size: 30px 30px;"></div>
+    
+    <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+      <span class="inline-block py-1 px-3 rounded-full bg-brandOrange/20 text-brandOrange font-semibold text-sm mb-4 tracking-wide uppercase" data-aos="fade-down">Paws Hopes Society</span>
+      <h1 class="text-4xl sm:text-6xl font-extrabold leading-tight mb-6" data-aos="fade-up">Let Them Know... <br/><span class="text-brandOrange">Someone Cares.</span></h1>
+      <p class="text-slate-300 mt-4 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="100">Since 2020, we have rescued over 237 animals. Your generosity helps fund emergency medicine, our shelter, and daily meals for the voiceless street animals in Lucknow.</p>
+      
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="200">
+        <a href="#donate-payment" class="bg-brandOrange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1"><i class="fas fa-qrcode mr-2"></i> Donate via UPI</a>
+        <a href="#bank-details" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-8 rounded-full border border-slate-700 transition-transform transform hover:-translate-y-1"><i class="fas fa-university mr-2"></i> Bank Transfer</a>
+      </div>
     </div>
   </section>
 
-  <!-- Donation Impact Cards & Payment Details -->
-  <section class="py-20 bg-white dark:bg-slate-900">
+  <!-- Donation Impact Grid -->
+  <section class="py-20 bg-[#fdfbf7] dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <!-- Impact tier cards -->
-      <div class="grid md:grid-cols-3 gap-8 mb-16">
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up">
-          <p class="text-3xl font-extrabold text-brandOrange">₹500</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Feed Street Animals</h3>
-          <p class="text-xs text-slate-500 mt-2">Helps cover a day of meals and fresh water for animals in our care.</p>
-        </div>
-
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border-2 border-brandOrange text-center relative shadow-lg" data-aos="fade-up" data-aos-delay="100">
-          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandOrange text-white px-3 py-1 rounded-full text-xs font-bold uppercase">Most Popular</span>
-          <p class="text-3xl font-extrabold text-brandOrange">₹1,500</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">First Aid & Medicine</h3>
-          <p class="text-xs text-slate-500 mt-2">Helps cover bandages, antiseptics, and basic medication for injured rescues.</p>
-        </div>
-
-        <div class="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up" data-aos-delay="200">
-          <p class="text-3xl font-extrabold text-brandOrange">₹3,500+</p>
-          <h3 class="font-bold text-slate-900 dark:text-white mt-2">Sponsor Treatment</h3>
-          <p class="text-xs text-slate-500 mt-2">Contributes toward larger medical needs like surgery or extended rehab care.</p>
-        </div>
+      <div class="text-center mb-16" data-aos="fade-up">
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Your Impact</h2>
+        <p class="text-slate-600 dark:text-slate-400 mt-4 max-w-2xl mx-auto">We currently have 44 animals in our shelter. See exactly how your contribution changes their lives today.</p>
       </div>
 
-      <!-- Payment Section -->
-      <div class="grid md:grid-cols-2 gap-12 items-start bg-slate-50 dark:bg-slate-950 p-8 sm:p-12 rounded-3xl border border-slate-200 dark:border-slate-800" data-aos="fade-up">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <!-- Tier 1 -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="50">
+          <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brandOrange rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
+            <i class="fas fa-bone"></i>
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 dark:text-white text-center mb-2">₹100</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Feed one rescued dog for one day.</p>
+        </div>
 
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Donate via UPI / QR Code</h2>
-          <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Scan the QR code with Google Pay, PhonePe, Paytm, or BHIM to contribute instantly with zero gateway fees.</p>
+        <!-- Tier 2 -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="100">
+          <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brandOrange rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
+            <i class="fas fa-paw"></i>
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 dark:text-white text-center mb-2">₹500</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Feed one rescued dog for five days.</p>
+        </div>
 
-          <div class="p-6 bg-white rounded-2xl inline-block border border-slate-200 shadow-md mb-4 text-center">
-            <img src="assets/images/donation-qr.png" alt="UPI QR code to donate to Paws Hopes Society" width="220" height="266" class="w-56 mx-auto rounded-lg" loading="lazy">
-            <p class="text-xs font-mono font-bold text-slate-800 mt-3">UPI ID: phs706@hdfcbank</p>
+        <!-- Tier 3 (Highlighted) -->
+        <div class="bg-brandOrange rounded-3xl p-6 shadow-md border border-brandOrange hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 relative text-white lg:-mt-4 lg:mb-4" data-aos="fade-up" data-aos-delay="150">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Crucial Need</span>
+          <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
+            <i class="fas fa-pills"></i>
+          </div>
+          <h3 class="text-2xl font-black text-center mb-2">₹1000</h3>
+          <p class="text-sm text-orange-50 text-center">Basic medicines, deworming and antiseptic treatment.</p>
+        </div>
+
+        <!-- Tier 4 -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="200">
+          <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
+            <i class="fas fa-ambulance"></i>
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 dark:text-white text-center mb-2">₹2500</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Emergency treatment for a severely injured animal.</p>
+        </div>
+
+        <!-- Tier 5 -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="250">
+          <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-brandBlue rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
+            <i class="fas fa-home"></i>
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 dark:text-white text-center mb-2">₹5000</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Sponsor rescued animals' food and overall care.</p>
+        </div>
+      </div>
+      
+      <div class="text-center mt-8" data-aos="fade-in" data-aos-delay="300">
+        <p class="text-slate-500 dark:text-slate-400 italic text-sm">Or donate any custom amount. Every single rupee counts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Payment Hub -->
+  <section id="donate-payment" class="py-16 bg-white dark:bg-slate-950 border-y border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-stretch">
+        
+        <!-- UPI Section -->
+        <div class="bg-slate-50 dark:bg-slate-900 p-8 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm" data-aos="fade-right">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-brandOrange rounded-full flex items-center justify-center text-white">
+              <i class="fas fa-qrcode"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Donate via UPI</h2>
+          </div>
+          
+          <p class="text-slate-600 dark:text-slate-400 text-sm mb-8">Scan the QR code with Google Pay, PhonePe, Paytm, or BHIM. Zero gateway fees mean 100% of your donation reaches the animals.</p>
+
+          <div class="flex flex-col items-center">
+            <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm mb-6 inline-block">
+              <img src="assets/images/donation-qr.png" alt="Paws Hopes Society UPI QR Code" width="220" height="220" class="w-56 h-auto rounded-lg" loading="lazy">
+            </div>
+            
+            <div class="w-full max-w-sm">
+              <label for="upi-id" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">UPI ID</label>
+              <div class="flex rounded-xl overflow-hidden border border-slate-300 dark:border-slate-600 focus-within:ring-2 focus-within:ring-brandOrange focus-within:border-brandOrange transition-all bg-white dark:bg-slate-800">
+                <input type="text" id="upi-id" value="phs706@hdfcbank" readonly class="w-full px-4 py-3 bg-transparent text-slate-800 dark:text-white font-mono text-sm focus:outline-none cursor-default selection:bg-orange-200">
+                <button onclick="copyUPI()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-5 font-semibold text-sm transition-colors flex items-center gap-2" aria-label="Copy UPI ID">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Direct Bank Transfer (NEFT/RTGS)</h2>
-          <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-            <p><strong class="text-slate-900 dark:text-white">Account Name:</strong> Paws Hopez Society</p>
-            <p><strong class="text-slate-900 dark:text-white">Account Number:</strong> 50200109395706</p>
-            <p><strong class="text-slate-900 dark:text-white">IFSC Code:</strong> HDFC0009487</p>
-            <p><strong class="text-slate-900 dark:text-white">Branch:</strong> Kalli Paschim, Lucknow</p>
-            <p><strong class="text-slate-900 dark:text-white">Bank:</strong> HDFC Bank</p>
+        <!-- Bank Transfer Section -->
+        <div id="bank-details" class="bg-slate-50 dark:bg-slate-900 p-8 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center" data-aos="fade-left">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center">
+              <i class="fas fa-university"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Bank Transfer</h2>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-500 mt-6 flex items-center gap-2">
-            <i class="fas fa-shield-alt text-brandGreen" aria-hidden="true"></i> UPI payments are processed securely via Razorpay.
-          </p>
+
+          <p class="text-slate-600 dark:text-slate-400 text-sm mb-8">For larger donations or corporate contributions, you can transfer funds directly via NEFT, RTGS, or IMPS.</p>
+
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+              <span class="text-sm text-slate-500 dark:text-slate-400">Account Name</span>
+              <span class="font-bold text-slate-900 dark:text-white text-right">Paws Hopez Society</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+              <span class="text-sm text-slate-500 dark:text-slate-400">Account Number</span>
+              <span class="font-bold text-slate-900 dark:text-white font-mono text-right">50200109395706</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+              <span class="text-sm text-slate-500 dark:text-slate-400">IFSC Code</span>
+              <span class="font-bold text-slate-900 dark:text-white font-mono text-right">HDFC0009487</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+              <span class="text-sm text-slate-500 dark:text-slate-400">Bank</span>
+              <span class="font-bold text-slate-900 dark:text-white text-right">HDFC Bank</span>
+            </div>
+            <div class="flex justify-between items-center pt-1">
+              <span class="text-sm text-slate-500 dark:text-slate-400">Branch</span>
+              <span class="font-bold text-slate-900 dark:text-white text-right">Kalli Paschim, Lucknow</span>
+            </div>
+          </div>
         </div>
 
       </div>
+    </div>
+  </section>
 
+  <!-- Monthly Sponsorship Callout -->
+  <section class="py-16 bg-[#fdfbf7] dark:bg-slate-900">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-r from-brandOrange to-orange-600 rounded-3xl p-8 sm:p-12 text-white shadow-xl text-center" data-aos="zoom-in">
+        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl mb-6 mx-auto">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <h2 class="text-3xl font-bold mb-4">Become a Monthly Sponsor</h2>
+        <p class="text-orange-50 mb-8 max-w-2xl mx-auto">Consistent care requires consistent support. You can set up a recurring monthly donation (Autopay) directly through your UPI app to help us maintain a steady supply of food and medicine for our 44 residents.</p>
+        <p class="text-sm font-semibold tracking-wide uppercase opacity-90"><i class="fas fa-info-circle mr-1"></i> Look for the "Autopay" or "Mandate" feature in Google Pay / PhonePe.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transparency & FAQ -->
+  <section class="py-16 bg-white dark:bg-slate-950">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      
       <!-- Transparency Note -->
-      <div class="mt-12 p-8 rounded-3xl bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900" data-aos="fade-up">
-        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
-          <i class="fas fa-hand-holding-heart text-brandGreen" aria-hidden="true"></i> Our Commitment To Transparency
-        </h3>
-        <p class="text-sm text-slate-600 dark:text-slate-300">Every donation goes directly toward feeding, medical treatment, and shelter for the animals in our care. If you have questions about how funds are used, please reach out to us directly via phone.</p>
+      <div class="mb-16 p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 text-brandGreen rounded-full mb-4">
+          <i class="fas fa-shield-alt text-xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">100% Transparency</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Paws Hopes Society is a registered NGO (since 2022). Every rupee donated goes directly toward feeding, medical treatment, and shelter for street animals. We have rescued 237 animals and facilitated 800+ adoptions. We operate with minimal overhead to ensure your donation has maximum impact.</p>
       </div>
 
-      <!-- FAQ -->
-      <div class="mt-16 max-w-3xl mx-auto" data-aos="fade-up">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
-        <div class="space-y-4">
-          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Is my donation secure?</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">Yes. UPI payments are processed through your banking app or UPI provider directly — we never see or store your payment credentials.</p>
+      <!-- Interactive FAQ -->
+      <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center" data-aos="fade-up">Donation FAQ</h2>
+      
+      <div class="space-y-4" data-aos="fade-up" data-aos-delay="100">
+        <!-- FAQ Item 1 -->
+        <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
+            <span class="font-bold text-slate-900 dark:text-white pr-4">How do I know my money is being used correctly?</span>
+            <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
+          </button>
+          <div class="faq-answer px-6 bg-white dark:bg-slate-950">
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">We share regular updates, rescue stories, and shelter operations on our Instagram (@PawsHopesSociety) and YouTube channels. You are also welcome to visit our shelter in Lucknow to see our work firsthand.</p>
           </div>
-          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Can I donate monthly?</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">Yes, you can set up a recurring UPI autopay through most banking apps using our UPI ID above.</p>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
+            <span class="font-bold text-slate-900 dark:text-white pr-4">Do I get tax exemption (80G) for my donation?</span>
+            <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
+          </button>
+          <div class="faq-answer px-6 bg-white dark:bg-slate-950">
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Currently, we do not offer 80G tax exemptions. We rely on the pure compassion of individuals who wish to directly impact the lives of suffering animals without expecting tax benefits in return.</p>
           </div>
-          <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Will I get a donation receipt or tax exemption?</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">Please contact us directly by phone for the current status of receipts and tax-exemption documentation.</p>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
+            <span class="font-bold text-slate-900 dark:text-white pr-4">Can I donate items instead of money?</span>
+            <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
+          </button>
+          <div class="faq-answer px-6 bg-white dark:bg-slate-950">
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Yes! We always need dog/cat food, blankets, newspapers, cleaning supplies, and basic medical supplies. Please contact us at +91 93132 93693 to coordinate an in-kind donation drop-off.</p>
           </div>
         </div>
       </div>
@@ -189,8 +390,16 @@
 
   </main>
 
+  <!-- Floating Donate Button (Mobile/Tablet specific) -->
+  <a href="#donate-payment" id="floating-donate" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-brandOrange text-white px-8 py-3 rounded-full shadow-[0_8px_30px_rgb(234,88,12,0.4)] font-bold z-40 transition-transform duration-300 translate-y-24 flex items-center gap-2 lg:hidden">
+    <i class="fas fa-heart"></i> Donate Now
+  </a>
+
+  <!-- Toast Notification -->
+  <div id="toast"><i class="fas fa-check-circle text-green-400 mr-2"></i> UPI ID Copied!</div>
+
   <!-- Footer -->
-  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800 relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 
       <div class="space-y-4">
@@ -254,9 +463,11 @@
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
       <p>Designed with compassion for voiceless animals.</p>
     </div>
+    
+    <!-- Updated Live Visitor Counter Base -->
     <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
       <i class="fas fa-eye" aria-hidden="true"></i>
-      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">110,357</span></span>
+      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">206,485</span></span>
     </div>
   </footer>
 
@@ -266,5 +477,59 @@
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>
+  
+  <script>
+    // Copy UPI Functionality
+    function copyUPI() {
+      const upiText = document.getElementById("upi-id");
+      upiText.select();
+      upiText.setSelectionRange(0, 99999); // For mobile devices
+      navigator.clipboard.writeText(upiText.value).then(() => {
+        showToast();
+      });
+    }
+
+    // Toast Notification
+    function showToast() {
+      const toast = document.getElementById("toast");
+      toast.className = "show";
+      setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // FAQ Accordion Logic
+    function toggleFaq(button) {
+      const item = button.parentElement;
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      
+      // Close all other FAQs
+      document.querySelectorAll('.faq-item').forEach(faq => {
+        faq.classList.remove('active');
+        faq.querySelector('button').setAttribute('aria-expanded', 'false');
+      });
+
+      // Toggle current FAQ
+      if (!isExpanded) {
+        item.classList.add('active');
+        button.setAttribute("aria-expanded", "true");
+      }
+    }
+
+    // Floating Donate Button Logic
+    window.addEventListener('scroll', function() {
+      const floatingBtn = document.getElementById('floating-donate');
+      const paymentSection = document.getElementById('donate-payment');
+      
+      if (window.scrollY > 300) {
+        const paymentRect = paymentSection.getBoundingClientRect();
+        if (paymentRect.top < window.innerHeight && paymentRect.bottom > 0) {
+          floatingBtn.classList.add('translate-y-24');
+        } else {
+          floatingBtn.classList.remove('translate-y-24');
+        }
+      } else {
+        floatingBtn.classList.add('translate-y-24');
+      }
+    });
+  </script>
 </body>
 </html>
