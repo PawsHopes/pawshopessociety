@@ -14,19 +14,41 @@ Kaaley:
 
     assets/images/adoption/1000001488.jpg
 
-    
 
-Kaali:
+Chikni:
 
-    assets/images/adoption/kaali.jpg
+    assets/images/adoption/chikni.jpg
 
-    assets/images/adoption/1000001471.jpg
+    assets/images/adoption/1000001397.jpg
 
-    assets/images/adoption/1000001473.jpg
+    assets/images/adoption/1000001396.jpg
 
-    assets/images/adoption/219333.jpg
 
-    assets/images/adoption/235844.jpg
+Paaro:
+
+    assets/images/adoption/paaro.jpeg
+
+    assets/images/adoption/1000001420.jpg
+
+    assets/images/adoption/1000001421.jpg
+
+    assets/images/adoption/1000001412.jpg
+
+
+Chuski:
+
+    assets/images/adoption/chuski.jpg
+
+    assets/images/adoption/1000001447.jpg
+
+    assets/images/adoption/1000001448.jpg
+
+    assets/images/adoption/1000001445.jpg
+
+    assets/images/adoption/1000001446.jpg
+
+    assets/images/adoption/1000001444.jpg
+
 
 Kaptaan:
 
@@ -44,19 +66,38 @@ Kaptaan:
 
     assets/images/adoption/1000001458.jpg
 
-Chuski:
 
-    assets/images/adoption/chuski.jpg
+Kaali:
 
-    assets/images/adoption/1000001447.jpg
+    assets/images/adoption/kaali.jpg
 
-    assets/images/adoption/1000001448.jpg
+    assets/images/adoption/1000001471.jpg
 
-    assets/images/adoption/1000001445.jpg
+    assets/images/adoption/1000001473.jpg
 
-    assets/images/adoption/1000001446.jpg
+    assets/images/adoption/219333.jpg
 
-    assets/images/adoption/1000001444.jpg
+    assets/images/adoption/235844.jpg
+
+
+Bagheera:
+
+    assets/images/adoption/bagheera.jpg
+
+
+Pucchki:
+
+    assets/images/adoption/pucchki.jpg
+
+
+Panther:
+
+    assets/images/adoption/panther.jpg
+
+
+Blackie:
+
+    assets/images/adoption/259470.jpg
 
 Bhishum:
 
@@ -66,15 +107,28 @@ Bhishum:
 
     assets/images/adoption/1000001432.jpg
 
-Paaro:
+Mr Grey:
 
-    assets/images/adoption/paaro.jpeg
+    assets/images/adoption/mrgrey.jpg
 
-    assets/images/adoption/1000001420.jpg
+    assets/images/adoption/1000001249.jpg
 
-    assets/images/adoption/1000001421.jpg
+    assets/images/adoption/1000001246.jpg
 
-    assets/images/adoption/1000001412.jpg
+    assets/images/adoption/1000001237.jpg
+
+Rocky:
+
+    assets/images/adoption/rocky.jpg
+
+    assets/images/adoption/1000001004.jpg
+
+    assets/images/adoption/1000001002.jpg
+
+    assets/images/adoption/1000001005.jpg
+
+    assets/images/adoption/1000001007.jpg
+
 
 Sundari:
 
@@ -89,6 +143,8 @@ Sundari:
     assets/images/adoption/214691.jpg
 
     assets/images/adoption/214690.jpg
+
+
 
 Chhutki (Chameli):
 
@@ -106,48 +162,3 @@ Chhutki (Chameli):
 
     assets/images/adoption/1000001382.jpg
 
-Chikni:
-
-    assets/images/adoption/chikni.jpg
-
-    assets/images/adoption/1000001397.jpg
-
-    assets/images/adoption/1000001396.jpg
-
-Rocky:
-
-    assets/images/adoption/rocky.jpg
-
-    assets/images/adoption/1000001004.jpg
-
-    assets/images/adoption/1000001002.jpg
-
-    assets/images/adoption/1000001005.jpg
-
-    assets/images/adoption/1000001007.jpg
-
-Bagheera:
-
-    assets/images/adoption/bagheera.jpg
-
-Pucchki:
-
-    assets/images/adoption/pucchki.jpg
-
-Mr Grey:
-
-    assets/images/adoption/mrgrey.jpg
-
-    assets/images/adoption/1000001249.jpg
-
-    assets/images/adoption/1000001246.jpg
-
-    assets/images/adoption/1000001237.jpg
-
-Panther:
-
-    assets/images/adoption/panther.jpg
-
-Blackie:
-
-    assets/images/adoption/259470.jpg

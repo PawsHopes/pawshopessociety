@@ -1,240 +1,95 @@
 /* ==========================================================================
-   Paws Hopes Society — Master Stylesheet
-   Tailwind Extension & Custom UX/UI Styles
-   Version 2.0
+   Paws Hopes Society — Global Styles & Fixes
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
-
-:root {
-  --primary: #ea580c;       /* Deep Orange */
-  --primary-dark: #c2410c;
-  --secondary: #15803d;     /* Forest Green */
-  --secondary-dark: #166534;
-  --accent-amber: #f59e0b;  /* Amber */
-  --accent-red: #ef4444;    /* Soft Red */
-  --bg-light: #fdfbf7;      /* Warm Gray/Off-white */
-  --bg-dark: #0f172a;       /* Dark Mode Slate */
-  --card-light: rgba(255, 255, 255, 0.85);
-  --card-dark: rgba(30, 41, 59, 0.85);
-  --text-light: #1e293b;
-  --text-dark: #f8fafc;
-}
-
-/* ==========================================================================
-   Base
-   ========================================================================== */
-
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--bg-light);
-  color: var(--text-light);
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* Prevent horizontal overflow on mobile devices */
+html, body {
+  max-width: 100%;
   overflow-x: hidden;
 }
 
-/* Dark Mode Overrides */
-body.dark {
-  background-color: var(--bg-dark);
-  color: var(--text-dark);
+/* Ensure images, videos, and iframes never overflow mobile screens */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
 }
 
-body.dark .glass-card {
-  background: var(--card-dark);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark .site-header.scrolled {
-  background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-body.dark .text-slate-800 { color: #f1f5f9; }
-body.dark .text-slate-700 { color: #e2e8f0; }
-body.dark .text-slate-600 { color: #cbd5e1; }
-body.dark .bg-white { background-color: #1e293b; }
-body.dark .bg-slate-50 { background-color: #0f172a; }
-body.dark .border-slate-200 { border-color: #334155; }
-
-/* ==========================================================================
-   Accessibility
-   ========================================================================== */
-
-/* Skip to content link — visible only on keyboard focus */
+/* Skip link for accessibility */
 .skip-link {
   position: absolute;
-  top: -100px;
-  left: 1rem;
-  z-index: 10000;
-  background: var(--primary);
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  transition: top 0.2s ease;
+  top: -40px;
+  left: 0;
+  background: #ea580c;
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.3s;
 }
 .skip-link:focus {
-  top: 1rem;
+  top: 0;
 }
 
-/* Consistent, visible focus states for keyboard navigation */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--accent-amber);
-  outline-offset: 2px;
-  border-radius: 0.25rem;
-}
-
-/* Respect reduced-motion preference */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ==========================================================================
-   Custom Scroll Progress Bar
-   ========================================================================== */
-
+/* Scroll progress bar */
 #scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  height: 3px;
+  background: #ea580c;
   z-index: 1000;
   width: 0%;
   transition: width 0.1s ease-out;
 }
 
-/* ==========================================================================
-   Glassmorphism
-   ========================================================================== */
-
-.glass-card {
-  background: var(--card-light);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
-}
-
-.glass-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* ==========================================================================
-   Loader Screen
-   ========================================================================== */
-
-#loader {
-  position: fixed;
-  inset: 0;
-  background-color: #ffffff;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.paw-spinner {
-  width: 60px;
-  height: 60px;
-  animation: pulse-paw 1.2s infinite ease-in-out;
-}
-
-@keyframes pulse-paw {
-  0%, 100% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.1); opacity: 1; }
-}
-
-/* ==========================================================================
-   Photo Placeholder (used until real shelter photography is supplied)
-   Renders an elegant branded panel instead of a broken image icon.
-   ========================================================================== */
-
+/* Photo placeholder styling */
 .photo-placeholder {
-  position: relative;
+  background: #e2e8f0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #ecfdf5 100%);
-  color: var(--primary);
-  text-align: center;
-  padding: 1.5rem;
-  overflow: hidden;
-}
-
-body.dark .photo-placeholder {
-  background: linear-gradient(135deg, #1c1410 0%, #1c1a10 50%, #0f1a14 100%);
-  color: var(--accent-amber);
-}
-
-.photo-placeholder::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
-  background-size: 22px 22px;
-  opacity: 0.12;
-}
-
-.photo-placeholder i {
-  position: relative;
-  z-index: 1;
-}
-
-.photo-placeholder span {
-  position: relative;
-  z-index: 1;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: #64748b;
+  text-align: center;
+  padding: 1rem;
 }
-
-body.dark .photo-placeholder span {
+.dark .photo-placeholder {
+  background: #1e293b;
   color: #94a3b8;
 }
+.photo-placeholder span {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
 
-/* ==========================================================================
-   Lightbox Modal
-   ========================================================================== */
-
-#lightbox {
+/* Premium Modal Styles */
+#animal-modal {
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
-
-/* ==========================================================================
-   Custom Scrollbar
-   ========================================================================== */
-
-::-webkit-scrollbar {
-  width: 10px;
+#animal-modal.active {
+  opacity: 1;
+  pointer-events: auto;
 }
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.modal-content {
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
 }
-body.dark ::-webkit-scrollbar-track {
-  background: #0f172a;
+#animal-modal.active .modal-content {
+  transform: scale(1);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 5px;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.thumbnail-img {
+  transition: all 0.2s ease;
+}
+.thumbnail-img.active {
+  border: 3px solid #ea580c;
+  opacity: 1;
 }
