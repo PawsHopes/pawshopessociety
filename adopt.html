@@ -3,49 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adopt A Pet in Lucknow | Paws Hopes Society</title>
-  <meta name="description" content="Meet dogs and cats currently available for adoption at Paws Hopes Society in Lucknow, Uttar Pradesh. Adopt, don't shop.">
-  <link rel="canonical" href="https://pawshopessociety.org/adopt.html">
-
-  <link rel="icon" type="image/png" href="assets/images/favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
+  <title>Adopt | Paws Hopes Society</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }
-    }
-  </script>
+  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }}</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
+  <script async src="https://tally.so/widgets/embed.js"></script>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
-
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
-
-  <!-- Header Navigation -->
+  
   <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0" aria-label="Paws Hopes Society Home">
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0">
         <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-9 w-9 sm:h-12 sm:w-12 rounded-full object-cover group-hover:scale-105 transition-transform">
-        <div>
-          <span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
-        </div>
+        <div><span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span></div>
       </a>
 
-      <nav class="hidden lg:flex items-center gap-7 font-medium text-sm" aria-label="Primary navigation">
+      <nav class="hidden lg:flex items-center gap-7 font-medium text-sm">
         <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
         <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
         <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
@@ -53,19 +30,16 @@
         <a href="adopt.html" class="text-brandOrange transition-colors" aria-current="page">Adopt</a>
         <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
         <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
+        
       </nav>
 
       <div class="hidden lg:flex items-center gap-3">
-        <!-- Translate Widget RESTORED -->
         <div class="hidden lg:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-white/10">
           <i class="fas fa-language text-brandOrange"></i>
           <span class="text-xs text-slate-200 font-medium whitespace-nowrap">Translate Site:</span>
           <div id="google_translate_element"></div>
         </div>
-
-        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
-          <i class="fas fa-moon"></i>
-        </button>
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors"><i class="fas fa-moon"></i></button>
         <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-5 py-2 rounded-full shadow-lg transition-all">
           <i class="fas fa-heart mr-1.5"></i> Donate
         </a>
@@ -73,16 +47,11 @@
 
       <div class="lg:hidden flex items-center gap-2">
         <div id="google_translate_element_mobile"></div>
-        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open menu">
-          <i class="fas fa-bars"></i>
-        </button>
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-moon"></i></button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none"><i class="fas fa-bars"></i></button>
       </div>
     </div>
 
-    <!-- Mobile Menu -->
     <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
       <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
       <a href="about.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">About</a>
@@ -91,15 +60,12 @@
       <a href="adopt.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">Adopt</a>
       <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
       <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
-      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md">
-        <i class="fas fa-heart mr-2"></i> Donate Now
-      </a>
+      
+      <a href="donate.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Donate</a>
     </div>
   </header>
 
   <main id="main-content">
-
-  <!-- Page Header -->
   <section class="pt-32 pb-16 bg-slate-900 text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
       <h1 class="text-4xl sm:text-5xl font-extrabold">Adopt A Pet in Lucknow</h1>
@@ -107,7 +73,6 @@
     </div>
   </section>
 
-  <!-- Available For Adoption -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-10" data-aos="fade-up">
@@ -116,32 +81,17 @@
         <p class="text-slate-600 dark:text-slate-400 mt-4">Click on any animal card to view their full photo gallery and details!</p>
       </div>
 
-      <!-- Filter Bar -->
       <div class="flex flex-wrap items-center justify-center gap-3 mb-12" role="group" aria-label="Filter animals available for adoption">
-        <button type="button" data-filter-species="all" class="filter-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandOrange bg-brandOrange text-white transition-colors">
-          All
-        </button>
-        <button type="button" data-filter-species="Dog" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors">
-          <i class="fas fa-dog mr-1" aria-hidden="true"></i> Dogs
-        </button>
-        <button type="button" data-filter-species="Cat" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors">
-          <i class="fas fa-cat mr-1" aria-hidden="true"></i> Cats
-        </button>
+        <button type="button" data-filter-species="all" class="filter-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandOrange bg-brandOrange text-white transition-colors">All</button>
+        <button type="button" data-filter-species="Dog" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors"><i class="fas fa-dog mr-1" aria-hidden="true"></i> Dogs</button>
+        <button type="button" data-filter-species="Cat" class="filter-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandOrange transition-colors"><i class="fas fa-cat mr-1" aria-hidden="true"></i> Cats</button>
         <span class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1 hidden sm:block"></span>
-        <button type="button" data-filter-gender="all" class="gender-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandGreen bg-brandGreen text-white transition-colors">
-          Any Gender
-        </button>
-        <button type="button" data-filter-gender="Male" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">
-          Male
-        </button>
-        <button type="button" data-filter-gender="Female" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">
-          Female
-        </button>
+        <button type="button" data-filter-gender="all" class="gender-btn active-filter px-5 py-2 rounded-full text-sm font-semibold border-2 border-brandGreen bg-brandGreen text-white transition-colors">Any Gender</button>
+        <button type="button" data-filter-gender="Male" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">Male</button>
+        <button type="button" data-filter-gender="Female" class="gender-btn px-5 py-2 rounded-full text-sm font-semibold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brandGreen transition-colors">Female</button>
       </div>
 
-      <div id="adoptable-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Cards rendered dynamically -->
-      </div>
+      <div id="adoptable-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
       <div id="adoptable-empty" class="hidden text-center py-12 px-6 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800">
         <i class="fas fa-paw fa-3x text-brandOrange/40 mb-4" aria-hidden="true"></i>
@@ -150,22 +100,16 @@
     </div>
   </section>
 
-  <!-- Call helpline strip -->
   <section class="py-10 bg-brandOrange text-white text-center">
     <div class="max-w-3xl mx-auto px-4">
       <p class="font-semibold">Ready to meet one of our rescue animals in Lucknow?</p>
       <div class="flex flex-wrap justify-center gap-4 mt-3">
-        <a href="tel:+919313293693" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
-          <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 93132 93693
-        </a>
-        <a href="tel:+917307070741" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors">
-          <i class="fas fa-phone-alt" aria-hidden="true"></i> +91 73070 70741
-        </a>
+        <a href="tel:+919313293693" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors"><i class="fas fa-phone-alt" aria-hidden="true"></i> +91 93132 93693</a>
+        <a href="tel:+917307070741" class="inline-flex items-center gap-2 bg-white text-brandOrange font-bold px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 transition-colors"><i class="fas fa-phone-alt" aria-hidden="true"></i> +91 73070 70741</a>
       </div>
     </div>
   </section>
 
-  <!-- Adopted / Success Stories -->
   <section class="py-20 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
@@ -174,9 +118,7 @@
         <p class="text-slate-600 dark:text-slate-400 mt-4">These furry friends have found loving forever homes through Paws Hopes Society.</p>
       </div>
 
-      <div id="adopted-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Success stories rendered dynamically -->
-      </div>
+      <div id="adopted-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
       <div id="adopted-empty" class="hidden text-center py-12 px-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800">
         <i class="fas fa-heart fa-3x text-brandGreen/40 mb-4" aria-hidden="true"></i>
@@ -185,44 +127,25 @@
     </div>
   </section>
 
-  </main>
-
-  <!-- Full Screen Modal / Photo Gallery Carousel -->
   <div id="animal-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/90 backdrop-blur-sm">
     <div class="modal-content bg-white dark:bg-slate-900 w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[90vh] relative">
-      
-      <!-- Close Button -->
-      <button onclick="closeModal()" class="absolute top-4 right-4 z-50 w-10 h-10 bg-slate-900/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Close modal">
-        <i class="fas fa-times text-xl"></i>
-      </button>
+      <button onclick="closeModal()" class="absolute top-4 right-4 z-50 w-10 h-10 bg-slate-900/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Close modal"><i class="fas fa-times text-xl"></i></button>
 
-      <!-- Left Column: Image Carousel -->
       <div class="w-full lg:w-1/2 bg-slate-100 dark:bg-slate-950 flex flex-col relative">
         <div class="relative flex-1 bg-black overflow-hidden flex items-center justify-center aspect-square lg:aspect-auto min-h-[300px]">
           <img id="modal-main-img" src="" alt="Animal Gallery Image" class="w-full h-full object-contain">
-          
-          <button onclick="prevImage()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Previous image">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Next image">
-            <i class="fas fa-chevron-right"></i>
-          </button>
+          <button onclick="prevImage()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+          <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-brandOrange text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
         </div>
-
-        <!-- Thumbnail Strip -->
-        <div id="modal-thumbnails" class="h-24 bg-slate-800 p-2 flex gap-2 overflow-x-auto hide-scrollbar snap-x">
-          <!-- Thumbnails loaded here -->
-        </div>
+        <div id="modal-thumbnails" class="h-24 bg-slate-800 p-2 flex gap-2 overflow-x-auto hide-scrollbar snap-x"></div>
       </div>
 
-      <!-- Right Column: Details & Story -->
       <div class="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col overflow-y-auto">
         <div class="flex-1">
           <div class="flex items-center gap-3 mb-2">
             <span id="modal-species" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full uppercase tracking-wide"></span>
             <span id="modal-gender" class="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-brandBlue text-xs font-bold rounded-full uppercase tracking-wide"></span>
           </div>
-          
           <h2 id="modal-name" class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-2"></h2>
           <p id="modal-breed" class="text-lg text-slate-500 dark:text-slate-400 font-medium mb-6"></p>
 
@@ -248,11 +171,12 @@
           <p class="text-center text-xs text-slate-400 mt-4">Adoptions require a quick verification process to ensure a safe home.</p>
         </div>
       </div>
-
     </div>
   </div>
 
-  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+  </main>
+  
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800 relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       <div class="space-y-4">
         <div class="flex items-center gap-3">
@@ -278,15 +202,21 @@
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
         <ul class="space-y-3 text-sm">
           <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i><span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span></li>
-          <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i><a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a></li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <span class="whitespace-nowrap">
+              <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / 
+              <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
+            </span>
+          </li>
         </ul>
       </div>
       <div>
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
         <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
         <div class="flex gap-3">
-          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-instagram" aria-hidden="true"></i></a>
-          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-instagram"></i></a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-youtube"></i></a>
         </div>
       </div>
     </div>
@@ -303,7 +233,6 @@
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
 
-  <!-- Google Translate Scripts RESTORED -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
@@ -313,13 +242,10 @@
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  
   <script src="assets/data/animals.js"></script>
   <script src="assets/js/script.js"></script>
-  
   <script>
-    // ==========================================
-    // Dynamic Adoption Gallery + Filter + Modal Logic
-    // ==========================================
     (function () {
       function speciesIcon(species) {
         const map = { Dog: 'fa-dog', Cat: 'fa-cat' };
@@ -329,26 +255,17 @@
       function buildCard(animal, isAdopted) {
         const imgList = animal.images && animal.images.length > 0 ? animal.images : (animal.photo ? [animal.photo] : []);
         const firstPhoto = imgList.length > 0 ? imgList[0] : '';
-
-        const photoBlock = firstPhoto
-          ? `<img src="${firstPhoto}" alt="${animal.name}, a ${animal.species.toLowerCase()} available for adoption in Lucknow" loading="lazy" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">`
-          : `<div class="photo-placeholder w-full h-64"><i class="fas ${speciesIcon(animal.species)} fa-3x" aria-hidden="true"></i><span>Photo Coming Soon</span></div>`;
-
+        const photoBlock = firstPhoto ? `<img src="${firstPhoto}" alt="${animal.name}" loading="lazy" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">` : `<div class="photo-placeholder w-full h-64"><i class="fas ${speciesIcon(animal.species)} fa-3x" aria-hidden="true"></i><span>Photo Coming Soon</span></div>`;
         const badgeColor = isAdopted ? 'bg-green-100 dark:bg-green-950 text-brandGreen' : 'bg-orange-100 dark:bg-orange-950 text-brandOrange';
         const badgeText = isAdopted ? 'Adopted' : 'Available';
         const breedText = animal.breed ? `${animal.breed} &middot; ` : '';
-
-        const noteBlock = animal.adoptedNote
-          ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${animal.adoptedNote}</p>`
-          : '';
+        const noteBlock = animal.adoptedNote ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${animal.adoptedNote}</p>` : '';
 
         return `
           <div class="adoption-card bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer group flex flex-col" data-aos="fade-up" data-species="${animal.species}" data-gender="${animal.gender}" data-id="${animal.id || animal.name}" onclick="openModal('${animal.id || animal.name}')">
             <div class="overflow-hidden relative">
               ${photoBlock}
-              <div class="absolute top-4 left-4">
-                <span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase shadow-md">${badgeText}</span>
-              </div>
+              <div class="absolute top-4 left-4"><span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase shadow-md">${badgeText}</span></div>
             </div>
             <div class="p-6 flex-1 flex flex-col">
               <div class="flex items-center justify-between mb-2">
@@ -370,11 +287,7 @@
         const list = document.getElementById(listId);
         const empty = document.getElementById(emptyId);
         if (!list || !empty) return;
-
-        if (!data || data.length === 0) {
-          empty.classList.remove('hidden');
-          return;
-        }
+        if (!data || data.length === 0) { empty.classList.remove('hidden'); return; }
         list.innerHTML = data.map((a) => buildCard(a, isAdopted)).join('');
       }
 
@@ -389,15 +302,11 @@
         const emptyBlock = document.getElementById('adoptable-empty');
         const emptyText = document.getElementById('adoptable-empty-text');
         let visibleCount = 0;
-
         cards.forEach((card) => {
-          const speciesMatch = currentSpecies === 'all' || card.dataset.species === currentSpecies;
-          const genderMatch = currentGender === 'all' || card.dataset.gender === currentGender;
-          const show = speciesMatch && genderMatch;
+          const show = (currentSpecies === 'all' || card.dataset.species === currentSpecies) && (currentGender === 'all' || card.dataset.gender === currentGender);
           card.style.display = show ? '' : 'none';
           if (show) visibleCount++;
         });
-
         if (visibleCount === 0 && cards.length > 0) {
           emptyBlock.classList.remove('hidden');
           if (emptyText) emptyText.innerHTML = 'No animals match this filter right now — try a different combination, or call our helpline.';
@@ -429,22 +338,16 @@
       if (typeof AOS !== 'undefined') AOS.refreshHard();
     })();
 
-    // ==========================================
-    // Modal & Photo Carousel Global Functions
-    // ==========================================
     let currentModalAnimal = null;
     let currentImageIndex = 0;
 
     function openModal(identifier) {
       const allAnimals = [...window.AVAILABLE_FOR_ADOPTION, ...window.ADOPTED_ANIMALS];
       currentModalAnimal = allAnimals.find(a => (a.id === identifier || a.name === identifier));
-      
       if(!currentModalAnimal) return;
 
       currentImageIndex = 0;
-      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
-        ? currentModalAnimal.images 
-        : (currentModalAnimal.photo ? [currentModalAnimal.photo] : []);
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 ? currentModalAnimal.images : (currentModalAnimal.photo ? [currentModalAnimal.photo] : []);
 
       document.getElementById('modal-name').textContent = currentModalAnimal.name;
       document.getElementById('modal-species').textContent = currentModalAnimal.species;
@@ -466,7 +369,6 @@
         imgList.forEach((imgSrc, index) => {
           const thumb = document.createElement('img');
           thumb.src = imgSrc;
-          thumb.alt = `${currentModalAnimal.name} photo thumbnail ${index + 1}`;
           thumb.className = `thumbnail-img w-20 h-20 object-cover rounded-lg cursor-pointer flex-shrink-0 opacity-50 hover:opacity-100 ${index === 0 ? 'active' : ''}`;
           thumb.onclick = () => setMainImage(index);
           thumbContainer.appendChild(thumb);
@@ -474,10 +376,7 @@
       } else {
         thumbContainer.style.display = 'none';
       }
-
-      if(imgList.length > 0) {
-        setMainImage(0);
-      }
+      if(imgList.length > 0) setMainImage(0);
 
       document.body.style.overflow = 'hidden';
       document.getElementById('animal-modal').classList.add('active');
@@ -489,51 +388,31 @@
     }
 
     function setMainImage(index) {
-      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
-        ? currentModalAnimal.images 
-        : [currentModalAnimal.photo];
-
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 ? currentModalAnimal.images : [currentModalAnimal.photo];
       currentImageIndex = index;
       document.getElementById('modal-main-img').src = imgList[currentImageIndex];
-      
       const thumbs = document.querySelectorAll('.thumbnail-img');
-      thumbs.forEach((t, i) => {
-        if(i === index) t.classList.add('active');
-        else t.classList.remove('active');
-      });
-      
-      if(thumbs[index]) {
-        thumbs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
+      thumbs.forEach((t, i) => { i === index ? t.classList.add('active') : t.classList.remove('active'); });
+      if(thumbs[index]) thumbs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
     function nextImage() {
-      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
-        ? currentModalAnimal.images 
-        : [currentModalAnimal.photo];
-
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 ? currentModalAnimal.images : [currentModalAnimal.photo];
       let newIndex = currentImageIndex + 1;
       if (newIndex >= imgList.length) newIndex = 0;
       setMainImage(newIndex);
     }
 
     function prevImage() {
-      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 
-        ? currentModalAnimal.images 
-        : [currentModalAnimal.photo];
-
+      const imgList = currentModalAnimal.images && currentModalAnimal.images.length > 0 ? currentModalAnimal.images : [currentModalAnimal.photo];
       let newIndex = currentImageIndex - 1;
       if (newIndex < 0) newIndex = imgList.length - 1;
       setMainImage(newIndex);
     }
 
-    document.getElementById('animal-modal').addEventListener('click', function(e) {
-      if(e.target === this) closeModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
+    document.getElementById('animal-modal').addEventListener('click', function(e) { if(e.target === this) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
   </script>
+
 </body>
 </html>

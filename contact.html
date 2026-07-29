@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Us A Message | Paws Hopes Society</title>
+  <title>Contact | Paws Hopes Society</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }}</script>
+  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }}</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
@@ -30,10 +30,10 @@
         <a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt</a>
         <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
         <a href="contact.html" class="text-brandOrange transition-colors" aria-current="page">Contact</a>
+        
       </nav>
 
       <div class="hidden lg:flex items-center gap-3">
-        <!-- Translate Widget RESTORED -->
         <div class="hidden lg:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-white/10">
           <i class="fas fa-language text-brandOrange"></i>
           <span class="text-xs text-slate-200 font-medium whitespace-nowrap">Translate Site:</span>
@@ -60,6 +60,7 @@
       <a href="adopt.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Adopt</a>
       <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
       <a href="contact.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">Contact</a>
+      
       <a href="donate.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Donate</a>
     </div>
   </header>
@@ -85,7 +86,12 @@
             <div class="p-3 bg-green-100 dark:bg-green-950 text-brandGreen rounded-xl"><i class="fas fa-phone-alt text-xl" aria-hidden="true"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-white">Rescue Helpline</h3>
-              <p class="text-sm text-slate-600 dark:text-slate-400"><a href="tel:+919313293693" class="hover:text-brandOrange">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange">+91 73070 70741</a></p>
+              <p class="text-sm text-slate-600 dark:text-slate-400">
+                <span class="whitespace-nowrap">
+                  <a href="tel:+919313293693" class="hover:text-brandOrange">+91 93132 93693</a> / 
+                  <a href="tel:+917307070741" class="hover:text-brandOrange">+91 73070 70741</a>
+                </span>
+              </p>
             </div>
           </div>
           <div class="flex items-start gap-4">
@@ -112,9 +118,10 @@
       </div>
     </div>
   </section>
+
   </main>
   
-  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800 relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       <div class="space-y-4">
         <div class="flex items-center gap-3">
@@ -140,7 +147,13 @@
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
         <ul class="space-y-3 text-sm">
           <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i><span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span></li>
-          <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i><a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a></li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <span class="whitespace-nowrap">
+              <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / 
+              <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
+            </span>
+          </li>
         </ul>
       </div>
       <div>
@@ -165,7 +178,6 @@
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
 
-  <!-- Google Translate Scripts RESTORED -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');

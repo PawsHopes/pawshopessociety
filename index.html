@@ -3,19 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paws Hopes Society | Animal Rescue NGO in Lucknow, India</title>
+  <title>Home | Paws Hopes Society</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }}</script>
+  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }}</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
+  <script async src="https://tally.so/widgets/embed.js"></script>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
   <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -36,10 +30,10 @@
         <a href="adopt.html" class="hover:text-brandOrange transition-colors">Adopt</a>
         <a href="volunteer.html" class="hover:text-brandOrange transition-colors">Volunteer</a>
         <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
+        
       </nav>
 
       <div class="hidden lg:flex items-center gap-3">
-        <!-- Translate Widget RESTORED -->
         <div class="hidden lg:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-white/10">
           <i class="fas fa-language text-brandOrange"></i>
           <span class="text-xs text-slate-200 font-medium whitespace-nowrap">Translate Site:</span>
@@ -66,6 +60,7 @@
       <a href="adopt.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Adopt</a>
       <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
       <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
+      
       <a href="donate.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Donate</a>
     </div>
   </header>
@@ -94,7 +89,6 @@
     </div>
   </section>
 
-  <!-- Counters / Highlights -->
   <section id="highlights-section" class="py-16 bg-gradient-to-r from-brandOrange to-orange-700 text-white relative z-20 shadow-2xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -122,7 +116,6 @@
     </div>
   </section>
 
-  <!-- About Section Preview -->
   <section class="py-24 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -141,7 +134,6 @@
             </a>
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4" data-aos="fade-left">
           <div class="space-y-4">
             <div class="photo-placeholder rounded-3xl h-48 sm:h-64 shadow-md flex flex-col items-center justify-center p-4">
@@ -170,13 +162,11 @@
     </div>
   </section>
 
-  <!-- Emergency Rescue Banner -->
   <section class="py-20 bg-red-900 text-white relative overflow-hidden">
     <div class="max-w-5xl mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
       <span class="px-3 py-1 bg-white/20 text-white text-xs rounded-full font-bold uppercase tracking-widest">24/7 Emergency Helpline</span>
       <h2 class="text-3xl sm:text-5xl font-extrabold mt-4">Found an Injured Animal in Lucknow?</h2>
       <p class="text-red-100 mt-4 text-lg max-w-2xl mx-auto">Do not wait. Whether it is a dog, cat, monkey, bird, squirrel, or guinea pig in distress, our rescue team is ready to respond.</p>
-      
       <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
         <a href="tel:+919313293693" class="bg-white text-red-700 font-extrabold px-6 py-4 rounded-full shadow-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
           <i class="fas fa-phone-alt"></i> +91 93132 93693
@@ -191,7 +181,6 @@
     </div>
   </section>
 
-  <!-- Adoptable Animals Teaser -->
   <section class="py-24 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-16" data-aos="fade-up">
@@ -203,16 +192,30 @@
           See All Adoptable Animals <i class="fas fa-arrow-right"></i>
         </a>
       </div>
-
-      <div id="homepage-adopt-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <!-- Rendered via script -->
-      </div>
+      <div id="homepage-adopt-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
     </div>
   </section>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const teaserGrid = document.getElementById('homepage-adopt-grid');
+      if(teaserGrid && window.AVAILABLE_FOR_ADOPTION) {
+        const topPets = window.AVAILABLE_FOR_ADOPTION.slice(0, 4);
+        teaserGrid.innerHTML = topPets.map(pet => {
+          const firstImg = pet.images && pet.images.length > 0 ? pet.images[0] : (pet.photo || '');
+          return `
+            <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up">
+              <img src="${firstImg}" alt="${pet.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">${pet.name}</span>
+            </a>
+          `;
+        }).join('');
+      }
+    });
+  </script>
 
   </main>
   
-  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
+  <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800 relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       <div class="space-y-4">
         <div class="flex items-center gap-3">
@@ -238,7 +241,13 @@
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
         <ul class="space-y-3 text-sm">
           <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i><span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span></li>
-          <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i><a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a></li>
+          <li class="flex items-center gap-3">
+            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
+            <span class="whitespace-nowrap">
+              <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / 
+              <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
+            </span>
+          </li>
         </ul>
       </div>
       <div>
@@ -263,7 +272,6 @@
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
 
-  <!-- Google Translate Scripts RESTORED -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
@@ -273,9 +281,8 @@
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script src="assets/data/animals.js"></script>
   <script src="assets/js/script.js"></script>
-  
+
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const teaserGrid = document.getElementById('homepage-adopt-grid');
