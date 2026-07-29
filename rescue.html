@@ -3,65 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emergency Rescue & Helpline | Paws Hopes Society</title>
-  <meta name="description" content="Report an injured or distressed animal to Paws Hopes Society's rescue helpline in Lucknow, Uttar Pradesh. We rescue dogs, cats, monkeys, birds, squirrels, and guinea pigs.">
-  <link rel="canonical" href="https://pawshopessociety.org/rescue.html">
-
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Paws Hopes Society">
-  <meta property="og:title" content="Emergency Rescue & Helpline | Paws Hopes Society">
-  <meta property="og:description" content="Report an injured or distressed animal to our rescue helpline in Lucknow.">
-  <meta property="og:image" content="https://pawshopessociety.org/assets/images/logo.png">
-  <meta property="og:url" content="https://pawshopessociety.org/rescue.html">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Emergency Rescue & Helpline | Paws Hopes Society">
-  <meta name="twitter:image" content="https://pawshopessociety.org/assets/images/logo.png">
-
-  <link rel="icon" type="image/png" href="assets/images/favicon.png">
-  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-
+  <title>Report An Animal In Distress | Paws Hopes Society</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }
-    }
-  </script>
+  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b' } } }}</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
-
-  <!-- Tally Embed Script -->
   <script async src="https://tally.so/widgets/embed.js"></script>
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
-
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="scroll-progress"></div>
-
-  <!-- Header Navigation -->
+  
   <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0" aria-label="Paws Hopes Society Home">
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0">
         <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-9 w-9 sm:h-12 sm:w-12 rounded-full object-cover group-hover:scale-105 transition-transform">
-        <div>
-          <span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
-        </div>
+        <div><span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span></div>
       </a>
 
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
+      <nav class="hidden lg:flex items-center gap-7 font-medium text-sm">
         <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
         <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
         <a href="rescue.html" class="text-brandOrange transition-colors" aria-current="page">Rescue</a>
@@ -71,62 +32,47 @@
         <a href="contact.html" class="hover:text-brandOrange transition-colors">Contact</a>
       </nav>
 
-      <div class="hidden lg:flex items-center gap-4">
-        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
-          <i class="fas fa-moon"></i>
-        </button>
-        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
-          <i class="fas fa-heart mr-2"></i> Donate Now
+      <div class="hidden lg:flex items-center gap-3">
+        <!-- Translate Widget RESTORED -->
+        <div class="hidden lg:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-white/10">
+          <i class="fas fa-language text-brandOrange"></i>
+          <span class="text-xs text-slate-200 font-medium whitespace-nowrap">Translate Site:</span>
+          <div id="google_translate_element"></div>
+        </div>
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors"><i class="fas fa-moon"></i></button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-5 py-2 rounded-full shadow-lg transition-all">
+          <i class="fas fa-heart mr-1.5"></i> Donate
         </a>
       </div>
 
-      <div class="lg:hidden flex items-center gap-3">
-        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
-          <i class="fas fa-bars"></i>
-        </button>
+      <div class="lg:hidden flex items-center gap-2">
+        <div id="google_translate_element_mobile"></div>
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-moon"></i></button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none"><i class="fas fa-bars"></i></button>
       </div>
     </div>
 
     <div id="mobile-menu" class="hidden lg:hidden bg-slate-900/95 border-b border-white/10 px-4 pt-4 pb-6 space-y-3 font-medium">
       <a href="index.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Home</a>
       <a href="about.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">About</a>
-      <a href="rescue.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5" aria-current="page">Rescue</a>
+      <a href="rescue.html" class="block py-2 text-brandOrange border-b border-white/5" aria-current="page">Rescue</a>
       <a href="gallery.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Gallery</a>
       <a href="adopt.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Adopt</a>
       <a href="volunteer.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Volunteer</a>
       <a href="contact.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Contact</a>
-      <a href="donate.html" class="block text-center mt-4 bg-brandOrange text-white py-3 rounded-xl font-bold shadow-md">
-        <i class="fas fa-heart mr-2"></i> Donate Now
-      </a>
+      <a href="donate.html" class="block py-2 text-white hover:text-brandOrange border-b border-white/5">Donate</a>
     </div>
   </header>
 
   <main id="main-content">
-
   <section class="pt-32 pb-16 bg-red-900 text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
       <span class="px-3 py-1 bg-white/20 text-white text-xs rounded-full font-bold uppercase tracking-widest">24/7 Helpline Active</span>
       <h1 class="text-4xl sm:text-5xl font-extrabold mt-4">Emergency Animal Rescue</h1>
       <p class="text-red-100 mt-4 text-lg">Spot an injured, sick, or trapped animal? Call us directly or fill out the form below.</p>
-
-      <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-        <a href="tel:+919313293693" class="bg-white text-red-700 font-extrabold px-6 py-4 rounded-full text-base sm:text-lg shadow-xl hover:bg-slate-100 transition-colors">
-          <i class="fas fa-phone-alt mr-2" aria-hidden="true"></i> +91 93132 93693
-        </a>
-        <a href="tel:+917307070741" class="bg-white text-red-700 font-extrabold px-6 py-4 rounded-full text-base sm:text-lg shadow-xl hover:bg-slate-100 transition-colors">
-          <i class="fas fa-phone-alt mr-2" aria-hidden="true"></i> +91 73070 70741
-        </a>
-        <a href="https://wa.me/919313293693" target="_blank" rel="noopener noreferrer" class="bg-green-500 text-white font-extrabold px-6 py-4 rounded-full text-base sm:text-lg shadow-xl hover:bg-green-600 transition-colors">
-          <i class="fab fa-whatsapp mr-2" aria-hidden="true"></i> WhatsApp Us
-        </a>
-      </div>
     </div>
   </section>
 
-  <!-- Animal Categories -->
   <section class="py-20 bg-white dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
@@ -136,39 +82,28 @@
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up"><i class="fas fa-dog fa-2x text-brandOrange mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Dogs</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="50"><i class="fas fa-cat fa-2x text-brandOrange mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Cats</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100"><i class="fas fa-monument fa-2x text-brandGreen mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Monkeys</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="150"><i class="fas fa-dove fa-2x text-brandGreen mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Birds</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200"><i class="fas fa-paw fa-2x text-brandAmber mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Squirrels</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="250"><i class="fas fa-paw fa-2x text-brandAmber mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Guinea Pigs</p></div>
-        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 col-span-2 md:col-span-2" data-aos="fade-up" data-aos-delay="300"><i class="fas fa-hand-holding-heart fa-2x text-red-500 mb-3" aria-hidden="true"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Reptile Rescue Assistance (as needed)</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up"><i class="fas fa-dog fa-2x text-brandOrange mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Dogs</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="50"><i class="fas fa-cat fa-2x text-brandOrange mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Cats</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100"><i class="fas fa-monument fa-2x text-brandGreen mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Monkeys</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="150"><i class="fas fa-dove fa-2x text-brandGreen mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Birds</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200"><i class="fas fa-paw fa-2x text-brandAmber mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Squirrels</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800" data-aos="fade-up" data-aos-delay="250"><i class="fas fa-paw fa-2x text-brandAmber mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Guinea Pigs</p></div>
+        <div class="text-center p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 col-span-2 md:col-span-2" data-aos="fade-up" data-aos-delay="300"><i class="fas fa-hand-holding-heart fa-2x text-red-500 mb-3"></i><p class="font-bold text-slate-900 dark:text-white text-sm">Reptile Rescue Assistance (as needed)</p></div>
       </div>
     </div>
   </section>
 
-  <!-- Report Form Section (Tally.so Embedded Form) -->
   <section class="py-20 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-white dark:bg-slate-900 p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl" data-aos="fade-up">
         <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2 text-center">Report An Animal In Distress</h2>
         <p class="text-slate-600 dark:text-slate-400 text-sm mb-8 text-center">Please provide accurate location details to help our rescue team act fast. For urgent cases, call the helpline directly instead of waiting for a form response.</p>
-
-        <iframe 
-          data-tally-src="https://tally.so/r/68G29N?transparentBackground=1" 
-          width="100%" 
-          height="850" 
-          frameborder="0" 
-          marginheight="0" 
-          marginwidth="0" 
-          title="Animal Rescue Alert Form">
-        </iframe>
+        <iframe data-tally-src="https://tally.so/r/68G29N?transparentBackground=1" width="100%" height="100%" style="min-height: 1200px; border: none;" frameborder="0" marginheight="0" marginwidth="0" title="Report An Animal In Distress"></iframe>
       </div>
     </div>
   </section>
-
   </main>
-
+  
   <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       <div class="space-y-4">
@@ -196,21 +131,19 @@
         <ul class="space-y-3 text-sm">
           <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i><span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span></li>
           <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i><a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a></li>
-          <li class="flex items-center gap-3 flex-wrap"><i class="fab fa-whatsapp text-green-500" aria-hidden="true"></i><a href="https://wa.me/919313293693" target="_blank" rel="noopener noreferrer" class="hover:text-brandOrange transition-colors">+91 93132 93693</a></li>
         </ul>
       </div>
       <div>
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
         <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
         <div class="flex gap-3">
-          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
-          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-youtube" aria-hidden="true"></i></a>
         </div>
       </div>
     </div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-3">
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
-      <p>Designed with compassion for voiceless animals.</p>
     </div>
     <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
       <i class="fas fa-eye" aria-hidden="true"></i>
@@ -221,6 +154,15 @@
   <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
+
+  <!-- Google Translate Scripts RESTORED -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+      new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element_mobile');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>

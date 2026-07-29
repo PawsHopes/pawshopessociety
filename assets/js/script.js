@@ -27,7 +27,6 @@ window.addEventListener('load', () => {
   }
 });
 
-// Trigger preloader on internal navigation links
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a');
   if (link && link.href && link.href.startsWith(window.location.origin) && !link.href.includes('#') && !link.getAttribute('target')) {
@@ -39,8 +38,6 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  // 1. Mobile Menu Toggle
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   if (mobileMenuBtn && mobileMenu) {
@@ -51,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Dark Mode Toggle
   const darkModeToggles = [document.getElementById('dark-mode-toggle'), document.getElementById('dark-mode-toggle-mobile')];
   const htmlElement = document.documentElement;
 
@@ -80,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 3. Back to Top Button & Scroll Progress
   const backToTopBtn = document.getElementById('backToTop');
   const scrollProgress = document.getElementById('scroll-progress');
 
@@ -108,13 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 4. Live Visitor Counter (Starting from 110,520)
+  // Live Visitor Counter (Starting from 110,520)
   const visitorCountEl = document.getElementById('visitor-count');
   if (visitorCountEl) {
     let baseCount = 110520;
     try {
       let currentCount = localStorage.getItem('phs_visitor_count');
-      
       if (!currentCount || parseInt(currentCount, 10) < baseCount) {
         currentCount = baseCount;
       } else {
@@ -133,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 5. Number Counting Calculation Effect for Stats
+  // Number Counting Calculation Effect for Stats
   const statNumbers = document.querySelectorAll('.stat-counter');
   if (statNumbers.length > 0) {
     const observer = new IntersectionObserver((entries, observerInstance) => {
@@ -143,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const target = parseInt(el.getAttribute('data-target'), 10);
           const suffix = el.getAttribute('data-suffix') || '';
           let current = 0;
-          const duration = 1200; // ms
-          const stepTime = Math.abs(Math.floor(duration / target));
+          const duration = 1200;
+          const step = Math.ceil(target / (duration / 40));
           
           const timer = setInterval(() => {
-            current += Math.ceil(target / 30);
+            current += step;
             if (current >= target) {
               current = target;
               clearInterval(timer);
@@ -163,12 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     statNumbers.forEach(num => observer.observe(num));
   }
 
-  // 6. Initialize AOS Animation Library
   if (typeof AOS !== 'undefined') {
-    AOS.init({
-      duration: 800,
-      once: true,
-      offset: 50
-    });
+    AOS.init({ duration: 800, once: true, offset: 50 });
   }
 });

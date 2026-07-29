@@ -2,19 +2,16 @@
    Paws Hopes Society — Global Styles & Fixes
    ========================================================================== */
 
-/* Prevent horizontal overflow on mobile devices */
 html, body {
   max-width: 100%;
   overflow-x: hidden;
 }
 
-/* Ensure images, videos, and iframes never overflow mobile screens */
 img, video, iframe {
   max-width: 100%;
   height: auto;
 }
 
-/* Skip link for accessibility */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -29,7 +26,6 @@ img, video, iframe {
   top: 0;
 }
 
-/* Scroll progress bar */
 #scroll-progress {
   position: fixed;
   top: 0;
@@ -76,7 +72,31 @@ img, video, iframe {
   50% { transform: scale(1.2); opacity: 1; color: #15803d; }
 }
 
-/* Photo placeholder styling */
+/* Google Translate Custom Styling */
+.goog-te-combo {
+  background-color: #1e293b;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 5px 8px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+.goog-te-gadget {
+  font-size: 0px !important;
+  color: transparent !important;
+}
+.goog-te-gadget span {
+  display: none;
+}
+.goog-logo-link {
+  display: none !important;
+}
+body {
+  top: 0px !important;
+}
+
 .photo-placeholder {
   background: #e2e8f0;
   display: flex;
@@ -97,7 +117,6 @@ img, video, iframe {
   font-weight: 500;
 }
 
-/* Premium Modal Styles */
 #animal-modal {
   opacity: 0;
   pointer-events: none;
@@ -128,3 +147,11 @@ img, video, iframe {
   border: 3px solid #ea580c;
   opacity: 1;
 }
+
+/* Custom styles for FAQ accordion */
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease; }
+.faq-item.active .faq-answer { max-height: 500px; padding-top: 1rem; padding-bottom: 0.5rem; }
+.faq-item.active .faq-icon { transform: rotate(180deg); }
+.faq-icon { transition: transform 0.3s ease; }
+#toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 100; left: 50%; bottom: 30px; font-size: 14px; opacity: 0; transition: opacity 0.5s, bottom 0.5s, visibility 0.5s; }
+#toast.show { visibility: visible; opacity: 1; bottom: 50px; }

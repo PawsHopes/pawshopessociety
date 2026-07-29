@@ -7,106 +7,15 @@
   <meta name="description" content="Support Paws Hopes Society via UPI, QR code, or direct bank transfer. Every rupee goes toward medical treatment, shelter, and food for street animals in Lucknow.">
   <link rel="canonical" href="https://pawshopessociety.pages.dev/donate.html">
 
-  <!-- OpenGraph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Paws Hopes Society">
-  <meta property="og:title" content="Donate & Save Lives | Paws Hopes Society">
-  <meta property="og:description" content="Support our animal rescue work via UPI, QR code, or bank transfer. Let Them Know... Someone Cares.">
-  <meta property="og:image" content="https://pawshopessociety.pages.dev/assets/images/logo.png">
-  <meta property="og:url" content="https://pawshopessociety.pages.dev/donate.html">
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Donate & Save Lives | Paws Hopes Society">
-  <meta name="twitter:description" content="Support our animal rescue work via UPI, QR code, or bank transfer. Let Them Know... Someone Cares.">
-  <meta name="twitter:image" content="https://pawshopessociety.pages.dev/assets/images/logo.png">
-
-  <!-- JSON-LD Schema Markup for NGO -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "NGO",
-    "name": "Paws Hopes Society",
-    "url": "https://pawshopessociety.pages.dev",
-    "logo": "https://pawshopessociety.pages.dev/assets/images/logo.png",
-    "description": "A registered animal rescue NGO in Lucknow, dedicated to rescuing, treating, and sheltering street animals.",
-    "foundingDate": "2022",
-    "telephone": "+91-9313293693",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "NH-24, Sitapur Rd, Bakshi Ka Talab, Bhaisamau",
-      "addressLocality": "Lucknow",
-      "addressRegion": "Uttar Pradesh",
-      "postalCode": "226202",
-      "addressCountry": "IN"
-    },
-    "sameAs": [
-      "https://instagram.com/PawsHopesSociety",
-      "https://youtube.com/@PawsHopesSociety"
-    ]
-  }
-  </script>
-
   <link rel="icon" type="image/png" href="assets/images/favicon.png">
-  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }
-    }
-  </script>
+  <script>tailwind.config = {darkMode: 'class', theme: { extend: { colors: { brandOrange: '#ea580c', brandGreen: '#15803d', brandAmber: '#f59e0b', brandBlue: '#0ea5e9' } } }}</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link rel="stylesheet" href="assets/css/style.css">
-  
-  <style>
-    /* Custom styles for FAQ accordion */
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-out, padding 0.3s ease;
-    }
-    .faq-item.active .faq-answer {
-      max-height: 500px;
-      padding-top: 1rem;
-      padding-bottom: 0.5rem;
-    }
-    .faq-item.active .faq-icon {
-      transform: rotate(180deg);
-    }
-    .faq-icon {
-      transition: transform 0.3s ease;
-    }
-    
-    /* Toast Notification */
-    #toast {
-      visibility: hidden;
-      min-width: 250px;
-      margin-left: -125px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      padding: 12px;
-      position: fixed;
-      z-index: 100;
-      left: 50%;
-      bottom: 30px;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
-    }
-    #toast.show {
-      visibility: visible;
-      opacity: 1;
-      bottom: 50px;
-    }
-  </style>
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 transition-colors duration-300">
 
@@ -116,14 +25,12 @@
   <!-- Header Navigation -->
   <header id="site-header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md text-white border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0" aria-label="Paws Hopes Society Home">
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3 group min-w-0">
         <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="48" height="48" class="h-9 w-9 sm:h-12 sm:w-12 rounded-full object-cover group-hover:scale-105 transition-transform">
-        <div>
-          <span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span>
-        </div>
+        <div><span class="text-sm sm:text-xl font-bold tracking-tight block leading-tight">Paws Hopes Society</span></div>
       </a>
 
-      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm" aria-label="Primary navigation">
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm">
         <a href="index.html" class="hover:text-brandOrange transition-colors">Home</a>
         <a href="about.html" class="hover:text-brandOrange transition-colors">About</a>
         <a href="rescue.html" class="hover:text-brandOrange transition-colors">Rescue</a>
@@ -134,21 +41,23 @@
       </nav>
 
       <div class="hidden lg:flex items-center gap-4">
-        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Toggle dark mode" aria-pressed="false">
-          <i class="fas fa-moon"></i>
-        </button>
-        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5" aria-current="page">
+        <!-- Translate Widget RESTORED -->
+        <div class="hidden lg:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-white/10">
+          <i class="fas fa-language text-brandOrange"></i>
+          <span class="text-xs text-slate-200 font-medium whitespace-nowrap">Translate Site:</span>
+          <div id="google_translate_element"></div>
+        </div>
+
+        <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/10 transition-colors"><i class="fas fa-moon"></i></button>
+        <a href="donate.html" class="bg-brandOrange hover:bg-orange-700 text-white font-semibold px-6 py-2.5 rounded-full shadow-lg transition-all transform hover:-translate-y-0.5" aria-current="page">
           <i class="fas fa-heart mr-2"></i> Donate Now
         </a>
       </div>
 
       <div class="lg:hidden flex items-center gap-3">
-        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10" aria-label="Toggle dark mode" aria-pressed="false">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
-          <i class="fas fa-bars"></i>
-        </button>
+        <div id="google_translate_element_mobile"></div>
+        <button id="dark-mode-toggle-mobile" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-moon"></i></button>
+        <button id="mobile-menu-btn" class="p-2 text-2xl focus:outline-none"><i class="fas fa-bars"></i></button>
       </div>
     </div>
 
@@ -170,7 +79,6 @@
 
   <!-- Premium Hero Section -->
   <section class="pt-32 pb-20 bg-slate-900 text-white relative overflow-hidden">
-    <!-- Abstract Background Pattern -->
     <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ea580c 1.5px, transparent 1.5px); background-size: 30px 30px;"></div>
     
     <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
@@ -185,6 +93,114 @@
     </div>
   </section>
 
+  <!-- Amazon Wishlist List Format -->
+  <section class="py-16 bg-[#fdfbf7] dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12" data-aos="fade-up">
+        <span class="text-brandOrange font-bold text-sm tracking-widest uppercase">IN-KIND DONATIONS</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">Our Amazon Wishlist</h2>
+        <p class="text-slate-600 dark:text-slate-400 mt-4">You can directly purchase these urgently needed supplies from our list and have them delivered to our shelter.</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden" data-aos="fade-up">
+         <ul class="divide-y divide-slate-200 dark:divide-slate-700">
+           <li>
+             <a href="https://www.amazon.in/hz/wishlist/ls/1CZ242UYNM4NT?ref_=wl_share" target="_blank" class="flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+               <div class="flex items-center gap-4">
+                 <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 text-brandOrange flex items-center justify-center"><i class="fas fa-bone"></i></div>
+                 <span class="font-semibold text-slate-900 dark:text-white">Adult Dog Food (Pedigree/Drools)</span>
+               </div>
+               <span class="text-brandOrange text-sm font-bold flex items-center gap-1">Donate <i class="fas fa-external-link-alt"></i></span>
+             </a>
+           </li>
+           <li>
+             <a href="https://www.amazon.in/hz/wishlist/ls/1CZ242UYNM4NT?ref_=wl_share" target="_blank" class="flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+               <div class="flex items-center gap-4">
+                 <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 text-brandGreen flex items-center justify-center"><i class="fas fa-pills"></i></div>
+                 <span class="font-semibold text-slate-900 dark:text-white">Deworming Tablets & Multivitamins</span>
+               </div>
+               <span class="text-brandOrange text-sm font-bold flex items-center gap-1">Donate <i class="fas fa-external-link-alt"></i></span>
+             </a>
+           </li>
+           <li>
+             <a href="https://www.amazon.in/hz/wishlist/ls/1CZ242UYNM4NT?ref_=wl_share" target="_blank" class="flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+               <div class="flex items-center gap-4">
+                 <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-brandAmber flex items-center justify-center"><i class="fas fa-pump-medical"></i></div>
+                 <span class="font-semibold text-slate-900 dark:text-white">Wound Healing Sprays (Topicure/Viacutan)</span>
+               </div>
+               <span class="text-brandOrange text-sm font-bold flex items-center gap-1">Donate <i class="fas fa-external-link-alt"></i></span>
+             </a>
+           </li>
+           <li>
+             <a href="https://www.amazon.in/hz/wishlist/ls/1CZ242UYNM4NT?ref_=wl_share" target="_blank" class="flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+               <div class="flex items-center gap-4">
+                 <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center"><i class="fas fa-pump-soap"></i></div>
+                 <span class="font-semibold text-slate-900 dark:text-white">Floor Cleaners & Disinfectants</span>
+               </div>
+               <span class="text-brandOrange text-sm font-bold flex items-center gap-1">Donate <i class="fas fa-external-link-alt"></i></span>
+             </a>
+           </li>
+         </ul>
+      </div>
+      
+      <div class="text-center mt-8" data-aos="fade-up">
+        <a href="https://www.amazon.in/hz/wishlist/ls/1CZ242UYNM4NT?ref_=wl_share" target="_blank" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-full shadow-lg transition-colors">
+          <i class="fab fa-amazon text-xl"></i> View Full Amazon Wishlist
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fundraising Appeals Table (HIDDEN) -->
+  <!--
+  <section class="py-16 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-6" data-aos="fade-up">
+        <span class="text-brandGreen font-bold text-xs tracking-widest uppercase">TARGET GOALS</span>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Active Fundraising Appeals</h2>
+        <p class="text-slate-600 dark:text-slate-400 mt-2">Help us reach our targets for critical medical cases and shelter expansions.</p>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" data-aos="fade-up">
+        <table class="w-full text-left border-collapse min-w-[800px]">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm border-b border-slate-200 dark:border-slate-700">
+              <th class="p-4 border-r border-slate-200 dark:border-slate-700 w-16 text-center">Sl.No.</th>
+              <th class="p-4 border-r border-slate-200 dark:border-slate-700">Title</th>
+              <th class="p-4 border-r border-slate-200 dark:border-slate-700">Expected Amount</th>
+              <th class="p-4 border-r border-slate-200 dark:border-slate-700">Due Amount</th>
+              <th class="p-4 text-center">View/Donate</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-sm">
+            <tr class="border-b border-slate-200 dark:border-slate-700">
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-center">1</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">A little gift. A lifetime of hope. (Parvo Treatment Fund)</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">98500</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-red-500">96995</td>
+              <td class="p-4 text-center"><button class="border border-brandGreen text-brandGreen px-4 py-1.5 rounded font-semibold text-sm hover:bg-brandGreen hover:text-white transition-colors">View</button></td>
+            </tr>
+            <tr class="border-b border-slate-200 dark:border-slate-700">
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-center">2</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">Emergency Surgery for Rescued Indie (Accident Case)</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">45000</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-red-500">12450</td>
+              <td class="p-4 text-center"><button class="border border-brandGreen text-brandGreen px-4 py-1.5 rounded font-semibold text-sm hover:bg-brandGreen hover:text-white transition-colors">View</button></td>
+            </tr>
+            <tr>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-center">3</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">Winter Shelter Expansion & Heating Lamps</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700">120000</td>
+              <td class="p-4 border-r border-slate-200 dark:border-slate-700 text-red-500">85000</td>
+              <td class="p-4 text-center"><button class="border border-brandGreen text-brandGreen px-4 py-1.5 rounded font-semibold text-sm hover:bg-brandGreen hover:text-white transition-colors">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  -->
+
   <!-- Donation Impact Grid -->
   <section class="py-20 bg-[#fdfbf7] dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -194,7 +210,6 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        <!-- Tier 1 -->
         <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="50">
           <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brandOrange rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
             <i class="fas fa-bone"></i>
@@ -203,7 +218,6 @@
           <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Feed one rescued dog for one day.</p>
         </div>
 
-        <!-- Tier 2 -->
         <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="100">
           <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brandOrange rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
             <i class="fas fa-paw"></i>
@@ -212,7 +226,6 @@
           <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Feed one rescued dog for five days.</p>
         </div>
 
-        <!-- Tier 3 (Highlighted) -->
         <div class="bg-brandOrange rounded-3xl p-6 shadow-md border border-brandOrange hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 relative text-white lg:-mt-4 lg:mb-4" data-aos="fade-up" data-aos-delay="150">
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Crucial Need</span>
           <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
@@ -222,7 +235,6 @@
           <p class="text-sm text-orange-50 text-center">Basic medicines, deworming and antiseptic treatment.</p>
         </div>
 
-        <!-- Tier 4 -->
         <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="200">
           <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
             <i class="fas fa-ambulance"></i>
@@ -231,7 +243,6 @@
           <p class="text-sm text-slate-600 dark:text-slate-400 text-center">Emergency treatment for a severely injured animal.</p>
         </div>
 
-        <!-- Tier 5 -->
         <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="250">
           <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-brandBlue rounded-full flex items-center justify-center text-xl mb-4 mx-auto">
             <i class="fas fa-home"></i>
@@ -271,7 +282,7 @@
             
             <div class="w-full max-w-sm">
               <label for="upi-id" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">UPI ID</label>
-              <div class="flex rounded-xl overflow-hidden border border-slate-300 dark:border-slate-600 focus-within:ring-2 focus-within:ring-brandOrange focus-within:border-brandOrange transition-all bg-white dark:bg-slate-800">
+              <div class="flex rounded-xl overflow-hidden border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
                 <input type="text" id="upi-id" value="phs706@hdfcbank" readonly class="w-full px-4 py-3 bg-transparent text-slate-800 dark:text-white font-mono text-sm focus:outline-none cursor-default selection:bg-orange-200">
                 <button onclick="copyUPI()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-5 font-semibold text-sm transition-colors flex items-center gap-2" aria-label="Copy UPI ID">
                   <i class="fas fa-copy"></i> Copy
@@ -321,7 +332,7 @@
   </section>
 
   <!-- Monthly Sponsorship Callout -->
-  <section class="py-16 bg-[#fdfbf7] dark:bg-slate-900">
+  <section class="py-16 bg-[#fdfbf7] dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-gradient-to-r from-brandOrange to-orange-600 rounded-3xl p-8 sm:p-12 text-white shadow-xl text-center" data-aos="zoom-in">
         <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl mb-6 mx-auto">
@@ -338,49 +349,44 @@
   <section class="py-16 bg-white dark:bg-slate-950">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <!-- Transparency Note -->
       <div class="mb-16 p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center" data-aos="fade-up">
         <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 text-brandGreen rounded-full mb-4">
           <i class="fas fa-shield-alt text-xl"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">100% Transparency</h3>
-        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Paws Hopes Society is a registered NGO (since 2022). Every rupee donated goes directly toward feeding, medical treatment, and shelter for street animals. We have rescued 237 animals and facilitated 800+ adoptions. We operate with minimal overhead to ensure your donation has maximum impact.</p>
+        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Paws Hopes Society is a registered NGO (since 2022). Every rupee donated goes directly toward feeding, medical treatment, and shelter for street animals. We operate with minimal overhead to ensure your donation has maximum impact.</p>
       </div>
 
-      <!-- Interactive FAQ -->
       <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center" data-aos="fade-up">Donation FAQ</h2>
       
       <div class="space-y-4" data-aos="fade-up" data-aos-delay="100">
-        <!-- FAQ Item 1 -->
         <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
             <span class="font-bold text-slate-900 dark:text-white pr-4">How do I know my money is being used correctly?</span>
             <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
           </button>
           <div class="faq-answer px-6 bg-white dark:bg-slate-950">
-            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">We share regular updates, rescue stories, and shelter operations on our Instagram (@PawsHopesSociety) and YouTube channels. You are also welcome to visit our shelter in Lucknow to see our work firsthand.</p>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pt-2">We share regular updates, rescue stories, and shelter operations on our Instagram (@PawsHopesSociety) and YouTube channels. You are also welcome to visit our shelter in Lucknow to see our work firsthand.</p>
           </div>
         </div>
 
-        <!-- FAQ Item 2 -->
         <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
             <span class="font-bold text-slate-900 dark:text-white pr-4">Do I get tax exemption (80G) for my donation?</span>
             <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
           </button>
           <div class="faq-answer px-6 bg-white dark:bg-slate-950">
-            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Currently, we do not offer 80G tax exemptions. We rely on the pure compassion of individuals who wish to directly impact the lives of suffering animals without expecting tax benefits in return.</p>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pt-2">Currently, we do not offer 80G tax exemptions. We rely on the pure compassion of individuals who wish to directly impact the lives of suffering animals without expecting tax benefits in return.</p>
           </div>
         </div>
 
-        <!-- FAQ Item 3 -->
         <div class="faq-item bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brandOrange" aria-expanded="false" onclick="toggleFaq(this)">
             <span class="font-bold text-slate-900 dark:text-white pr-4">Can I donate items instead of money?</span>
             <i class="fas fa-chevron-down text-slate-400 faq-icon"></i>
           </button>
           <div class="faq-answer px-6 bg-white dark:bg-slate-950">
-            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Yes! We always need dog/cat food, blankets, newspapers, cleaning supplies, and basic medical supplies. Please contact us at +91 93132 93693 to coordinate an in-kind donation drop-off.</p>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pt-2">Yes! Please use our Amazon Wishlist above to purchase supplies, or contact us at +91 93132 93693 to coordinate an in-kind donation drop-off.</p>
           </div>
         </div>
       </div>
@@ -401,16 +407,14 @@
   <!-- Footer -->
   <footer class="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-800 relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-
       <div class="space-y-4">
         <div class="flex items-center gap-3">
-          <img src="assets/images/logo.png" alt="Paws Hopes Society" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
+          <img src="assets/images/logo.png" alt="Paws Hopes Society Logo" width="40" height="40" class="h-10 w-10 rounded-full border border-brandOrange">
           <span class="text-xl font-bold text-white">Paws Hopes Society</span>
         </div>
         <p class="text-xs italic text-brandOrange">"Let Them Know... Someone Cares."</p>
         <p class="text-sm leading-relaxed">A registered Indian animal welfare NGO in Lucknow, rescuing injured street animals and providing medical care, shelter, and adoption since 2020.</p>
       </div>
-
       <div>
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Quick Navigation</h3>
         <ul class="space-y-2.5 text-sm">
@@ -423,57 +427,43 @@
           <li><a href="contact.html" class="hover:text-brandOrange transition-colors">Contact Us</a></li>
         </ul>
       </div>
-
       <div>
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Rescue Helpline</h3>
         <ul class="space-y-3 text-sm">
-          <li class="flex items-start gap-3">
-            <i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i>
-            <span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span>
-          </li>
-          <li class="flex items-center gap-3">
-            <i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i>
-            <a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> /
-            <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
-          </li>
-          <li class="flex items-center gap-3 flex-wrap">
-            <i class="fab fa-whatsapp text-green-500" aria-hidden="true"></i>
-            <a href="https://wa.me/919313293693" target="_blank" rel="noopener noreferrer" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> /
-            <a href="https://wa.me/917307070741" target="_blank" rel="noopener noreferrer" class="hover:text-brandOrange transition-colors">+91 73070 70741</a>
-          </li>
+          <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt text-brandOrange mt-1" aria-hidden="true"></i><span>NH-24, Sitapur Rd, Bakshi Ka Talab, Lucknow, Uttar Pradesh 226202</span></li>
+          <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-brandOrange" aria-hidden="true"></i><a href="tel:+919313293693" class="hover:text-brandOrange transition-colors">+91 93132 93693</a> / <a href="tel:+917307070741" class="hover:text-brandOrange transition-colors">+91 73070 70741</a></li>
         </ul>
       </div>
-
       <div>
         <h3 class="text-white font-bold text-base mb-4 border-b border-slate-800 pb-2">Follow Our Work</h3>
         <p class="text-sm mb-4">Stay updated with rescue updates and adoption appeals on social media.</p>
         <div class="flex gap-3">
-          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on Instagram">
-            <i class="fab fa-instagram" aria-hidden="true"></i>
-          </a>
-          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors" aria-label="Paws Hopes Society on YouTube">
-            <i class="fab fa-youtube" aria-hidden="true"></i>
-          </a>
+          <a href="https://instagram.com/PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-instagram"></i></a>
+          <a href="https://youtube.com/@PawsHopesSociety" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-brandOrange text-white flex items-center justify-center transition-colors"><i class="fab fa-youtube"></i></a>
         </div>
       </div>
-
     </div>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-3">
       <p>&copy; 2026 Paws Hopes Society. All Rights Reserved. Registered Animal Welfare Organization.</p>
-      <p>Designed with compassion for voiceless animals.</p>
     </div>
-    
-    <!-- Updated Live Visitor Counter Base -->
     <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
       <i class="fas fa-eye" aria-hidden="true"></i>
-      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">206,485</span></span>
+      <span>Visitors: <span id="visitor-count" class="font-semibold text-slate-300">110,520</span></span>
     </div>
   </footer>
 
   <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-brandOrange text-white rounded-full shadow-2xl hidden items-center justify-center hover:bg-orange-700 transition-all z-50 focus:outline-none" aria-label="Back to top">
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
+
+  <!-- Google Translate Scripts RESTORED -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+      new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,hi,bn,te,mr,ta,gu,ur,kn,ml,pa', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element_mobile');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script src="assets/js/script.js"></script>
@@ -483,7 +473,7 @@
     function copyUPI() {
       const upiText = document.getElementById("upi-id");
       upiText.select();
-      upiText.setSelectionRange(0, 99999); // For mobile devices
+      upiText.setSelectionRange(0, 99999); 
       navigator.clipboard.writeText(upiText.value).then(() => {
         showToast();
       });
@@ -501,13 +491,11 @@
       const item = button.parentElement;
       const isExpanded = button.getAttribute("aria-expanded") === "true";
       
-      // Close all other FAQs
       document.querySelectorAll('.faq-item').forEach(faq => {
         faq.classList.remove('active');
         faq.querySelector('button').setAttribute('aria-expanded', 'false');
       });
 
-      // Toggle current FAQ
       if (!isExpanded) {
         item.classList.add('active');
         button.setAttribute("aria-expanded", "true");
