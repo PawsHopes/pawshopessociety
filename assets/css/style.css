@@ -41,6 +41,41 @@ img, video, iframe {
   transition: width 0.1s ease-out;
 }
 
+/* Preloader Overlay (Only Paws, No Text) */
+#page-preloader {
+  position: fixed;
+  inset: 0;
+  background: #0f172a;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+#page-preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+.paw-loader {
+  display: flex;
+  gap: 16px;
+  font-size: 2.5rem;
+  color: #ea580c;
+}
+.paw-loader i {
+  animation: pawPulse 1.2s infinite ease-in-out;
+}
+.paw-loader i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.paw-loader i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes pawPulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 1; color: #15803d; }
+}
+
 /* Photo placeholder styling */
 .photo-placeholder {
   background: #e2e8f0;

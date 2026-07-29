@@ -2,6 +2,42 @@
    Paws Hopes Society — Global Main Script
    ========================================================================== */
 
+// 0. Instant Preloader Injector (Paws Only, No Text)
+(function() {
+  if (!document.getElementById('page-preloader')) {
+    const preloader = document.createElement('div');
+    preloader.id = 'page-preloader';
+    preloader.innerHTML = `
+      <div class="paw-loader">
+        <i class="fas fa-paw"></i>
+        <i class="fas fa-paw"></i>
+        <i class="fas fa-paw"></i>
+      </div>
+    `;
+    document.body.prepend(preloader);
+  }
+})();
+
+window.addEventListener('load', () => {
+  const preloader = document.getElementById('page-preloader');
+  if (preloader) {
+    setTimeout(() => {
+      preloader.classList.add('fade-out');
+    }, 300);
+  }
+});
+
+// Trigger preloader on internal navigation links
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a');
+  if (link && link.href && link.href.startsWith(window.location.origin) && !link.href.includes('#') && !link.getAttribute('target')) {
+    const preloader = document.getElementById('page-preloader');
+    if (preloader) {
+      preloader.classList.remove('fade-out');
+    }
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Mobile Menu Toggle
@@ -72,34 +108,62 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 4. Live Visitor Counter (No commas, starting from 110520)
+  // 4. Live Visitor Counter (Starting from 110,520)
   const visitorCountEl = document.getElementById('visitor-count');
   if (visitorCountEl) {
     let baseCount = 110520;
     try {
-      let storedCount = localStorage.getItem('phs_visitor_count');
-      let hasVisitedSession = sessionStorage.getItem('phs_session_counted');
-
-      if (!storedCount) {
-        storedCount = baseCount;
-        localStorage.setItem('phs_visitor_count', storedCount);
+      let currentCount = localStorage.getItem('phs_visitor_count');
+      
+      if (!currentCount || parseInt(currentCount, 10) < baseCount) {
+        currentCount = baseCount;
       } else {
-        storedCount = parseInt(storedCount, 10);
+        currentCount = parseInt(currentCount, 10);
       }
 
-      if (!hasVisitedSession) {
-        storedCount += 1;
-        localStorage.setItem('phs_visitor_count', storedCount);
-        sessionStorage.setItem('phs_session_counted', 'true');
+      if (!sessionStorage.getItem('phs_counted_session')) {
+        currentCount += 1;
+        localStorage.setItem('phs_visitor_count', currentCount);
+        sessionStorage.setItem('phs_counted_session', 'true');
       }
 
-      visitorCountEl.textContent = storedCount;
+      visitorCountEl.textContent = currentCount.toLocaleString('en-IN');
     } catch (e) {
-      visitorCountEl.textContent = "110520";
+      visitorCountEl.textContent = "110,520";
     }
   }
 
-  // 5. Initialize AOS Animation Library
+  // 5. Number Counting Calculation Effect for Stats
+  const statNumbers = document.querySelectorAll('.stat-counter');
+  if (statNumbers.length > 0) {
+    const observer = new IntersectionObserver((entries, observerInstance) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.getAttribute('data-target'), 10);
+          const suffix = el.getAttribute('data-suffix') || '';
+          let current = 0;
+          const duration = 1200; // ms
+          const stepTime = Math.abs(Math.floor(duration / target));
+          
+          const timer = setInterval(() => {
+            current += Math.ceil(target / 30);
+            if (current >= target) {
+              current = target;
+              clearInterval(timer);
+            }
+            el.textContent = current + suffix;
+          }, 40);
+
+          observerInstance.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    statNumbers.forEach(num => observer.observe(num));
+  }
+
+  // 6. Initialize AOS Animation Library
   if (typeof AOS !== 'undefined') {
     AOS.init({
       duration: 800,
