@@ -155,3 +155,18 @@ body {
 .faq-icon { transition: transform 0.3s ease; }
 #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 100; left: 50%; bottom: 30px; font-size: 14px; opacity: 0; transition: opacity 0.5s, bottom 0.5s, visibility 0.5s; }
 #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+/* ==========================================================================
+   Mobile Performance & Rendering Optimizations
+   ========================================================================== */
+
+/* Force GPU acceleration on animations and modals for smoother mobile rendering */
+.modal-content, #page-preloader, header {
+  will-change: transform, opacity;
+}
+
+/* Ensure text rendering is optimized for mobile screens */
+body {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+}
