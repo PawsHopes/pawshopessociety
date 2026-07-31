@@ -2,7 +2,6 @@
    Paws Hopes Society — Global Main Script
    ========================================================================== */
 
-// 0. Instant Preloader Injector (Paws Only, No Text)
 (function() {
   if (!document.getElementById('page-preloader')) {
     const preloader = document.createElement('div');
@@ -103,16 +102,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Live Visitor Counter (Starting from 110,520)
+  // Live Visitor Counter (Permanent & Robust Solution - Never Stucks)
   const visitorCountEl = document.getElementById('visitor-count');
   if (visitorCountEl) {
-    let baseCount = 110520;
+    const baseCount = 110520;
     try {
-      let currentCount = localStorage.getItem('phs_visitor_count');
-      if (!currentCount || parseInt(currentCount, 10) < baseCount) {
+      let currentCount = parseInt(localStorage.getItem('phs_visitor_count'), 10);
+      if (isNaN(currentCount) || currentCount < baseCount) {
         currentCount = baseCount;
-      } else {
-        currentCount = parseInt(currentCount, 10);
       }
 
       if (!sessionStorage.getItem('phs_counted_session')) {
@@ -123,11 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       visitorCountEl.textContent = currentCount.toLocaleString('en-IN');
     } catch (e) {
-      visitorCountEl.textContent = "110,520";
+      visitorCountEl.textContent = (baseCount + 1).toLocaleString('en-IN');
     }
   }
 
-  // Number Counting Calculation Effect for Stats
   const statNumbers = document.querySelectorAll('.stat-counter');
   if (statNumbers.length > 0) {
     const observer = new IntersectionObserver((entries, observerInstance) => {

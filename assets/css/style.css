@@ -37,7 +37,7 @@ img, video, iframe {
   transition: width 0.1s ease-out;
 }
 
-/* Preloader Overlay (Only Paws, No Text) */
+/* Preloader Overlay (Indian Tricolor Paws) */
 #page-preloader {
   position: fixed;
   inset: 0;
@@ -56,20 +56,32 @@ img, video, iframe {
   display: flex;
   gap: 16px;
   font-size: 2.5rem;
-  color: #ea580c;
 }
-.paw-loader i {
-  animation: pawPulse 1.2s infinite ease-in-out;
+.paw-loader i:nth-child(1) {
+  color: #ff9933; /* Saffron */
+  animation: pawPulseSaffron 1.2s infinite ease-in-out;
 }
 .paw-loader i:nth-child(2) {
+  color: #ffffff; /* White */
+  animation: pawPulseWhite 1.2s infinite ease-in-out;
   animation-delay: 0.2s;
 }
 .paw-loader i:nth-child(3) {
+  color: #138808; /* India Green */
+  animation: pawPulseGreen 1.2s infinite ease-in-out;
   animation-delay: 0.4s;
 }
-@keyframes pawPulse {
+@keyframes pawPulseSaffron {
   0%, 100% { transform: scale(0.8); opacity: 0.3; }
-  50% { transform: scale(1.2); opacity: 1; color: #15803d; }
+  50% { transform: scale(1.2); opacity: 1; color: #ff9933; }
+}
+@keyframes pawPulseWhite {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 1; color: #ffffff; }
+}
+@keyframes pawPulseGreen {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 1; color: #138808; }
 }
 
 /* Google Translate Custom Styling */
@@ -159,13 +171,9 @@ body {
 /* ==========================================================================
    Mobile Performance & Rendering Optimizations
    ========================================================================== */
-
-/* Force GPU acceleration on animations and modals for smoother mobile rendering */
 .modal-content, #page-preloader, header {
   will-change: transform, opacity;
 }
-
-/* Ensure text rendering is optimized for mobile screens */
 body {
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
