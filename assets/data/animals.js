@@ -12,13 +12,13 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 4 years",
     health: "Strict requirement: Air-conditioned (AC) environment is a must.",
     images: [
-      "assets/images/adoption/kaaley.jpg",
-      "assets/images/adoption/1000001485.jpg",
-      "assets/images/adoption/235835.jpg",
-      "assets/images/adoption/235856.jpg",
-      "assets/images/adoption/1000001484.jpg",
-      "assets/images/adoption/1000001487.jpg",
-      "assets/images/adoption/1000001488.jpg"
+      "assets/images/adoption/kaaley.webp",
+      "assets/images/adoption/1000001485.webp",
+      "assets/images/adoption/235835.webp",
+      "assets/images/adoption/235856.webp",
+      "assets/images/adoption/1000001484.webp",
+      "assets/images/adoption/1000001487.webp",
+      "assets/images/adoption/1000001488.webp"
     ],
     description: "A powerful, very active pure-breed Himalayan Bhutia. Best suited as a guard dog for an experienced handler with space to move around. Being a cold-climate breed, air conditioning at home is a must — not looking for a lap-dog role."
   },
@@ -31,11 +31,11 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 2 years",
     health: "Sterilized.",
     images: [
-      "assets/images/adoption/kaali.jpg",
-      "assets/images/adoption/1000001471.jpg",
-      "assets/images/adoption/1000001473.jpg",
-      "assets/images/adoption/219333.jpg",
-      "assets/images/adoption/235844.jpg"
+      "assets/images/adoption/kaali.webp",
+      "assets/images/adoption/1000001471.webp",
+      "assets/images/adoption/1000001473.webp",
+      "assets/images/adoption/219333.webp",
+      "assets/images/adoption/235844.webp"
     ],
     description: "Sterilized and full of energy. Very playful and friendly by nature — not a guarding type, just looking for a loving family to play with."
   },
@@ -48,13 +48,13 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3 months",
     health: "Safe, healthy, and ready for a loving home.",
     images: [
-      "assets/images/adoption/kaptaan.jpg",
-      "assets/images/adoption/1000001452.jpg",
-      "assets/images/adoption/1000001455.jpg",
-      "assets/images/adoption/1000001456.jpg",
-      "assets/images/adoption/1000001450.jpg",
-      "assets/images/adoption/1000001457.jpg",
-      "assets/images/adoption/1000001458.jpg"
+      "assets/images/adoption/kaptaan.webp",
+      "assets/images/adoption/1000001452.webp",
+      "assets/images/adoption/1000001455.webp",
+      "assets/images/adoption/1000001456.webp",
+      "assets/images/adoption/1000001450.webp",
+      "assets/images/adoption/1000001457.webp",
+      "assets/images/adoption/1000001458.webp"
     ],
     description: "Rescued from a location where he was at risk of serious harm. Despite that rough start, Kaptaan is calm and friendly by nature."
   },
@@ -67,12 +67,12 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 5 months",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/chuski.jpg",
-      "assets/images/adoption/1000001447.jpg",
-      "assets/images/adoption/1000001448.jpg",
-      "assets/images/adoption/1000001445.jpg",
-      "assets/images/adoption/1000001446.jpg",
-      "assets/images/adoption/1000001444.jpg"
+      "assets/images/adoption/chuski.webp",
+      "assets/images/adoption/1000001447.webp",
+      "assets/images/adoption/1000001448.webp",
+      "assets/images/adoption/1000001445.webp",
+      "assets/images/adoption/1000001446.webp",
+      "assets/images/adoption/1000001444.webp"
     ],
     description: "Fully vaccinated and dewormed. Heavy-boned build with a protective nature — an alert, loyal companion in the making."
   },
@@ -85,9 +85,9 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 5 months",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/bhishum.jpg",
-      "assets/images/adoption/1000001434.jpg",
-      "assets/images/adoption/1000001432.jpg"
+      "assets/images/adoption/bhishum.webp",
+      "assets/images/adoption/1000001434.webp",
+      "assets/images/adoption/1000001432.webp"
     ],
     description: "Fully vaccinated and dewormed. Protective by nature and very playful — loves toys and company."
   },
@@ -100,10 +100,10 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3 months",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/paaro.jpeg",
-      "assets/images/adoption/1000001420.jpg",
-      "assets/images/adoption/1000001421.jpg",
-      "assets/images/adoption/1000001412.jpg"
+      "assets/images/adoption/paaro.webp",
+      "assets/images/adoption/1000001420.webp",
+      "assets/images/adoption/1000001421.webp",
+      "assets/images/adoption/1000001412.webp"
     ],
     description: "Fully vaccinated and dewormed. Very calm and friendly — our special child, born with 20 nails instead of the usual number, but that's never slowed her down."
   },
@@ -116,12 +116,12 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 1 year",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/sundari.jpg",
-      "assets/images/adoption/214692.jpg",
-      "assets/images/adoption/206647.jpg",
-      "assets/images/adoption/214688.jpg",
-      "assets/images/adoption/214691.jpg",
-      "assets/images/adoption/214690.jpg"
+      "assets/images/adoption/sundari.webp",
+      "assets/images/adoption/214692.webp",
+      "assets/images/adoption/206647.webp",
+      "assets/images/adoption/214688.webp",
+      "assets/images/adoption/214691.webp",
+      "assets/images/adoption/214690.webp"
     ],
     description: "Fully vaccinated and dewormed. Very friendly and playful, with a beautiful light coat."
   },
@@ -134,13 +134,13 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 2 months",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/chhutki.jpg",
-      "assets/images/adoption/1000001390.jpg",
-      "assets/images/adoption/1000001391.jpg",
-      "assets/images/adoption/1000001395.jpg",
-      "assets/images/adoption/1000001385.jpg",
-      "assets/images/adoption/1000001380.jpg",
-      "assets/images/adoption/1000001382.jpg"
+      "assets/images/adoption/chhutki.webp",
+      "assets/images/adoption/1000001390.webp",
+      "assets/images/adoption/1000001391.webp",
+      "assets/images/adoption/1000001395.webp",
+      "assets/images/adoption/1000001385.webp",
+      "assets/images/adoption/1000001380.webp",
+      "assets/images/adoption/1000001382.webp"
     ],
     description: "A tiny pup, fully vaccinated and dewormed, already full of curiosity and energy."
   },
@@ -153,9 +153,9 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 2 months",
     health: "Fully vaccinated and dewormed.",
     images: [
-      "assets/images/adoption/chikni.jpg",
-      "assets/images/adoption/1000001397.jpg",
-      "assets/images/adoption/1000001396.jpg"
+      "assets/images/adoption/chikni.webp",
+      "assets/images/adoption/1000001397.webp",
+      "assets/images/adoption/1000001396.webp"
     ],
     description: "Fully vaccinated and dewormed. A playful young pup looking for her forever family."
   },
@@ -168,7 +168,7 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 10 months",
     health: "Fully vaccinated (DAPPL4, Rabies, Canine Coronavirus) and dewormed.",
     images: [
-      "assets/images/adoption/rocky.jpg",
+      "assets/images/adoption/rocky.webp",
     ],
     description: "Fully vaccinated and dewormed per veterinary records. A handsome white-coated boy ready for a home."
   },
@@ -181,7 +181,7 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3.5 months",
     health: "Healthy and ready for adoption.",
     images: [
-      "assets/images/adoption/bagheera.jpg"
+      "assets/images/adoption/bagheera.webp"
     ],
     description: "A curious tabby kitten, litter-mate to Pucchki, looking for a warm home to call his own."
   },
@@ -194,7 +194,7 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3.5 months",
     health: "Healthy and ready for adoption.",
     images: [
-      "assets/images/adoption/pucchki.jpg"
+      "assets/images/adoption/pucchki.webp"
     ],
     description: "A playful tabby kitten, litter-mate to Bagheera. Loves exploring every nook and cranny."
   },
@@ -207,10 +207,10 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3.5 months",
     health: "Healthy and ready for adoption.",
     images: [
-      "assets/images/adoption/mrgrey.jpg",
-      "assets/images/adoption/1000001249.jpg",
-      "assets/images/adoption/1000001246.jpg",
-      "assets/images/adoption/1000001237.jpg"
+      "assets/images/adoption/mrgrey.webp",
+      "assets/images/adoption/1000001249.webp",
+      "assets/images/adoption/1000001246.webp",
+      "assets/images/adoption/1000001237.webp"
     ],
     description: "A handsome grey tabby kitten with striking eyes, ready to bring some quiet companionship into a new home."
   },
@@ -223,7 +223,7 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3.5 months",
     health: "Healthy and ready for adoption.",
     images: [
-      "assets/images/adoption/panther.jpg"
+      "assets/images/adoption/panther.webp"
     ],
     description: "A sleek black kitten with a calm, watchful nature, looking for her forever family."
   },
@@ -236,7 +236,7 @@ window.AVAILABLE_FOR_ADOPTION = [
     age: "Approx. 3.5 months",
     health: "Healthy and ready for adoption.",
     images: [
-      "assets/images/adoption/259470.jpg"
+      "assets/images/adoption/259470.webp"
     ],
     description: "A beautiful little girl featuring a stunning dark coat with unique lighter markings on her face and paw. She is looking for a loving forever home."
   }
