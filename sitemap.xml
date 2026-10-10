@@ -1,51 +1,28 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://pawshopessociety.org/index.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>https://pawshopessociety.pages.dev/</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/about.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://pawshopessociety.pages.dev/about.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/rescue.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://pawshopessociety.pages.dev/adopt.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/gallery.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://pawshopessociety.pages.dev/donate.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/adopt.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://pawshopessociety.pages.dev/rescue.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/volunteer.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://pawshopessociety.pages.dev/volunteer.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/donate.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.95</priority>
+    <loc>https://pawshopessociety.pages.dev/gallery.html</loc>
   </url>
   <url>
-    <loc>https://pawshopessociety.org/contact.html</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://pawshopessociety.pages.dev/contact.html</loc>
   </url>
 </urlset>
