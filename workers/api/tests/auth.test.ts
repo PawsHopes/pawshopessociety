@@ -4,8 +4,8 @@ import { verifyCloudflareAccessJwt } from '../src/middleware/cfAccessAuth';
 function encode(value: unknown): string {
   return btoa(JSON.stringify(value))
     .replace(/=/g, '')
-    .replace(/\\+/g, '-')
-    .replace(/\\//g, '_');
+    .replaceAll('+', '-')
+    .replaceAll('/', '_');
 }
 
 describe('Cloudflare Access JWT validation', () => {
