@@ -1,0 +1,5 @@
+[allowlist]
+description = "Exact known non-secret test placeholder detected in the historical foundation test commit; no production credential is present."
+fingerprints = [
+  "9e531c1082a5fa41474b51f2762b05bfb6851d5b:workers/api/tests/foundation.test.ts:generic-api-key:21"
+]
