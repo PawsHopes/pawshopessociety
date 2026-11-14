@@ -91,7 +91,7 @@ export async function verifyCloudflareAccessJwt(
     throw new Error('Invalid token audience');
   }
 
-  if (!payload.email || payload.email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.email)) {
+  if (!payload.email || payload.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
     throw new Error('Token missing a valid email claim');
   }
 
