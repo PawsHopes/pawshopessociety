@@ -135,7 +135,7 @@ export async function verifySignedDocumentToken(
     throw new Error('Malformed document access token.');
   }
   const [documentId, userId, expStr, providedSig] = parts as [string, string, string, string];
-  if (!/^[A-Za-z0-9_-]{1,128}$/.test(documentId) || !/^[A-Za-z0-9_-]{1,128}$/.test(userId) || !/^\\d{1,12}$/.test(expStr) || !/^[a-f0-9]{64}$/.test(providedSig)) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(documentId) || !/^[A-Za-z0-9_-]{1,128}$/.test(userId) || !/^\d{1,12}$/.test(expStr) || !/^[a-f0-9]{64}$/.test(providedSig)) {
     throw new Error('Malformed document access token.');
   }
   const exp = Number(expStr);
