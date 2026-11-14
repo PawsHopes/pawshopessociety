@@ -164,7 +164,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   if (!parsed.success) {
     return page(
       'Please check your details',
-      '<p>Please provide a valid name and email address, then submit the form again.</p><p><a href="/api/v1/public/join/${encodeURIComponent(token)}">Return to the application form</a></p>',
+      `<p>Please provide a valid name and email address, then submit the form again.</p><p><a href="/api/v1/public/join/${encodeURIComponent(token)}">Return to the application form</a></p>`,
       400
     );
   }
