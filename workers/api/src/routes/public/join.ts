@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
 
@@ -27,7 +28,7 @@ function escapeHtml(value: string): string {
       '"': '&quot;',
       "'": '&#39;',
     };
-    return map[character];
+    return map[character] ?? character;
   });
 }
 
@@ -58,7 +59,9 @@ ${content}
   );
 }
 
-async function findActiveLink(c: any, token: string) {
+type JoinContext = Context<{ Bindings: Bindings; Variables: AppVariables }>;
+
+async function findActiveLink(c: JoinContext, token: string) {
   if (!/^[A-Za-z0-9_-]{40,80}$/.test(token)) return null;
 
   const tokenHash = await hashJoinToken(token);
