@@ -49,6 +49,14 @@ describe('Phase 3 Foundation — Security & Storage Unit Tests', () => {
     expect(valid.ext).toBe('pdf');
   });
 
+
+  it('rejects weak document signing secrets and token lifetimes over five minutes', async () => {
+    await expect(createSignedDocumentToken('doc-123', 'user-456', 'too-short', 300))
+      .rejects.toThrow(/at least 32 bytes/);
+    await expect(createSignedDocumentToken('doc-123', 'user-456', 'super-strong-test-secret-key-0123456789', 301))
+      .rejects.toThrow(/between 1 and 300 seconds/);
+  });
+
   it('signs and verifies short-lived private document tokens and blocks tampering', async () => {
     const secret = 'super-strong-test-secret-key-0123456789';
     const { token } = await createSignedDocumentToken('doc-123', 'user-456', secret, 300);

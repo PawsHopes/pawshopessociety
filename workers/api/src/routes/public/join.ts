@@ -110,7 +110,7 @@ publicJoinRoutes.get('/:token', async (c) => {
   <p><label>Email address<br><input name="email" type="email" required maxlength="180" autocomplete="email"></label></p>
   <p><label>Phone (optional)<br><input name="phone" maxlength="25" autocomplete="tel"></label></p>
   <p><label>Why would you like to join? (optional)<br><textarea name="message" maxlength="1000" rows="4"></textarea></label></p>
-  <div aria-hidden="true" style="position:absolute;left:-10000px"><label>Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+  <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
   <p><button type="submit">Submit application</button></p>
 </form>
 <p>Only an authorised Super Admin can approve applications and assign ERP access.</p>`
@@ -164,7 +164,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   if (!parsed.success) {
     return page(
       'Please check your details',
-      '<p>Please provide a valid name and email address, then submit the form again.</p><p><a href="javascript:history.back()">Go back</a></p>',
+      '<p>Please provide a valid name and email address, then submit the form again.</p><p><a href="/api/v1/public/join/${encodeURIComponent(token)}">Return to the application form</a></p>',
       400
     );
   }

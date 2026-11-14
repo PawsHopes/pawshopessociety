@@ -80,7 +80,14 @@ export function validateUploadFile(
   return { mime: detected, ext: EXT_MAP[detected] };
 }
 
+function assertSigningSecret(secret: string): void {
+  if (typeof secret !== 'string' || new TextEncoder().encode(secret).byteLength < 32) {
+    throw new Error('Document signing secret must contain at least 32 bytes.');
+  }
+}
+
 async function hmacSignHex(secret: string, message: string): Promise<string> {
+  assertSigningSecret(secret);
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
@@ -100,6 +107,12 @@ export async function createSignedDocumentToken(
   secret: string,
   ttlSeconds = 300
 ): Promise<{ token: string; expiresAt: string }> {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(documentId) || !/^[A-Za-z0-9_-]{1,128}$/.test(userId)) {
+    throw new Error('Invalid document or user identifier.');
+  }
+  if (!Number.isSafeInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 300) {
+    throw new Error('Document access token lifetime must be between 1 and 300 seconds.');
+  }
   const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
   const payload = `${documentId}.${userId}.${exp}`;
   const sig = await hmacSignHex(secret, payload);
@@ -113,13 +126,20 @@ export async function verifySignedDocumentToken(
   token: string,
   secret: string
 ): Promise<{ documentId: string; userId: string }> {
+  assertSigningSecret(secret);
+  if (typeof token !== 'string' || token.length > 512) {
+    throw new Error('Malformed document access token.');
+  }
   const parts = token.split('.');
   if (parts.length !== 4) {
     throw new Error('Malformed document access token.');
   }
   const [documentId, userId, expStr, providedSig] = parts as [string, string, string, string];
-  const exp = parseInt(expStr, 10);
-  if (Number.isNaN(exp) || exp <= Math.floor(Date.now() / 1000)) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(documentId) || !/^[A-Za-z0-9_-]{1,128}$/.test(userId) || !/^\\d{1,12}$/.test(expStr) || !/^[a-f0-9]{64}$/.test(providedSig)) {
+    throw new Error('Malformed document access token.');
+  }
+  const exp = Number(expStr);
+  if (!Number.isSafeInteger(exp) || exp <= Math.floor(Date.now() / 1000) || exp > Math.floor(Date.now() / 1000) + 300) {
     throw new Error('Document access link has expired.');
   }
   const expectedSig = await hmacSignHex(secret, `${documentId}.${userId}.${expStr}`);

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { bodyLimit } from 'hono/body-limit';
 import type { Bindings, AppVariables } from './types/env';
 import { securityHeaders } from './middleware/securityHeaders';
 import { rateLimit } from './middleware/rateLimit';
@@ -17,6 +18,7 @@ import { adminAuditLogRoutes } from './routes/admin/auditLogs';
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
 app.use('*', securityHeaders);
+app.use('/api/*', bodyLimit({ maxSize: 11 * 1024 * 1024 }));
 
 app.use(
   '/api/*',

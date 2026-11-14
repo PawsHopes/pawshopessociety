@@ -16,7 +16,7 @@ export const securityHeaders = createMiddleware<{
   c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
   c.header(
     'Content-Security-Policy',
-    "default-src 'none'; frame-ancestors 'none'; base-uri 'none';"
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self';"
   );
   if (c.env.ENVIRONMENT !== 'development') {
     c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
