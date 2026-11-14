@@ -1,0 +1,77 @@
+name = "pawshopes-erp-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "development"
+PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev"
+ADMIN_ERP_ORIGIN = "https://erp-pawshopes.pages.dev"
+CF_ACCESS_TEAM_DOMAIN = "pawshopessociety.cloudflareaccess.com"
+PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org"
+
+# Bindings for local development / staging
+[[d1_databases]]
+binding = "DB"
+database_name = "pawshopes-erp-db-staging"
+database_id = "REPLACE_WITH_STAGING_D1_ID"
+migrations_dir = "../../database/migrations"
+
+[[r2_buckets]]
+binding = "PUBLIC_MEDIA"
+bucket_name = "pawshopes-public-media-staging"
+
+[[r2_buckets]]
+binding = "PRIVATE_VAULT"
+bucket_name = "pawshopes-private-vault-staging"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "REPLACE_WITH_STAGING_KV_ID"
+
+[triggers]
+crons = ["30 2 * * *"]
+
+[env.staging]
+name = "pawshopes-erp-api-staging"
+vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://erp-pawshopes.pages.dev", CF_ACCESS_TEAM_DOMAIN = "pawshopessociety.cloudflareaccess.com", PUBLIC_MEDIA_BASE_URL = "https://media-staging.pawshopessociety.org" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "pawshopes-erp-db-staging"
+database_id = "REPLACE_WITH_STAGING_D1_ID"
+migrations_dir = "../../database/migrations"
+
+[[env.staging.r2_buckets]]
+binding = "PUBLIC_MEDIA"
+bucket_name = "pawshopes-public-media-staging"
+
+[[env.staging.r2_buckets]]
+binding = "PRIVATE_VAULT"
+bucket_name = "pawshopes-private-vault-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "REPLACE_WITH_STAGING_KV_ID"
+
+[env.production]
+name = "pawshopes-erp-api-production"
+vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://erp-pawshopes.pages.dev", CF_ACCESS_TEAM_DOMAIN = "pawshopessociety.cloudflareaccess.com", PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "pawshopes-erp-db-prod"
+database_id = "REPLACE_WITH_PROD_D1_ID"
+migrations_dir = "../../database/migrations"
+
+[[env.production.r2_buckets]]
+binding = "PUBLIC_MEDIA"
+bucket_name = "pawshopes-public-media-prod"
+
+[[env.production.r2_buckets]]
+binding = "PRIVATE_VAULT"
+bucket_name = "pawshopes-private-vault-prod"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "REPLACE_WITH_PROD_KV_ID"
