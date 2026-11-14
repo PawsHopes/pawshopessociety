@@ -8,10 +8,7 @@ import {
 
 describe('Phase 3 Foundation — Security & Storage Unit Tests', () => {
   it('rejects unauthenticated requests to /api/v1/admin/me with 401', async () => {
-    const res = await app.request(
-      'http://localhost/api/v1/admin/me',
-      { method: 'GET' },
-      {
+    const env = {
         ENVIRONMENT: 'production',
         PUBLIC_SITE_ORIGIN: 'https://pawshopessociety.pages.dev',
         ADMIN_ERP_ORIGIN: 'https://erp-pawshopes.pages.dev',
@@ -22,7 +19,15 @@ describe('Phase 3 Foundation — Security & Storage Unit Tests', () => {
         DB: {} as D1Database,
         PUBLIC_MEDIA: {} as R2Bucket,
         PRIVATE_VAULT: {} as R2Bucket,
-      }
+      };
+    const executionCtx = {
+      waitUntil: () => undefined,
+      passThroughOnException: () => undefined,
+    } as unknown as ExecutionContext;
+    const res = await app.fetch(
+      new Request('http://localhost/api/v1/admin/me', { method: 'GET' }),
+      env,
+      executionCtx
     );
     expect(res.status).toBe(401);
     const body = (await res.json()) as { success: boolean; error: { code: string } };
