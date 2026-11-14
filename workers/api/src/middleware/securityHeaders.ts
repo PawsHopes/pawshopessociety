@@ -19,6 +19,6 @@ export const securityHeaders = createMiddleware<{
     "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self';"
   );
   if (c.env.ENVIRONMENT !== 'development') {
-    c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    c.header('Strict-Transport-Security', 'max-age=31536000');
   }
 });
