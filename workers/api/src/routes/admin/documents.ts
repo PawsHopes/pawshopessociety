@@ -26,6 +26,22 @@ export const publicFileProxyRoutes = new Hono<{
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+interface UploadFile {
+  name: string;
+  size: number;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+function isUploadFile(value: unknown): value is UploadFile {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Partial<UploadFile>;
+  return (
+    typeof candidate.name === 'string' &&
+    typeof candidate.size === 'number' &&
+    typeof candidate.arrayBuffer === 'function'
+  );
+}
+
 const CATEGORIES = new Set([
   'vet_bill', 'prescription', 'lab_report', 'vaccination_cert',
   'adoption_agreement', 'foster_agreement', 'applicant_id',
@@ -77,10 +93,10 @@ adminDocumentRoutes.post('/uploads/public-media', async (c) => {
   if (sizeError) return sizeError;
 
   const form = await c.req.formData().catch(() => null);
-  const file = form?.get('file');
+  const file: unknown = form?.get('file');
   const altText = String(form?.get('altText') || '').slice(0, 500);
 
-  if (!file || typeof file === 'string') {
+  if (!isUploadFile(file)) {
     return c.json({ success: false, error: { code: 'BAD_REQUEST', message: 'File is required.' } }, 400);
   }
   if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
@@ -137,7 +153,7 @@ adminDocumentRoutes.post('/uploads/private-doc', async (c) => {
   const title = String(form?.get('title') || '').trim().slice(0, 180);
   const expiryDate = form?.get('expiryDate') ? String(form.get('expiryDate')) : null;
 
-  if (!file || typeof file === 'string' || !title) {
+  if (!isUploadFile(file) || !title) {
     return c.json({ success: false, error: { code: 'BAD_REQUEST', message: 'File and title are required.' } }, 400);
   }
   if (!CATEGORIES.has(category)) {
