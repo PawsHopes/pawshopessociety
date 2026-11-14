@@ -80,7 +80,7 @@ adminDocumentRoutes.post('/uploads/public-media', async (c) => {
   const file = form?.get('file');
   const altText = String(form?.get('altText') || '').slice(0, 500);
 
-  if (!(file instanceof File)) {
+  if (!file || typeof file === 'string') {
     return c.json({ success: false, error: { code: 'BAD_REQUEST', message: 'File is required.' } }, 400);
   }
   if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
@@ -137,7 +137,7 @@ adminDocumentRoutes.post('/uploads/private-doc', async (c) => {
   const title = String(form?.get('title') || '').trim().slice(0, 180);
   const expiryDate = form?.get('expiryDate') ? String(form.get('expiryDate')) : null;
 
-  if (!(file instanceof File) || !title) {
+  if (!file || typeof file === 'string' || !title) {
     return c.json({ success: false, error: { code: 'BAD_REQUEST', message: 'File and title are required.' } }, 400);
   }
   if (!CATEGORIES.has(category)) {
