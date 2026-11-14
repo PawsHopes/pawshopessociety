@@ -16,7 +16,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import type { AuthUser } from '../lib/api';
+import type { AuthUser } from './lib/api';
 
 interface LayoutProps {
   user: AuthUser | null;
