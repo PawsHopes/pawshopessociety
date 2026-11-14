@@ -34,7 +34,7 @@ const ROLES = [
 export const JoinManagementPage: React.FC = () => {
   const [links, setLinks] = useState<JoinLink[]>([]);
   const [applications, setApplications] = useState<JoinApplication[]>([]);
-  const [label, setLabel] = useState('Paw\\'s Hopez Society — Join');
+  const [label, setLabel] = useState("Paw's Hopez Society — Join");
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [newLink, setNewLink] = useState('');
   const [roleByApplication, setRoleByApplication] = useState<Record<string, string>>({});
