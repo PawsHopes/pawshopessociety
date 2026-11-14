@@ -6,6 +6,7 @@ on:
       - erp-development
   pull_request:
     branches:
+      - main
       - erp-development
   workflow_dispatch:
 
