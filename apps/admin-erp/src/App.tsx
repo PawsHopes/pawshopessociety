@@ -91,7 +91,7 @@ export const App: React.FC = () => {
           <Route path="/users" element={<PermissionGate user={user} permission="users:manage"><UsersPage /></PermissionGate>} />
           <Route path="/join-requests" element={<PermissionGate user={user} permission="users:manage"><JoinManagementPage /></PermissionGate>} />
           <Route path="/audit-logs" element={<PermissionGate user={user} permission="audit:read"><AuditLogsPage /></PermissionGate>} />
-          <Route path="/roadmap/:moduleKey" element={<ModulePreviewPage />} />
+          <Route path="/roadmap/:moduleKey" element={<ModulePreviewPage user={user} />} />
         </Routes>
       </Layout>
     </BrowserRouter>
