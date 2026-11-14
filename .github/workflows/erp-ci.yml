@@ -1,0 +1,98 @@
+name: ERP CI
+
+on:
+  push:
+    branches:
+      - erp-development
+  pull_request:
+    branches:
+      - erp-development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Admin ERP build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        working-directory: apps/admin-erp
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Type-check and build admin ERP
+        working-directory: apps/admin-erp
+        run: npm run build
+
+  worker:
+    name: Worker API checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker dependencies
+        working-directory: workers/api
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Type-check Worker API
+        working-directory: workers/api
+        run: npm run typecheck
+
+      - name: Run Worker tests
+        working-directory: workers/api
+        run: npm test
+
+  database:
+    name: Database migration validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply all D1 migration SQL to a temporary SQLite database
+        run: |
+          python - <<'PY'
+          import sqlite3
+          from pathlib import Path
+
+          migration_dir = Path("database/migrations")
+          migrations = sorted(migration_dir.glob("*.sql"))
+          if not migrations:
+              raise SystemExit("No SQL migration files found.")
+
+          db = sqlite3.connect(":memory:")
+          db.execute("PRAGMA foreign_keys = ON")
+
+          for migration in migrations:
+              print(f"Validating {migration}")
+              try:
+                  db.executescript(migration.read_text(encoding="utf-8"))
+              except sqlite3.Error as exc:
+                  raise SystemExit(f"Migration failed: {migration}: {exc}") from exc
+
+          print(f"Successfully applied {len(migrations)} migration files to temporary SQLite.")
+          PY
