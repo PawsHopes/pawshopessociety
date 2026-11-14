@@ -205,7 +205,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const userId = crypto.randomUUID();
 
   try {
-    await c.env.DB.batch([
+    const results = await c.env.DB.batch([
       c.env.DB.prepare(`
         UPDATE join_applications
         SET status = 'approved', reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
@@ -214,9 +214,16 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
       `).bind(actor.id, userId, applicationId),
       c.env.DB.prepare(`
         INSERT INTO users (id, email, full_name, phone, role_id, status)
-        VALUES (?, ?, ?, ?, ?, 'active')
-      `).bind(userId, application.email, application.full_name, application.phone, role.id)
+        SELECT ?, ?, ?, ?, ?, 'active'
+        WHERE EXISTS (
+          SELECT 1 FROM join_applications
+          WHERE id = ? AND status = 'approved' AND created_user_id = ?
+        )
+      `).bind(userId, application.email, application.full_name, application.phone, role.id, applicationId, userId)
     ]);
+    if (!results[0]?.meta.changes || !results[1]?.meta.changes) {
+      return c.json({ success: false, error: { code: 'CONFLICT', message: 'The application has already been reviewed or could not be approved.' } }, 409);
+    }
   } catch {
     return c.json({ success: false, error: { code: 'CONFLICT', message: 'The application may already have been reviewed or the email may already exist.' } }, 409);
   }

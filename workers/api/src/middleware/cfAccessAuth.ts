@@ -6,7 +6,7 @@ interface JwkKey extends JsonWebKey {
   alg?: string;
 }
 
-let cachedKeys: { fetchedAt: number; keys: JwkKey[] } | null = null;
+const cachedKeys = new Map<string, { fetchedAt: number; keys: JwkKey[] }>();
 const JWKS_TTL_MS = 10 * 60 * 1000;
 
 function base64UrlToUint8Array(input: string): Uint8Array {
@@ -21,12 +21,16 @@ function base64UrlToUint8Array(input: string): Uint8Array {
 }
 
 async function getCloudflarePublicKeys(teamDomain: string): Promise<JwkKey[]> {
+  if (!/^[a-z0-9.-]+$/i.test(teamDomain)) {
+    throw new Error('Invalid Cloudflare Access team domain');
+  }
   const now = Date.now();
-  if (cachedKeys && now - cachedKeys.fetchedAt < JWKS_TTL_MS) {
-    return cachedKeys.keys;
+  const cached = cachedKeys.get(teamDomain);
+  if (cached && now - cached.fetchedAt < JWKS_TTL_MS) {
+    return cached.keys;
   }
   const url = `https://${teamDomain}/cdn-cgi/access/certs`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
   if (!res.ok) {
     throw new Error(`Failed to fetch Cloudflare Access JWKS (${res.status})`);
   }
@@ -34,7 +38,7 @@ async function getCloudflarePublicKeys(teamDomain: string): Promise<JwkKey[]> {
   if (!data.keys || !Array.isArray(data.keys)) {
     throw new Error('Invalid JWKS payload from Cloudflare Access');
   }
-  cachedKeys = { fetchedAt: now, keys: data.keys };
+  cachedKeys.set(teamDomain, { fetchedAt: now, keys: data.keys });
   return data.keys;
 }
 
@@ -43,8 +47,9 @@ export async function verifyCloudflareAccessJwt(
   teamDomain: string,
   expectedAud: string
 ): Promise<{ email: string }> {
+  if (token.length > 8192) throw new Error('JWT exceeds maximum permitted size');
   const parts = token.split('.');
-  if (parts.length !== 3) {
+  if (parts.length !== 3 || parts.some((part) => !/^[A-Za-z0-9_-]+$/.test(part))) {
     throw new Error('Malformed JWT structure');
   }
   const [headerB64, payloadB64, sigB64] = parts as [string, string, string];
@@ -57,6 +62,8 @@ export async function verifyCloudflareAccessJwt(
     aud?: string | string[];
     iss?: string;
     exp?: number;
+    nbf?: number;
+    iat?: number;
   };
 
   if (header.alg !== 'RS256' || !header.kid) {
@@ -64,8 +71,14 @@ export async function verifyCloudflareAccessJwt(
   }
 
   const nowSec = Math.floor(Date.now() / 1000);
-  if (!payload.exp || payload.exp <= nowSec) {
+  if (!Number.isSafeInteger(payload.exp) || !payload.exp || payload.exp <= nowSec) {
     throw new Error('Cloudflare Access token expired');
+  }
+  if (payload.nbf !== undefined && (!Number.isSafeInteger(payload.nbf) || payload.nbf > nowSec + 60)) {
+    throw new Error('Cloudflare Access token is not yet valid');
+  }
+  if (payload.iat !== undefined && (!Number.isSafeInteger(payload.iat) || payload.iat > nowSec + 60)) {
+    throw new Error('Cloudflare Access token has an invalid issue time');
   }
 
   const expectedIss = `https://${teamDomain}`;
@@ -78,12 +91,12 @@ export async function verifyCloudflareAccessJwt(
     throw new Error('Invalid token audience');
   }
 
-  if (!payload.email) {
-    throw new Error('Token missing email claim');
+  if (!payload.email || payload.email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.email)) {
+    throw new Error('Token missing a valid email claim');
   }
 
   const keys = await getCloudflarePublicKeys(teamDomain);
-  const jwk = keys.find((k) => k.kid === header.kid);
+  const jwk = keys.find((k) => k.kid === header.kid && k.kty === 'RSA' && (!k.alg || k.alg === 'RS256') && (!k.use || k.use === 'sig'));
   if (!jwk) {
     throw new Error('Signing key not found in Cloudflare JWKS');
   }
@@ -144,13 +157,13 @@ export const cfAccessAuth = createMiddleware<{
     );
     c.set('authEmail', email);
     return next();
-  } catch (err) {
+  } catch {
     return c.json(
       {
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: err instanceof Error ? err.message : 'Invalid authentication token.',
+          message: 'Invalid or expired Cloudflare Access authentication token.',
         },
       },
       401

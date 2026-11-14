@@ -11,14 +11,16 @@ healthRoutes.get('/', async (c) => {
     dbStatus = 'error';
   }
 
-  return c.json({
-    success: true,
-    data: {
-      service: 'pawshopes-erp-api',
-      organization: "Paw's Hopez Society",
-      environment: c.env.ENVIRONMENT,
-      database: dbStatus,
-      timestamp: new Date().toISOString(),
+  c.header('Cache-Control', 'no-store');
+  return c.json(
+    {
+      success: dbStatus === 'ok',
+      data: {
+        service: 'pawshopes-erp-api',
+        database: dbStatus,
+        timestamp: new Date().toISOString(),
+      },
     },
-  });
+    dbStatus === 'ok' ? 200 : 503
+  );
 });

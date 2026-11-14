@@ -2,11 +2,14 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
+import { rateLimit } from '../../middleware/rateLimit';
 
 export const publicJoinRoutes = new Hono<{
   Bindings: Bindings;
   Variables: AppVariables;
 }>();
+
+publicJoinRoutes.use('/:token', rateLimit({ bucket: 'public-join-form', maxRequests: 8, windowSeconds: 600 }));
 
 export async function hashJoinToken(token: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -126,7 +129,26 @@ publicJoinRoutes.post('/:token', async (c) => {
     );
   }
 
-  const body = await c.req.parseBody();
+  const contentType = c.req.header('Content-Type') || '';
+  if (!contentType.toLowerCase().startsWith('application/x-www-form-urlencoded')) {
+    return page('Invalid form submission', '<p>Please submit the application using the provided form.</p>', 415);
+  }
+  const contentLength = Number(c.req.header('Content-Length') || '0');
+  if (Number.isFinite(contentLength) && contentLength > 16 * 1024) {
+    return page('Form is too large', '<p>Please shorten your application and try again.</p>', 413);
+  }
+  const rawBody = await c.req.text();
+  if (new TextEncoder().encode(rawBody).byteLength > 16 * 1024) {
+    return page('Form is too large', '<p>Please shorten your application and try again.</p>', 413);
+  }
+  const params = new URLSearchParams(rawBody);
+  const body: Record<string, string> = {
+    website: params.get('website') || '',
+    fullName: params.get('fullName') || '',
+    email: params.get('email') || '',
+    phone: params.get('phone') || '',
+    message: params.get('message') || '',
+  };
   const honeypot = typeof body.website === 'string' ? body.website.trim() : '';
   if (honeypot) {
     return page('Application received', '<p>Thank you. If your application is valid, it will be reviewed by an administrator.</p>');

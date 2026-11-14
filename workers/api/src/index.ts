@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Bindings, AppVariables } from './types/env';
 import { securityHeaders } from './middleware/securityHeaders';
+import { rateLimit } from './middleware/rateLimit';
 import { cfAccessAuth } from './middleware/cfAccessAuth';
 import { loadRbacUser } from './middleware/rbac';
 import { healthRoutes } from './routes/health';
@@ -30,6 +31,7 @@ app.use(
     },
     allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'Cf-Access-Jwt-Assertion', 'X-Dev-User-Email'],
+    credentials: true,
     maxAge: 86400,
   })
 );
@@ -37,6 +39,7 @@ app.use(
 // Public endpoints
 app.route('/api/v1/health', healthRoutes);
 app.route('/api/v1/public/animals', publicAnimalsRoutes);
+app.use('/api/v1/public/join/*', rateLimit({ bucket: 'public-join', maxRequests: 8, windowSeconds: 600 }));
 app.route('/api/v1/public/join', publicJoinRoutes);
 app.route('/api/v1/files', publicFileProxyRoutes);
 
