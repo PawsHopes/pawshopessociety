@@ -89,7 +89,7 @@ publicJoinRoutes.get('/:token', async (c) => {
   if (!link) {
     return page(
       'Invitation link unavailable',
-      '<p>This join link is invalid, expired or has been revoked. Please contact Paw\\'s Hopez Society for a current link.</p>',
+      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopez Society for a current link.</p>',
       404
     );
   }
@@ -97,7 +97,7 @@ publicJoinRoutes.get('/:token', async (c) => {
   const action = `/api/v1/public/join/${encodeURIComponent(token)}`;
 
   return page(
-    'Apply to join Paw\\'s Hopez Society',
+    'Apply to join Paws Hopez Society',
     `<p>Submit your details below. Your application will remain pending until a Society administrator verifies and approves it. Submitting this form does not create an ERP account or grant access.</p>
 <form method="post" action="${action}">
   <p><label>Full name<br><input name="fullName" required minlength="2" maxlength="120" autocomplete="name"></label></p>
@@ -118,7 +118,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   if (!link) {
     return page(
       'Invitation link unavailable',
-      '<p>This join link is invalid, expired or has been revoked. Please contact Paw\\'s Hopez Society.</p>',
+      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopez Society.</p>',
       404
     );
   }
@@ -190,6 +190,6 @@ publicJoinRoutes.post('/:token', async (c) => {
 
   return page(
     'Application submitted',
-    '<p>Thank you for your interest in Paw\\'s Hopez Society. Your application has been submitted and is pending administrator verification.</p><p>You will receive further instructions from the Society after review. This submission does not grant ERP access.</p>'
+    '<p>Thank you for your interest in Paws Hopez Society. Your application has been submitted and is pending administrator verification.</p><p>You will receive further instructions from the Society after review. This submission does not grant ERP access.</p>'
   );
 });
