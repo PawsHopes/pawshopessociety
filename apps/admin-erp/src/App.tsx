@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { apiFetch, type AuthUser } from './lib/api';
-import { Layout } from './components/Layout';
+import { Layout } from './Layout';
 import { FoundationDashboard } from './pages/FoundationDashboard';
 import { UsersPage } from './pages/UsersPage';
 import { JoinManagementPage } from './pages/JoinManagementPage';
