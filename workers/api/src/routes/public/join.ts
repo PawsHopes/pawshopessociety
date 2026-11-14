@@ -149,9 +149,10 @@ publicJoinRoutes.post('/:token', async (c) => {
     phone: params.get('phone') || '',
     message: params.get('message') || '',
   };
+  const receivedMessage = '<p>Thank you for your interest in Paws Hopez Society. If your application can be accepted, it will be reviewed by an authorised administrator. This submission does not grant ERP access.</p>';
   const honeypot = typeof body.website === 'string' ? body.website.trim() : '';
   if (honeypot) {
-    return page('Application received', '<p>Thank you. If your application is valid, it will be reviewed by an administrator.</p>');
+    return page('Application received', receivedMessage);
   }
 
   const parsed = applicationSchema.safeParse({
@@ -175,10 +176,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   ).bind(email).first();
 
   if (existingUser) {
-    return page(
-      'Application not submitted',
-      '<p>This email is already associated with an ERP account or previous registration. Please contact the Society administrator for assistance.</p>'
-    );
+    return page('Application received', receivedMessage);
   }
 
   const duplicate = await c.env.DB.prepare(`
@@ -187,10 +185,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   `).bind(email).first();
 
   if (duplicate) {
-    return page(
-      'Application already pending',
-      '<p>An application using this email is already awaiting administrator review. Please do not submit it again.</p>'
-    );
+    return page('Application received', receivedMessage);
   }
 
   try {
@@ -207,14 +202,8 @@ publicJoinRoutes.post('/:token', async (c) => {
       parsed.data.message || null
     ).run();
   } catch {
-    return page(
-      'Application already pending',
-      '<p>An application using this email may already be awaiting review. If you need help, contact the Society administrator.</p>'
-    );
+    return page('Application received', receivedMessage);
   }
 
-  return page(
-    'Application submitted',
-    '<p>Thank you for your interest in Paws Hopez Society. Your application has been submitted and is pending administrator verification.</p><p>You will receive further instructions from the Society after review. This submission does not grant ERP access.</p>'
-  );
+  return page('Application received', receivedMessage);
 });
