@@ -19,7 +19,7 @@ import {
 import type { AuthUser } from './lib/api';
 
 interface LayoutProps {
-  user: AuthUser | null;
+  user: AuthUser;
   children: React.ReactNode;
 }
 
@@ -40,7 +40,7 @@ const NAV_ITEMS = [
 
 export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const visibleNav = NAV_ITEMS.filter((item) => !user || user.permissions.includes(item.perm));
+  const visibleNav = NAV_ITEMS.filter((item) => user.permissions.includes(item.perm));
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#fdfbf7]">
