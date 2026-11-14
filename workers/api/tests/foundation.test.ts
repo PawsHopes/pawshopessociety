@@ -15,7 +15,7 @@ describe('Phase 3 Foundation — Security & Storage Unit Tests', () => {
         CF_ACCESS_TEAM_DOMAIN: 'pawshopessociety.cloudflareaccess.com',
         CF_ACCESS_AUD: 'test-aud',
         PUBLIC_MEDIA_BASE_URL: 'https://media.pawshopessociety.org',
-        SIGNED_URL_SECRET: 'test-secret-1234567890',
+        SIGNED_URL_SECRET: 'TEST_ONLY_PLACEHOLDER_NOT_A_SECRET',
         DB: {} as D1Database,
         PUBLIC_MEDIA: {} as R2Bucket,
         PRIVATE_VAULT: {} as R2Bucket,
