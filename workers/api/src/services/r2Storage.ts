@@ -144,8 +144,6 @@ export async function verifySignedDocumentToken(
   if (!/^[a-f0-9]{64}$/i.test(providedSig)) {
     throw new Error('Malformed document access token signature.');
   }
-    throw new Error('Malformed document access token.');
-  }
   const exp = Number(expStr);
   if (!Number.isSafeInteger(exp) || exp <= Math.floor(Date.now() / 1000) || exp > Math.floor(Date.now() / 1000) + 300) {
     throw new Error('Document access link has expired.');
