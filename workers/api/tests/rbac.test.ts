@@ -49,26 +49,30 @@ describe('API-side RBAC enforcement', () => {
 });
 
 
-describe('equal Super Admin permissions', () => {
+describe('primary administrator permission boundary', () => {
   const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
 
-  it('grants the same full permissions to both designated Super Admin accounts', () => {
-    const infosec = effectivePermissions('super_admin', 'infosecayush@gmail.com', all);
-    const yivam = effectivePermissions('super_admin', 'yivam24770@jcaton.com', all);
-    expect(infosec).toEqual(all);
-    expect(yivam).toEqual(all);
-    expect(infosec).toEqual(yivam);
-  });
-
-  it('keeps full permissions for the existing Society primary Super Admin', () => {
+  it('grants the complete permission set only to the Society primary administrator', () => {
     expect(effectivePermissions('super_admin', 'hopezpaws@gmail.com', all)).toEqual(all);
   });
 
-  it('keeps unlisted Super Admin accounts read-only', () => {
-    const permissions = effectivePermissions('super_admin', 'unlisted@example.org', all);
-    expect(permissions).toContain('animals:read');
-    expect(permissions).not.toContain('animals:write');
-    expect(permissions).not.toContain('users:manage');
+  it('keeps every secondary Super Admin read-only, including known tester accounts', () => {
+    for (const email of ['infosecayush@gmail.com', 'yivam24770@jcaton.com', 'unlisted@example.org']) {
+      const permissions = effectivePermissions('super_admin', email, all);
+      expect(permissions.every((code) => code.endsWith(':read') || code === 'dashboard:read')).toBe(true);
+      expect(permissions).not.toContain('animals:write');
+      expect(permissions).not.toContain('animals:publish');
+      expect(permissions).not.toContain('finance:approve');
+      expect(permissions).not.toContain('finance:ledger');
+      expect(permissions).not.toContain('donations:verify');
+      expect(permissions).not.toContain('inventory:approve');
+      expect(permissions).not.toContain('adoption:approve');
+      expect(permissions).not.toContain('cms:publish');
+      expect(permissions).not.toContain('rescue:write');
+      expect(permissions).not.toContain('volunteers:write');
+      expect(permissions).not.toContain('users:manage');
+      expect(permissions).not.toContain('documents:private_read');
+    }
   });
 
   it('does not elevate non-admin roles based on email', () => {
