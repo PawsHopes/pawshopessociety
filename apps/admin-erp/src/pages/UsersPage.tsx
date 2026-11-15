@@ -209,7 +209,7 @@ export const UsersPage: React.FC = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                  <button onClick={() => updateUser(u)} disabled={!canManageRoles} title={!canManageRoles ? "Only the designated primary administrator can modify user accounts." : undefined} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
+                  <button onClick={() => updateUser(u)} disabled={!canManageRoles || u.email.toLowerCase() === "hopezpaws@gmail.com"} title={u.email.toLowerCase() === "hopezpaws@gmail.com" ? "Protected primary administrator account." : (!canManageRoles ? "Only a designated Super Admin can modify user accounts." : undefined)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
                   <button
                     onClick={() => toggleStatus(u)}
                     disabled={!canManageRoles || u.email.toLowerCase() === 'hopezpaws@gmail.com'}
