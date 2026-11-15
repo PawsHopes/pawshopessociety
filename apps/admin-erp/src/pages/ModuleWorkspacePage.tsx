@@ -63,7 +63,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'donations', label: 'Donation Register', permission: 'donations:read', writePermission: 'donations:write', fields: [
       text('donor_id','Donor ID',true), text('fund_category_id','Fund category ID',true), text('account_id','Receiving account ID',true), date('donation_date','Donation date',true),
-      num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
+      num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
     ]},
     { key: 'expenses', label: 'Expense Claims', permission: 'finance:read', writePermission: 'expenses:submit', fields: [
       text('expense_code','Expense code',true), date('expense_date','Expense date',true), choice('category','Category',['animal_food','vet_consultation','medicines','vaccination','sterilization','transportation','rescue_operations','shelter_maintenance','utilities','equipment','administrative','other'],true),
@@ -213,6 +213,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   if (resource?.key === 'expenses') columns.push('approval_status','payment_status');
   if (resource?.key === 'stock_movements') columns.push('approval_status');
   if (resource?.key === 'adoption_applications' || resource?.key === 'foster_applications') columns.push('status');
+
+  if (resource && !columns.includes('id')) columns.unshift('id');
 
   return <div className="space-y-6">
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
