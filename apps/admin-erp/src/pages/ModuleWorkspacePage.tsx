@@ -19,7 +19,7 @@ const RESOURCES: Record<string, Resource[]> = {
     text('rescue_location','Rescue location'), text('microchip_or_tag','Microchip / tag'), text('kennel_zone','Kennel / zone'), text('legacy_slug','Legacy slug'), text('estimated_dob','Estimated date of birth'), text('identification_marks','Identification marks'), text('rescue_source','Rescue source'), relation('rescue_case_id','Rescue case','rescue_cases'), date('sterilization_date','Sterilization date'), text('caretaker_user_id','Caretaker user ID'), area('adopted_note','Adoption note'),
     choice('vaccination_status','Vaccination',['not_vaccinated','partial','up_to_date','pending']), choice('sterilization_status','Sterilization',['not_sterilized','scheduled','sterilized','not_applicable']),
     choice('current_status','Lifecycle status',['rescued','under_assessment','under_treatment','recovering','available_for_adoption','fostered','adopted','released','deceased']),
-    choice('is_adoption_eligible','Adoption eligible',['0','1']), choice('is_foster_eligible','Foster eligible',['0','1']), choice('is_published_public','Publish publicly',['0','1']),
+    choice('is_adoption_eligible','Adoption eligible',['0','1']), choice('is_foster_eligible','Foster eligible',['0','1']),
     area('health_summary','Health summary'), area('public_description','Public description'), area('internal_notes','Internal notes')
   ]}],
   rescue: [{ key: 'rescue_cases', label: 'Rescue Cases', permission: 'rescue:read', writePermission: 'rescue:write', fields: [
@@ -180,7 +180,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       'purchase_orders', 'compliance_registrations'
     ].includes(resource.key) && user.permissions.includes('documents:private_read'))
   );
-  const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
+  const canWorkflow = !!resource && ((resource.key === 'animals' && user.permissions.includes('animals:publish')) || (resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
     if (!resource) return;
@@ -358,6 +358,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const actionsForRow = (row: Record<string,unknown>) => {
     if (!resource) return [] as string[];
     const status = String(row.status || row.approval_status || row.verification_status || '');
+    if (resource.key === 'animals' && user.permissions.includes('animals:publish')) return ['publish'];
     if (resource.key === 'donations' && status === 'pending' && user.permissions.includes('donations:verify')) return ['verify'];
     if (resource.key === 'expenses' && status === 'pending' && user.permissions.includes('finance:approve')) return ['approve','reject'];
     if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && user.permissions.includes('finance:ledger')) return ['paid'];
@@ -374,10 +375,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (action === 'reject') {
       reason = window.prompt('Enter the reason for rejection:') || '';
       if (!reason.trim()) return;
-    } else if (!window.confirm(action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
-    const suffix = action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
-    const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : undefined });
-    setFeedback(result.success ? (action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? 'Record rejected.' : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
+    } else if (!window.confirm(action === 'publish' ? (row.is_published_public ? 'Remove this animal from the public website?' : 'Publish this animal on the public website?') : action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
+    const suffix = action === 'publish' ? '/animals/' + id + '/publish' : action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
+    const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : action === 'publish' ? JSON.stringify({ published: !Boolean(row.is_published_public) }) : undefined });
+    setFeedback(result.success ? (action === 'publish' ? (row.is_published_public ? 'Animal removed from the public website.' : 'Animal published on the public website.') : action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? 'Record rejected.' : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
     await load();
   };
 
@@ -388,6 +389,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     : resource?.key === 'accounts' ? ['code','name','account_type','current_balance_paise','is_active']
     : resource?.key === 'fund_categories' ? ['code','name','is_restricted','description']
     : resource?.fields.map((f) => f.key).slice(0, 7) || [];
+  if (resource?.key === 'animals') columns.push('is_published_public');
   if (resource?.key === 'donations') columns.push('verification_status');
   if (resource?.key === 'expenses') columns.push('approval_status','payment_status');
   if (resource?.key === 'stock_movements') columns.push('approval_status');
@@ -439,7 +441,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{total} matching record(s) · showing up to {pageSize} per page</p></div><input value={search} onChange={(e) => { setPage(0); setSearch(e.target.value); }} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow || canViewAttachments) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
-      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow || canViewAttachments ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow || canViewAttachments) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canViewAttachments && <button type="button" onClick={() => void showAttachments(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Files</button>}{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
+      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow || canViewAttachments ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow || canViewAttachments) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canViewAttachments && <button type="button" onClick={() => void showAttachments(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Files</button>}{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action === 'publish' ? (row.is_published_public ? 'Unpublish' : 'Publish') : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
       {total > pageSize && <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-slate-600">Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} of {total}</p>
         <div className="flex gap-2">
