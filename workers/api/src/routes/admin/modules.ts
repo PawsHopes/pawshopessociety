@@ -529,11 +529,15 @@ adminModuleRoutes.post('/animals/:id/publish', async (c) => {
     return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide published as true or false.' } }, 400);
   }
   const id = c.req.param('id');
-  const animal = await c.env.DB.prepare('SELECT id, is_published_public, is_adoption_eligible, current_status, deleted_at FROM animals WHERE id = ?')
-    .bind(id).first<{ id: string; is_published_public: number; is_adoption_eligible: number; current_status: string; deleted_at: string | null }>();
+  const animal = await c.env.DB.prepare('SELECT id, is_published_public, is_adoption_eligible, current_status, public_description, deleted_at FROM animals WHERE id = ?')
+    .bind(id).first<{ id: string; is_published_public: number; is_adoption_eligible: number; current_status: string; public_description: string | null; deleted_at: string | null }>();
   if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
-  if (body.published && (animal.deleted_at || !['available_for_adoption', 'adopted'].includes(animal.current_status) || (animal.current_status === 'available_for_adoption' && animal.is_adoption_eligible !== 1))) {
-    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Only active animals marked available for adoption or already adopted can appear on the public website.' } }, 409);
+  const adoptionReady = animal.current_status === 'adopted' ||
+    (animal.current_status === 'available_for_adoption' && animal.is_adoption_eligible === 1);
+  const rescueStoryReady = ['rescued', 'under_assessment', 'under_treatment', 'recovering'].includes(animal.current_status) &&
+    Boolean(animal.public_description?.trim());
+  if (body.published && (animal.deleted_at || (!adoptionReady && !rescueStoryReady))) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Publish only active adoption-ready animals or rescue/recovery stories with a public description. Fostered, released, and deceased records remain private.' } }, 409);
   }
   if (Boolean(animal.is_published_public) === body.published) {
     return c.json({ success: true, data: { id, is_published_public: body.published, unchanged: true } });
