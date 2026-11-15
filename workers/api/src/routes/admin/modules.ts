@@ -212,6 +212,29 @@ adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
     await c.env.DB.prepare("UPDATE website_content SET media_asset_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'draft'")
       .bind(mediaAssetId, recordId).run();
   }
+  if (documentId) {
+    const documentField: Record<string, string> = {
+      medical_records: 'attachment_doc_id',
+      vaccinations: 'certificate_doc_id',
+      adoption_applications: 'id_proof_doc_id',
+      foster_applications: 'id_proof_doc_id',
+      donations: 'proof_doc_id',
+      expenses: 'invoice_doc_id',
+      compliance_registrations: 'certificate_doc_id',
+      purchase_orders: 'invoice_doc_id'
+    };
+    const field = documentField[resource];
+    if (field) {
+      await c.env.DB.prepare(`UPDATE ${config.table} SET ${field} = ? WHERE id = ?`).bind(documentId, recordId).run();
+    } else if (resource === 'adoption_agreements') {
+      await c.env.DB.prepare(`
+        UPDATE adoption_agreements
+        SET signed_agreement_doc_id = COALESCE(signed_agreement_doc_id, ?),
+            handover_doc_id = CASE WHEN signed_agreement_doc_id IS NOT NULL THEN ? ELSE handover_doc_id END
+        WHERE id = ?
+      `).bind(documentId, documentId, recordId).run();
+    }
+  }
 
   await appendAuditLog(c, {
     action: 'ERP_ATTACHMENT_ADDED',
