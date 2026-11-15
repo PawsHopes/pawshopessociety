@@ -212,7 +212,8 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
         SET status = 'approved', reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
             created_user_id = ?
         WHERE id = ? AND status = 'pending'
-      `).bind(actor.id, userId, applicationId),
+          AND NOT EXISTS (SELECT 1 FROM users WHERE email = ?)
+      `).bind(actor.id, userId, applicationId, application.email),
       c.env.DB.prepare(`
         INSERT INTO users (id, email, full_name, phone, role_id, status)
         SELECT ?, ?, ?, ?, ?, 'active'
