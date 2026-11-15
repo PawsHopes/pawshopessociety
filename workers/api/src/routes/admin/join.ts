@@ -32,8 +32,10 @@ const rejectSchema = z.object({
   reason: z.string().trim().max(500).optional().default(''),
 });
 
-function requireSuperAdmin(c: any) {
-  return c.get('authUser')?.roleCode === 'super_admin';
+function isPrimaryAdmin(c: any) {
+  const actor = c.get('authUser');
+  const configuredEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  return Boolean(configuredEmail) && actor?.email?.toLowerCase() === configuredEmail;
 }
 
 function createRawToken(): string {
@@ -54,8 +56,8 @@ async function hashToken(token: string): Promise<string> {
 adminJoinRoutes.use('*', requirePermission('users:manage'));
 
 adminJoinRoutes.post('/links', async (c) => {
-  if (!requireSuperAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can create join links.' } }, 403);
+  if (!isPrimaryAdmin(c)) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create join links.' } }, 403);
   }
 
   const parsed = createLinkSchema.safeParse(await c.req.json().catch(() => null));
@@ -90,8 +92,8 @@ adminJoinRoutes.post('/links', async (c) => {
 });
 
 adminJoinRoutes.get('/links', async (c) => {
-  if (!requireSuperAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can view join links.' } }, 403);
+  if (!isPrimaryAdmin(c)) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can view join links.' } }, 403);
   }
 
   const result = await c.env.DB.prepare(`
@@ -108,8 +110,8 @@ adminJoinRoutes.get('/links', async (c) => {
 });
 
 adminJoinRoutes.post('/links/:id/revoke', async (c) => {
-  if (!requireSuperAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can revoke join links.' } }, 403);
+  if (!isPrimaryAdmin(c)) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can revoke join links.' } }, 403);
   }
 
   const id = c.req.param('id');
@@ -133,8 +135,8 @@ adminJoinRoutes.post('/links/:id/revoke', async (c) => {
 });
 
 adminJoinRoutes.get('/applications', async (c) => {
-  if (!requireSuperAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can review applications.' } }, 403);
+  if (!isPrimaryAdmin(c)) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can review applications.' } }, 403);
   }
 
   const status = c.req.query('status') || 'pending';
@@ -315,7 +317,7 @@ adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
   const actor = c.get('authUser');
   if (actor.roleCode !== 'super_admin') {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can reject applicants.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can reject applicants.' } }, 403);
   }
 
   const parsed = rejectSchema.safeParse(await c.req.json().catch(() => ({})));
