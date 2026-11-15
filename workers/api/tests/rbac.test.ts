@@ -50,7 +50,7 @@ describe('API-side RBAC enforcement', () => {
 
 
 describe('primary administrator privilege boundary', () => {
-  const all = ['dashboard:read', 'animals:read', 'animals:write', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
+  const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
 
   it('makes a secondary Super Admin read-only', () => {
     const permissions = effectivePermissions('super_admin', 'yivam24770@jcaton.com', all);
@@ -58,6 +58,7 @@ describe('primary administrator privilege boundary', () => {
     expect(permissions).toContain('dashboard:read');
     expect(permissions.every((code) => code.endsWith(':read') || code === 'dashboard:read')).toBe(true);
     expect(permissions).not.toContain('animals:write');
+    expect(permissions).not.toContain('animals:publish');
     expect(permissions).not.toContain('finance:approve');
     expect(permissions).not.toContain('finance:ledger');
     expect(permissions).not.toContain('donations:verify');
