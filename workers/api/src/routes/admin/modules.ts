@@ -300,7 +300,9 @@ adminModuleRoutes.post('/:resource/:id/reject', async (c) => {
   }
   if (resource === 'adoption_applications' || resource === 'foster_applications') {
     if (!actor.permissions.includes('adoption:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
-    const result = await c.env.DB.prepare(`UPDATE ${resource} SET status = 'rejected', rejection_reason = ?, reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status NOT IN ('approved','rejected','completed')`).bind(reason, actor.id, id).run();
+    const result = resource === 'adoption_applications'
+      ? await c.env.DB.prepare(`UPDATE adoption_applications SET status = 'rejected', rejection_reason = ?, reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status NOT IN ('approved','rejected','completed')`).bind(reason, actor.id, id).run()
+      : await c.env.DB.prepare(`UPDATE foster_applications SET status = 'rejected', notes = ?, reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status NOT IN ('approved','rejected','completed')`).bind(reason, actor.id, id).run();
     if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'NOT_FOUND_OR_CONFLICT', message: 'Application not found or already decided.' } }, 409);
     await appendAuditLog(c, { action: 'APPLICATION_REJECTED', entityType: resource, entityId: id, after: { status: 'rejected', reason } });
     return c.json({ success: true, data: { id, status: 'rejected' } });
