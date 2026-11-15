@@ -1,6 +1,15 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
+export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
+  // A secondary account assigned the Super Admin label is deliberately read-only.
+  // Only the fixed Society primary account receives the full Super Admin permission set.
+  if (roleCode === 'super_admin' && email.toLowerCase() !== 'hopezpaws@gmail.com') {
+    return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
+  }
+  return allPermissions;
+}
+
 export const loadRbacUser = createMiddleware<{
   Bindings: Bindings;
   Variables: AppVariables;
@@ -85,12 +94,7 @@ export const loadRbacUser = createMiddleware<{
     .all<{ code: string }>();
 
   const allPermissions = (permResult.results || []).map((r) => r.code);
-  // A secondary account assigned the Super Admin label is deliberately read-only.
-  // Only the fixed Society primary account receives the full Super Admin permission set.
-  const isPrimaryAdmin = userRow.email.toLowerCase() === 'hopezpaws@gmail.com';
-  const permissions = userRow.role_code === 'super_admin' && !isPrimaryAdmin
-    ? allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read')
-    : allPermissions;
+  const permissions = effectivePermissions(userRow.role_code, userRow.email, allPermissions);
 
   const authUser: AuthUser = {
     id: userRow.id,
