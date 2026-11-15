@@ -101,12 +101,9 @@ adminUsersRoutes.post(
     }
 
     const email = parsed.data.email.toLowerCase().trim();
-
-    if (parsed.data.roleCode === 'super_admin') {
-      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
-      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
-        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create another Super Admin.' } }, 403);
-      }
+    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+    if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create ERP users and assign their initial roles.' } }, 403);
     }
 
     const role = await c.env.DB.prepare(
@@ -199,6 +196,13 @@ adminUsersRoutes.patch(
       const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
       if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
         return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society account can change user roles.' } }, 403);
+      }
+    }
+
+    if (parsed.data.status !== undefined) {
+      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society administrator can suspend or reactivate users.' } }, 403);
       }
     }
 
