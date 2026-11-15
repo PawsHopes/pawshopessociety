@@ -204,10 +204,6 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         body: JSON.stringify(publicMedia ? { mediaAssetId: uploadedId, label: file.name } : { documentId: uploadedId, label: file.name })
       });
       if (!linked.success) throw new Error(linked.error?.message || `Could not attach ${file.name}`);
-      if (resource.key === 'website_content' && publicMedia) {
-        const cms = await apiFetch(`/api/v1/admin/modules/website_content/${recordId}`, { method: 'PATCH', body: JSON.stringify({ media_asset_id: uploadedId }) });
-        if (!cms.success) throw new Error(cms.error?.message || 'Image uploaded but could not be linked to the CMS draft.');
-      }
       setSelectedFiles((current) => current.filter((pending) => pending !== file));
     }
     await loadAttachments(recordId);
