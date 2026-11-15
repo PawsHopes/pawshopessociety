@@ -16,7 +16,6 @@ const ROLE_CODES = [
   'vet_staff',
   'rescue_coord',
   'adoption_coord',
-  'volunteer',
   'auditor',
 ] as const;
 
