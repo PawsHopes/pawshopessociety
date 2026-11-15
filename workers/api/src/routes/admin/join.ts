@@ -229,7 +229,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
         SELECT ?, 'VOL-' || strftime('%Y%m%d','now') || '-' || substr(hex(randomblob(4)),1,8),
           ?, ?, ?, '[]', date('now'), 'active'
         WHERE EXISTS (SELECT 1 FROM users WHERE id = ? AND role_id = ?)
-      `).bind(volunteerId, application.full_name, application.email, application.phone, userId, role.id));
+      `).bind(volunteerId, application.full_name, application.email, application.phone || '', userId, role.id));
     }
     const results = await c.env.DB.batch(statements);
     if (!results[0]?.meta.changes || !results[1]?.meta.changes || (volunteerId && !results[2]?.meta.changes)) {
