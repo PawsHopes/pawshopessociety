@@ -306,7 +306,12 @@
         const list = document.getElementById(listId);
         const empty = document.getElementById(emptyId);
         if (!list || !empty) return;
-        if (!data || data.length === 0) { empty.classList.remove('hidden'); return; }
+        if (!Array.isArray(data) || data.length === 0) {
+          list.replaceChildren();
+          empty.classList.remove('hidden');
+          return;
+        }
+        empty.classList.add('hidden');
         list.innerHTML = data.map((a) => buildCard(a, isAdopted)).join('');
       }
 
