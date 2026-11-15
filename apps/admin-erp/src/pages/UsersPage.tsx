@@ -210,8 +210,8 @@ export const UsersPage: React.FC = () => {
                   <button onClick={() => updateUser(u)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white">Save</button>
                   <button
                     onClick={() => toggleStatus(u)}
-                    disabled={u.email.toLowerCase() === 'hopezpaws@gmail.com'}
-                    title={u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected primary administrator account.' : undefined}
+                    disabled={!canManageRoles || u.email.toLowerCase() === 'hopezpaws@gmail.com'}
+                    title={u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected primary administrator account.' : (!canManageRoles ? 'Only the designated Society administrator can suspend or reactivate users.' : undefined)}
                     className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected' : (u.status === 'active' ? 'Suspend' : 'Activate')}
