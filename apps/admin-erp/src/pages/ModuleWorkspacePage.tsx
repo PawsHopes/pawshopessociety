@@ -156,6 +156,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [busy, setBusy] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachments, setAttachments] = useState<Record<string, unknown>[]>([]);
+  const [viewingAttachments, setViewingAttachments] = useState<{ id: string; label: string; items: Record<string, unknown>[] } | null>(null);
   const updateFieldsForResource = (key: string): string[] | null => {
     if (key === 'adoption_applications') return ['experience_notes','home_check_status','home_check_notes'];
     if (key === 'foster_applications') return ['foster_start_date','expected_end_date','actual_end_date','notes'];
@@ -163,6 +164,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   };
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
+  const canViewAttachments = !!resource && resource.fields.length > 0 && user.permissions.includes(resource.permission);
   const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
@@ -243,6 +245,15 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       setSelectedFiles((current) => current.filter((pending) => pending !== file));
     }
     await loadAttachments(recordId);
+  };
+  const showAttachments = async (row: Record<string, unknown>) => {
+    if (!resource) return;
+    const id = String(row.id || '');
+    const label = String(row.name || row.animal_code || row.case_code || row.application_code || row.full_name || row.applicant_name || row.sku || id);
+    setViewingAttachments({ id, label, items: [] });
+    const result = await apiFetch<{ items: Record<string, unknown>[] }>(`/api/v1/admin/modules/attachments/${resource.key}/${id}`);
+    if (result.success && result.data) setViewingAttachments({ id, label, items: result.data.items });
+    else setFeedback(result.error?.message || 'Unable to load attachments.');
   };
   const openPrivateAttachment = async (documentId: string) => {
     const result = await apiFetch<{ url: string }>(`/api/v1/admin/documents/${documentId}/signed-url`);
@@ -389,10 +400,20 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         <div className="flex items-end gap-2 md:col-span-2 xl:col-span-3"><button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
       </form>
     </section>}
+    {viewingAttachments && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div><h2 className="font-bold text-slate-900">Files: {viewingAttachments.label}</h2><p className="text-xs text-slate-500">{viewingAttachments.items.length} attachment(s)</p></div>
+        <button type="button" onClick={() => setViewingAttachments(null)} className="text-sm font-semibold text-slate-600 underline">Close</button>
+      </div>
+      {viewingAttachments.items.length === 0 ? <p className="mt-3 text-sm text-slate-500">No files attached to this record yet.</p> : <ul className="mt-3 space-y-2">{viewingAttachments.items.map((item) => <li key={String(item.id)} className="flex flex-wrap items-center gap-2 text-sm">
+        {item.public_url ? <a className="text-blue-700 underline" href={String(item.public_url)} target="_blank" rel="noreferrer">{String(item.media_file_name || item.label || 'Open image')}</a> : <button type="button" className="text-blue-700 underline" onClick={() => void openPrivateAttachment(String(item.document_id))}>{String(item.document_file_name || item.label || 'Open private document')}</button>}
+        <span className="text-xs text-slate-500">{String(item.doc_category || item.media_mime_type || item.document_mime_type || '')}</span>
+      </li>)}</ul>}
+    </section>}
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{rows.length} records loaded · maximum 100 per search</p></div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
-      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
-      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow || canViewAttachments) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
+      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow || canViewAttachments ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow || canViewAttachments) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canViewAttachments && <button type="button" onClick={() => void showAttachments(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Files</button>}{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
     </section>
     <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
   </div>;
