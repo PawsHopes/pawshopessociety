@@ -336,6 +336,23 @@
       wireFilterGroup('.filter-btn', 'filterSpecies', (v) => { currentSpecies = v; });
       wireFilterGroup('.gender-btn', 'filterGender', (v) => { currentGender = v; });
 
+      // Prefer the live ERP feed; keep the legacy cards visible if the feed is unavailable.
+      fetch('/api/animals', { headers: { Accept: 'application/json' }, credentials: 'omit' })
+        .then((response) => response.ok ? response.json() : null)
+        .then((payload) => {
+          const data = payload && payload.success && payload.data;
+          if (!data || !Array.isArray(data.available) || !Array.isArray(data.adopted)) return;
+          window.AVAILABLE_FOR_ADOPTION = data.available;
+          window.ADOPTED_ANIMALS = data.adopted;
+          render('adoptable-grid', 'adoptable-empty', window.AVAILABLE_FOR_ADOPTION, false);
+          render('adopted-grid', 'adopted-empty', window.ADOPTED_ANIMALS, true);
+          applyFilters();
+          if (typeof AOS !== 'undefined') AOS.refreshHard();
+        })
+        .catch(() => {
+          // Static adoption content remains as a resilient fallback.
+        });
+
       if (typeof AOS !== 'undefined') AOS.refreshHard();
     })();
 
