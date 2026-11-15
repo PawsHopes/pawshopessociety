@@ -442,6 +442,77 @@ adminModuleRoutes.post('/animals/:id/publish', async (c) => {
   return c.json({ success: true, data: { id, is_published_public: body.published } });
 });
 
+adminModuleRoutes.post('/cms/:id/publish', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('cms:publish')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'CMS publishing permission required.' } }, 403);
+  }
+  const body = await c.req.json().catch(() => null) as { published?: unknown } | null;
+  if (typeof body?.published !== 'boolean') {
+    return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide published as true or false.' } }, 400);
+  }
+  const id = c.req.param('id');
+  const existing = await c.env.DB.prepare(
+    'SELECT id, page_slug, section_key, status, version_number FROM website_content WHERE id = ?'
+  ).bind(id).first<{ id: string; page_slug: string; section_key: string; status: string; version_number: number }>();
+  if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'CMS content version not found.' } }, 404);
+
+  if (body.published) {
+    if (existing.status !== 'draft') {
+      return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only draft CMS versions can be published.' } }, 409);
+    }
+    const result = await c.env.DB.batch([
+      c.env.DB.prepare(`
+        UPDATE website_content
+        SET status = 'published', published_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+            updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id = ? AND status = 'draft'
+          AND version_number = (
+            SELECT MAX(version_number) FROM website_content
+            WHERE page_slug = ? AND section_key = ?
+          )
+      `).bind(actor.id, id, existing.page_slug, existing.section_key),
+      c.env.DB.prepare(`
+        UPDATE website_content
+        SET status = 'archived', updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE page_slug = ? AND section_key = ? AND status = 'published' AND id <> ?
+          AND EXISTS (SELECT 1 FROM website_content WHERE id = ? AND status = 'published')
+      `).bind(actor.id, existing.page_slug, existing.section_key, id, id)
+    ]);
+    if ((result[0]?.meta?.changes ?? 0) !== 1) {
+      return c.json({ success: false, error: { code: 'CONFLICT', message: 'A newer CMS version exists or this draft was already processed. Refresh and try again.' } }, 409);
+    }
+    await appendAuditLog(c, {
+      action: 'CMS_CONTENT_PUBLISHED',
+      entityType: 'website_content',
+      entityId: id,
+      before: { status: existing.status },
+      after: { status: 'published', pageSlug: existing.page_slug, sectionKey: existing.section_key, version: existing.version_number }
+    });
+    return c.json({ success: true, data: { id, status: 'published' } });
+  }
+
+  if (existing.status !== 'published') {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only published CMS content can be unpublished.' } }, 409);
+  }
+  const result = await c.env.DB.prepare(`
+    UPDATE website_content
+    SET status = 'archived', updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    WHERE id = ? AND status = 'published'
+  `).bind(actor.id, id).run();
+  if ((result.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'CMS content changed before it could be unpublished.' } }, 409);
+  }
+  await appendAuditLog(c, {
+    action: 'CMS_CONTENT_UNPUBLISHED',
+    entityType: 'website_content',
+    entityId: id,
+    before: { status: 'published' },
+    after: { status: 'archived', pageSlug: existing.page_slug, sectionKey: existing.section_key, version: existing.version_number }
+  });
+  return c.json({ success: true, data: { id, status: 'archived' } });
+});
+
 adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   const resource = c.req.param('resource');
   const id = c.req.param('id');
