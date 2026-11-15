@@ -183,6 +183,29 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const missing = (config.required || []).filter((key) => input[key] === undefined || input[key] === null || input[key] === '');
   if (missing.length) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: `Required fields missing: ${missing.join(', ')}` } }, 400);
 
+  if (resource === 'stock_movements') {
+    const movement = String(input.movement_type || '');
+    const quantity = Number(input.quantity_delta);
+    if (!Number.isFinite(quantity) || quantity === 0 ||
+      (['opening','purchase_in'].includes(movement) && quantity < 0) ||
+      (['issue_out','expired_writeoff'].includes(movement) && quantity > 0)) {
+      return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Use a positive quantity for opening/purchase-in and a negative quantity for issue/expiry write-off.' } }, 400);
+    }
+  }
+  if (resource === 'website_content' || resource === 'volunteers') {
+    const jsonField = resource === 'website_content' ? 'body_json' : 'skills_json';
+    const raw = input[jsonField];
+    if (raw !== undefined) {
+      try {
+        const parsedJson = JSON.parse(String(raw));
+        if (resource === 'volunteers' && !Array.isArray(parsedJson)) throw new Error('Skills must be a JSON array.');
+        if (resource === 'website_content' && (parsedJson === null || typeof parsedJson !== 'object')) throw new Error('Content must be a JSON object or array.');
+      } catch {
+        return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: resource === 'volunteers' ? 'Skills must be a valid JSON array.' : 'Content body must be valid JSON.' } }, 400);
+      }
+    }
+  }
+
   const values: Record<string, unknown> = { ...(config.defaults || {}), ...input, ...(config.serverFields?.(actor.id) || {}) };
   if (resource === 'donations') values.verification_status = 'pending';
   if (resource === 'expenses') values.approval_status = 'pending';
