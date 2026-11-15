@@ -346,14 +346,18 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const columns = ['id', ...Object.keys(values)];
   const placeholders = columns.map(() => '?').join(', ');
   const bindings = [id, ...Object.values(values)];
-  await c.env.DB.prepare(`INSERT INTO ${config.table} (${columns.join(', ')}) VALUES (${placeholders})`).bind(...bindings).run();
+  const statements = [
+    c.env.DB.prepare(`INSERT INTO ${config.table} (${columns.join(', ')}) VALUES (${placeholders})`).bind(...bindings)
+  ];
   if (resource === 'inventory_items' && Number(values.opening_stock || 0) > 0) {
-    await c.env.DB.prepare(`
+    statements.push(c.env.DB.prepare(`
       INSERT INTO stock_movements (
         id, item_id, movement_type, quantity_delta, approval_status, approved_by, notes, recorded_by
       ) VALUES (?, ?, 'opening', ?, 'approved', ?, 'Opening balance recorded during item creation', ?)
-    `).bind(crypto.randomUUID(), id, Number(values.opening_stock), actor.id, actor.id).run();
+    `).bind(crypto.randomUUID(), id, Number(values.opening_stock), actor.id, actor.id));
   }
+  // Item creation and its approved opening movement must commit or roll back together.
+  await c.env.DB.batch(statements);
   await appendAuditLog(c, { action: `${resource.toUpperCase()}_CREATED`, entityType: resource, entityId: id, after: values });
   return c.json({ success: true, data: { id, created: true } }, 201);
 });
