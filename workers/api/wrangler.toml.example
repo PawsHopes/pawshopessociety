@@ -36,7 +36,7 @@ crons = ["30 2 * * *"]
 
 [env.staging]
 name = "pawshopes-erp-api-staging"
-vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", PUBLIC_MEDIA_BASE_URL = "https://media-staging.pawshopessociety.org" }
+vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", STAGING_BOOTSTRAP_ADMIN_EMAIL = "hopezpaws@gmail.com", PUBLIC_MEDIA_BASE_URL = "https://media-staging.pawshopessociety.org" }
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -58,7 +58,7 @@ id = "1156cf04f6b9496dabc7d580457f0c53"
 
 [env.production]
 name = "pawshopes-erp-api-production"
-vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org" }
+vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "REPLACE_WITH_PRODUCTION_ADMIN_ORIGIN", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "REPLACE_WITH_PRODUCTION_ACCESS_AUD", PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org" }
 
 [[env.production.d1_databases]]
 binding = "DB"
