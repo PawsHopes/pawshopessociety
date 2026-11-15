@@ -10,10 +10,13 @@ interface PagesRequestContext {
   passThroughOnException: () => void;
 }
 
-// Keep the tested Worker API implementation as the single source of truth.
-// Pages Functions serves it on the Admin hostname so Access authentication and
-// API requests share the same origin and audience.
-export const onRequest = ({ request, env, waitUntil, passThroughOnException }: PagesRequestContext) => {
-  const executionContext = { waitUntil, passThroughOnException } as WorkerExecutionContext;
-  return apiWorker.fetch(request, env, executionContext);
+// Reuse the tested Hono Worker API on the Admin hostname. This keeps browser
+// requests same-origin so the existing Cloudflare Access session protects
+// admin pages and admin API calls with the same JWT audience.
+export const onRequest = (context: PagesRequestContext) => {
+  const executionContext = {
+    waitUntil: (promise: Promise<unknown>) => context.waitUntil(promise),
+    passThroughOnException: () => context.passThroughOnException(),
+  } as WorkerExecutionContext;
+  return apiWorker.fetch(context.request, context.env, executionContext);
 };
