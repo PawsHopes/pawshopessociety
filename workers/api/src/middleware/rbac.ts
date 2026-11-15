@@ -4,7 +4,7 @@ import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
 
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
-  // Full Super Admin privileges are limited to the explicitly designated Society accounts.
+  // Only the Society primary administrator receives full Super Admin privileges.
   if (roleCode === 'super_admin' && email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
