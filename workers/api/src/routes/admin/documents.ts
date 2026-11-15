@@ -78,6 +78,7 @@ function checkContentLength(c: any) {
 }
 
 adminDocumentRoutes.post('/uploads/public-media', async (c) => {
+  if (!c.env.PUBLIC_MEDIA) return c.json({ success: false, error: { code: 'STORAGE_UNAVAILABLE', message: 'Public media storage is not enabled in this staging environment yet.' } }, 503);
   const user = c.get('authUser');
   const allowed =
     user.roleCode === 'super_admin' ||
@@ -143,6 +144,7 @@ adminDocumentRoutes.post('/uploads/public-media', async (c) => {
 });
 
 adminDocumentRoutes.post('/uploads/private-doc', async (c) => {
+  if (!c.env.PRIVATE_VAULT) return c.json({ success: false, error: { code: 'STORAGE_UNAVAILABLE', message: 'Private document storage is not enabled in this staging environment yet.' } }, 503);
   const user = c.get('authUser');
   const sizeError = checkContentLength(c);
   if (sizeError) return sizeError;
@@ -243,6 +245,7 @@ adminDocumentRoutes.get(
 
 // Download requires a fresh Cloudflare Access identity and the same user who received the token.
 publicFileProxyRoutes.get('/private/:token', cfAccessAuth, loadRbacUser, async (c) => {
+  if (!c.env.PRIVATE_VAULT) return c.json({ success: false, error: { code: 'STORAGE_UNAVAILABLE', message: 'Private document storage is not enabled in this staging environment yet.' } }, 503);
   try {
     const token = c.req.param('token');
     const verified = await verifySignedDocumentToken(token, c.env.SIGNED_URL_SECRET);
