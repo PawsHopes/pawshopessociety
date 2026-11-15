@@ -21,6 +21,7 @@ interface RoleRow {
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [roles, setRoles] = useState<RoleRow[]>([]);
+  const [canManageRoles, setCanManageRoles] = useState(false);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -29,10 +30,11 @@ export const UsersPage: React.FC = () => {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const load = () => {
-    apiFetch<{ users: UserRow[]; roles: RoleRow[] }>('/api/v1/admin/users').then((res) => {
+    apiFetch<{ users: UserRow[]; roles: RoleRow[]; canManageRoles: boolean }>('/api/v1/admin/users').then((res) => {
       if (res.success && res.data) {
         setUsers(res.data.users);
         setRoles(res.data.roles);
+        setCanManageRoles(res.data.canManageRoles === true);
         setUserDrafts(Object.fromEntries(res.data.users.map((u) => [u.id, { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }])));
       }
     });
@@ -186,7 +188,7 @@ export const UsersPage: React.FC = () => {
                 <td className="p-4"><input value={userDrafts[u.id]?.phone ?? u.phone ?? ''} maxLength={25} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), phone: e.target.value } }))} className="w-36 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" /></td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-brandOrange">
-                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">{!roles.some((role) => role.code === u.roleCode) && (
+                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} disabled={!canManageRoles} title={!canManageRoles ? 'Only the designated Society administrator can change roles.' : undefined} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:bg-slate-100">{!roles.some((role) => role.code === u.roleCode) && (
                     <option value={u.roleCode}>{u.roleName}</option>
                   )}
                   {roles.map((role) => <option key={role.code} value={role.code}>{role.name}</option>)}</select> : u.roleName}
