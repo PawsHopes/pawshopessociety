@@ -443,6 +443,66 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
 });
 
 
+adminModuleRoutes.post('/foster_applications/:id/activate', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('adoption:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
+  }
+  const id = c.req.param('id');
+  const application = await c.env.DB.prepare(
+    'SELECT id, animal_id, status FROM foster_applications WHERE id = ?'
+  ).bind(id).first<{ id: string; animal_id: string; status: string }>();
+  if (!application) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Foster application not found.' } }, 404);
+  if (application.status !== 'approved') {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only approved foster applications can be activated.' } }, 409);
+  }
+  const result = await c.env.DB.prepare(
+    "UPDATE foster_applications SET status = 'active', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'approved'"
+  ).bind(actor.id, id).run();
+  if ((result.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Foster application changed before activation.' } }, 409);
+  }
+  await appendAuditLog(c, {
+    action: 'FOSTER_PLACEMENT_ACTIVATED',
+    entityType: 'foster_applications',
+    entityId: id,
+    after: { status: 'active', animalId: application.animal_id }
+  });
+  return c.json({ success: true, data: { id, status: 'active', animalId: application.animal_id } });
+});
+
+adminModuleRoutes.post('/foster_applications/:id/complete', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('adoption:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
+  }
+  const id = c.req.param('id');
+  const application = await c.env.DB.prepare(
+    'SELECT id, animal_id, status, actual_end_date FROM foster_applications WHERE id = ?'
+  ).bind(id).first<{ id: string; animal_id: string; status: string; actual_end_date: string | null }>();
+  if (!application) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Foster application not found.' } }, 404);
+  if (application.status !== 'active' || !application.actual_end_date) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Record the actual foster end date before completing the placement.' } }, 409);
+  }
+  const result = await c.env.DB.prepare(
+    "UPDATE foster_applications SET status = 'completed', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'active' AND actual_end_date IS NOT NULL"
+  ).bind(actor.id, id).run().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('actual end date')) return null;
+    throw error;
+  });
+  if (!result || (result.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Foster placement could not be completed. Verify the actual end date and current status.' } }, 409);
+  }
+  await appendAuditLog(c, {
+    action: 'FOSTER_PLACEMENT_COMPLETED',
+    entityType: 'foster_applications',
+    entityId: id,
+    after: { status: 'completed', actualEndDate: application.actual_end_date, animalId: application.animal_id }
+  });
+  return c.json({ success: true, data: { id, status: 'completed', animalId: application.animal_id } });
+});
+
 adminModuleRoutes.post('/animals/:id/publish', async (c) => {
   const actor = c.get('authUser');
   if (!actor.permissions.includes('animals:publish')) {
