@@ -35,8 +35,13 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     let active = true;
-    apiFetch<AuthUser>('/api/v1/admin/me')
-      .then((res) => {
+    const initializeSession = async () => {
+      try {
+        let res = await apiFetch<AuthUser>('/api/v1/admin/me');
+        if (!res.success && res.error?.code === 'FORBIDDEN' && res.error.message.toLowerCase().includes('not registered')) {
+          const bootstrap = await apiFetch('/api/v1/bootstrap/super-admin', { method: 'POST' });
+          if (bootstrap.success) res = await apiFetch<AuthUser>('/api/v1/admin/me');
+        }
         if (!active) return;
         if (res.success && res.data) {
           setUser(res.data);
@@ -45,12 +50,13 @@ export const App: React.FC = () => {
           setUser(null);
           setAuthStatus('unauthenticated');
         }
-      })
-      .catch(() => {
+      } catch {
         if (!active) return;
         setUser(null);
         setAuthStatus('unauthenticated');
-      });
+      }
+    };
+    void initializeSession();
     return () => {
       active = false;
     };
