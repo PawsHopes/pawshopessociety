@@ -259,17 +259,30 @@ adminModuleRoutes.get('/:resource', async (c) => {
   if (!actor.permissions.includes(config.read)) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You do not have permission to view this resource.' } }, 403);
 
   const limit = Math.min(Math.max(Number(c.req.query('limit') || 50) || 50, 1), 200);
+  const offset = Math.min(Math.max(Math.floor(Number(c.req.query('offset') || 0) || 0), 0), 1000000);
   const search = (c.req.query('q') || '').trim().slice(0, 100);
-  let sql = `SELECT * FROM ${config.table}`;
-  const params: unknown[] = [];
-  if (search && config.search.length) {
-    sql += ' WHERE (' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')';
-    for (let i = 0; i < config.search.length; i++) params.push(`%${search}%`);
+  const whereSql = search && config.search.length
+    ? ' WHERE (' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')'
+    : '';
+  const searchParams: unknown[] = [];
+  if (whereSql) {
+    for (let i = 0; i < config.search.length; i++) searchParams.push(`%${search}%`);
   }
-  sql += ` ORDER BY ${config.order} DESC LIMIT ?`;
-  params.push(limit);
-  const result = await c.env.DB.prepare(sql).bind(...params).all();
-  return c.json({ success: true, data: { items: result.results || [], resource, readOnly: !config.write || config.immutable === true } });
+  const totalResult = await c.env.DB.prepare(`SELECT COUNT(*) AS total FROM ${config.table}${whereSql}`)
+    .bind(...searchParams).first<{ total: number }>();
+  const sql = `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
+  const result = await c.env.DB.prepare(sql).bind(...searchParams, limit, offset).all();
+  return c.json({
+    success: true,
+    data: {
+      items: result.results || [],
+      total: Number(totalResult?.total || 0),
+      limit,
+      offset,
+      resource,
+      readOnly: !config.write || config.immutable === true
+    }
+  });
 });
 
 adminModuleRoutes.post('/:resource', async (c) => {
