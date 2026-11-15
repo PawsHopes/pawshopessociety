@@ -70,9 +70,11 @@
       const items = payload?.success && Array.isArray(payload?.data?.items) ? payload.data.items : [];
       const currentSlug = normalizeSlug(window.location.pathname);
       const pageItems = items.filter((item) => normalizeSlug(item.pageSlug) === currentSlug);
+      let titleApplied = false;
       for (const item of pageItems) {
-        if (item.seoTitle && !document.querySelector('meta[name="cms-seo-title"]')) {
+        if (item.seoTitle && !titleApplied) {
           document.title = String(item.seoTitle);
+          titleApplied = true;
         }
         if (item.seoDescription) {
           let meta = document.querySelector('meta[name="description"]');
