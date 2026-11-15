@@ -362,7 +362,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (resource.key === 'expenses' && status === 'pending' && user.permissions.includes('finance:approve')) return ['approve','reject'];
     if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && user.permissions.includes('finance:ledger')) return ['paid'];
     if (resource.key === 'stock_movements' && status === 'pending' && user.permissions.includes('inventory:approve')) return ['approve'];
-    if (['adoption_applications','foster_applications'].includes(resource.key) && !['approved','rejected','completed'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
+    if (resource.key === 'adoption_applications' && ['application','initial_review','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
+    if (resource.key === 'foster_applications' && ['application','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
     return [];
   };
 
