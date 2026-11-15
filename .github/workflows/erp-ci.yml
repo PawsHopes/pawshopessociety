@@ -102,6 +102,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Reject migration-based ERP user account changes
+        run: |
+          if grep -RniE 'INSERT[[:space:]]+INTO[[:space:]]+users|UPDATE[[:space:]]+users|DELETE[[:space:]]+FROM[[:space:]]+users' database/migrations; then
+            echo "::error::ERP users, roles, and account status must only be changed through the audited primary-admin API."
+            exit 1
+          fi
+
       - name: Apply all D1 migration SQL to a temporary SQLite database
         run: |
           python - <<'PY'
