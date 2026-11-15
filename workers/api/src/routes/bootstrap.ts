@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { Bindings, AppVariables } from '../../types/env';
+import type { Bindings, AppVariables } from '../types/env';
 
 export const bootstrapRoutes = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
