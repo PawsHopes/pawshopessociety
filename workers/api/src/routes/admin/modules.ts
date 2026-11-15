@@ -80,7 +80,7 @@ const RESOURCES: Record<string, ResourceConfig> = {
   expenses: {
     table: 'expenses', read: 'finance:read', write: 'expenses:submit',
     fields: ['expense_code','expense_date','category','fund_category_id','account_id','description','amount_paise','payment_mode','vendor_payee','animal_id','rescue_case_id','invoice_doc_id'],
-    required: ['expense_code','expense_date','category','fund_category_id','account_id','amount_paise','payment_mode'], search: ['expense_code','description','vendor_payee'], order: 'expense_date',
+    required: ['expense_code','expense_date','category','fund_category_id','account_id','description','amount_paise','payment_mode','vendor_payee'], search: ['expense_code','description','vendor_payee'], order: 'expense_date',
     defaults: { approval_status: 'pending', payment_status: 'unpaid' },
     serverFields: (actorId) => ({ submitted_by: actorId }),
     updateFields: [],
@@ -103,7 +103,7 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   inventory_items: {
     table: 'inventory_items', read: 'inventory:read', write: 'inventory:write',
-    fields: ['sku','name','category','unit','opening_stock','current_stock','min_stock_threshold','expiry_tracking_enabled','preferred_supplier_id'],
+    fields: ['sku','name','category','unit','min_stock_threshold','expiry_tracking_enabled','preferred_supplier_id'],
     required: ['sku','name','category','unit'], search: ['sku','name','category'], order: 'name',
     defaults: { opening_stock: 0, current_stock: 0, min_stock_threshold: 0, expiry_tracking_enabled: 0 },
   },
