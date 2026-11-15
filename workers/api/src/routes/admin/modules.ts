@@ -628,8 +628,9 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
 
   if (resource === 'stock_movements') {
     if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
-    const row = await c.env.DB.prepare('SELECT id, item_id, movement_type, quantity_delta, approval_status FROM stock_movements WHERE id = ?').bind(id).first<{id:string;item_id:string;movement_type:string;quantity_delta:number;approval_status:string}>();
+    const row = await c.env.DB.prepare('SELECT id, item_id, movement_type, quantity_delta, approval_status, recorded_by FROM stock_movements WHERE id = ?').bind(id).first<{id:string;item_id:string;movement_type:string;quantity_delta:number;approval_status:string;recorded_by:string}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
+    if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot approve your own stock movement.' } }, 403);
     if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending stock movements can be approved.' } }, 409);
     try {
       const result = await c.env.DB.prepare("UPDATE stock_movements SET approval_status = 'approved', approved_by = ? WHERE id = ? AND approval_status = 'pending'").bind(actor.id, id).run();
@@ -755,6 +756,7 @@ adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
   const id = c.req.param('id');
   const expense = await c.env.DB.prepare('SELECT * FROM expenses WHERE id = ?').bind(id).first<Record<string, unknown>>();
   if (!expense) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
+  if (expense.approved_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'A different finance user must post payment after approval.' } }, 403);
   if (expense.approval_status !== 'approved' || expense.payment_status !== 'unpaid') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only approved, unpaid expenses can be posted as paid.' } }, 409);
   const paymentAccount = await c.env.DB.prepare("SELECT id, account_type, is_active FROM accounts WHERE id = ?").bind(String(expense.account_id)).first<{id:string;account_type:string;is_active:number}>();
   if (!paymentAccount || paymentAccount.account_type !== 'asset' || paymentAccount.is_active !== 1) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Expense payment must use an active cash/bank asset account.' } }, 409);
