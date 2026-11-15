@@ -35,8 +35,8 @@ const RESOURCES: Record<string, Resource[]> = {
       relation('veterinarian_id','Veterinarian','veterinarians'), text('diagnosis','Diagnosis',true), area('symptoms','Symptoms'), area('prescription_text','Prescription'), area('medication_history_notes','Medication history'), area('treatment_notes','Treatment notes'), date('follow_up_date','Follow-up date')
     ]},
     { key: 'vaccinations', label: 'Vaccinations', permission: 'medical:read', writePermission: 'medical:write', fields: [
-      text('animal_id','Animal record ID',true), text('vaccine_name','Vaccine name',true), text('batch_number','Batch number'),
-      date('administered_date','Administered date',true), date('next_due_date','Next due date'), text('veterinarian_id','Veterinarian ID'), area('notes','Notes')
+      relation('animal_id','Animal record','animals',true), text('vaccine_name','Vaccine name',true), text('batch_number','Batch number'),
+      date('administered_date','Administered date',true), date('next_due_date','Next due date'), relation('veterinarian_id','Veterinarian','veterinarians'), area('notes','Notes')
     ]},
     { key: 'veterinarians', label: 'Veterinarians & Clinics', permission: 'medical:read', writePermission: 'medical:write', fields: [
       text('name','Veterinarian name',true), text('clinic_name','Clinic'), text('registration_number','Registration number'), text('phone','Phone'), text('email','Email'), area('address','Address'), choice('is_active','Active',['1','0'])
@@ -44,17 +44,17 @@ const RESOURCES: Record<string, Resource[]> = {
   ],
   adoptions: [
     { key: 'adoption_applications', label: 'Adoption Applications', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
-      text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
+      text('application_code','Application code',true), relation('animal_id','Animal record','animals',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
       text('applicant_email','Email'), area('applicant_address','Address',true), text('housing_type','Housing type'), choice('has_other_pets','Other pets',['0','1']),
       choice('home_check_status','Home check',['pending','scheduled','passed','failed']), area('home_check_notes','Home check notes'),
       area('experience_notes','Experience')
     ]},
     { key: 'foster_applications', label: 'Foster Applications', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
-      text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
+      text('application_code','Application code',true), relation('animal_id','Animal record','animals',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
       text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), date('actual_end_date','Actual end'), area('notes','Notes')
     ]},
     { key: 'adoption_agreements', label: 'Adoption Agreements & Follow-ups', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
-      text('agreement_number','Agreement number',true), relation('application_id','Adoption application','adoption_applications',true), text('animal_id','Animal record ID',true), date('handover_date','Handover date',true),
+      text('agreement_number','Agreement number',true), relation('application_id','Adoption application','adoption_applications',true), relation('animal_id','Animal record','animals',true), date('handover_date','Handover date',true),
       date('follow_up_30d_date','30-day follow-up'), area('follow_up_30d_notes','30-day notes'), date('follow_up_90d_date','90-day follow-up'), area('follow_up_90d_notes','90-day notes')
     ]}
   ],
@@ -68,8 +68,8 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'expenses', label: 'Expense Claims', permission: 'finance:read', writePermission: 'expenses:submit', fields: [
       text('expense_code','Expense code',true), date('expense_date','Expense date',true), choice('category','Category',['animal_food','vet_consultation','medicines','vaccination','sterilization','transportation','rescue_operations','shelter_maintenance','utilities','equipment','administrative','other'],true),
-      text('fund_category_id','Fund category ID',true), relation('account_id','Payment account','accounts',true), num('amount_paise','Amount (₹)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true),
-      text('vendor_payee','Vendor / payee',true), relation('animal_id','Animal','animals'), text('rescue_case_id','Rescue case ID'), area('description','Description')
+      relation('fund_category_id','Fund category','fund_categories',true), relation('account_id','Payment account','accounts',true), num('amount_paise','Amount (₹)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true),
+      text('vendor_payee','Vendor / payee',true), relation('animal_id','Animal','animals'), relation('rescue_case_id','Rescue case','rescue_cases'), area('description','Description')
     ]},
     { key: 'financial_transactions', label: 'Immutable Ledger', permission: 'finance:read', fields: [] },
     { key: 'accounts', label: 'Chart of Accounts', permission: 'finance:read', fields: [] },
@@ -86,7 +86,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       relation('item_id','Inventory item','inventory_items',true), choice('movement_type','Movement type',['opening','purchase_in','issue_out','expired_writeoff','adjustment'],true), num('quantity_delta','Quantity change',true),
-      text('batch_number','Batch number'), date('expiry_date','Expiry date'), text('animal_id','Animal ID'), relation('purchase_order_id','Purchase order','purchase_orders'), area('notes','Notes')
+      text('batch_number','Batch number'), date('expiry_date','Expiry date'), relation('animal_id','Animal','animals'), relation('purchase_order_id','Purchase order','purchase_orders'), area('notes','Notes')
     ]},
     { key: 'suppliers', label: 'Suppliers', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
@@ -113,14 +113,22 @@ const RESOURCES: Record<string, Resource[]> = {
 };
 
 const relationDisplay = (resource: string, row: Record<string, unknown>): string => {
-  const name = String(row.name || row.full_name || row.applicant_name || row.case_code || row.po_number || row.expense_code || row.title || 'Record');
-  const code = String(row.animal_code || row.volunteer_code || row.donor_code || row.code || row.sku || '');
-  const detail = resource === 'rescue_cases' ? String(row.location_address || '')
-    : resource === 'veterinarians' ? String(row.clinic_name || '')
-    : resource === 'adoption_applications' ? String(row.applicant_name || '')
-    : resource === 'expenses' ? String(row.vendor_payee || '')
+  const primary = resource === 'adoption_applications' ? row.application_code
+    : resource === 'rescue_cases' ? row.case_code
+    : resource === 'purchase_orders' ? row.po_number
+    : resource === 'expenses' ? row.expense_code
+    : row.name || row.full_name || row.applicant_name || row.title;
+  const secondary = resource === 'animals' ? row.animal_code
+    : resource === 'volunteers' ? row.volunteer_code
+    : resource === 'donors' ? row.donor_code
+    : resource === 'fund_categories' || resource === 'accounts' ? row.code
+    : resource === 'inventory_items' ? row.sku
+    : resource === 'adoption_applications' ? row.applicant_name
+    : resource === 'rescue_cases' ? row.location_address
+    : resource === 'veterinarians' ? row.clinic_name
+    : resource === 'expenses' ? row.vendor_payee
     : '';
-  return [name, code, detail].filter(Boolean).join(' · ');
+  return [primary, secondary].filter(Boolean).map(String).join(' · ') || 'Record';
 };
 
 const TITLES: Record<string,string> = {
