@@ -321,13 +321,20 @@ adminModuleRoutes.post('/:resource', async (c) => {
     const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?').bind(String(values.page_slug), String(values.section_key)).first<{ next_version: number }>();
     values.version_number = version?.next_version ?? 1;
   }
-  if (resource === 'inventory_items') values.current_stock = Number(values.opening_stock ?? 0);
+  if (resource === 'inventory_items') values.current_stock = 0;
   if (resource === 'stock_movements') values.approval_status = 'pending';
   const id = crypto.randomUUID();
   const columns = ['id', ...Object.keys(values)];
   const placeholders = columns.map(() => '?').join(', ');
   const bindings = [id, ...Object.values(values)];
   await c.env.DB.prepare(`INSERT INTO ${config.table} (${columns.join(', ')}) VALUES (${placeholders})`).bind(...bindings).run();
+  if (resource === 'inventory_items' && Number(values.opening_stock || 0) > 0) {
+    await c.env.DB.prepare(`
+      INSERT INTO stock_movements (
+        id, item_id, movement_type, quantity_delta, approval_status, approved_by, notes, recorded_by
+      ) VALUES (?, ?, 'opening', ?, 'approved', ?, 'Opening balance recorded during item creation', ?)
+    `).bind(crypto.randomUUID(), id, Number(values.opening_stock), actor.id, actor.id).run();
+  }
   await appendAuditLog(c, { action: `${resource.toUpperCase()}_CREATED`, entityType: resource, entityId: id, after: values });
   return c.json({ success: true, data: { id, created: true } }, 201);
 });
