@@ -66,6 +66,7 @@ const RESOURCES: Record<string, ResourceConfig> = {
     fields: ['agreement_number','application_id','animal_id','handover_date','signed_agreement_doc_id','handover_doc_id','follow_up_30d_date','follow_up_30d_notes','follow_up_90d_date','follow_up_90d_notes'],
     required: ['agreement_number','application_id','animal_id','handover_date'], search: ['agreement_number'], order: 'created_at',
     serverFields: (actorId) => ({ witnessed_by: actorId }),
+    updateFields: ['follow_up_30d_date','follow_up_30d_notes','follow_up_90d_date','follow_up_90d_notes'],
   },
   donors: {
     table: 'donors', read: 'donations:read', write: 'donations:write',
@@ -300,6 +301,22 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const missing = (config.required || []).filter((key) => input[key] === undefined || input[key] === null || input[key] === '');
   if (missing.length) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: `Required fields missing: ${missing.join(', ')}` } }, 400);
 
+  if (resource === 'animals') {
+    const nextStatus = String(input.current_status || 'rescued');
+    if (['adopted', 'fostered'].includes(nextStatus)) {
+      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Adopted or fostered status can only be set by the verified adoption/foster handover workflow.' } }, 409);
+    }
+    if (nextStatus === 'available_for_adoption' && (!actor.permissions.includes('adoption:approve') || Number(input.is_adoption_eligible || 0) !== 1)) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Marking an animal available requires adoption approval permission and adoption eligibility.' } }, 403);
+    }
+    if (nextStatus === 'released' && !actor.permissions.includes('rescue:write')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Rescue permission is required to mark an animal released.' } }, 403);
+    }
+    if (nextStatus === 'deceased' && !actor.permissions.includes('medical:write')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Medical permission is required to record a deceased animal.' } }, 403);
+    }
+  }
+
   if (resource === 'adoption_agreements') {
     const application = await c.env.DB.prepare('SELECT animal_id, status FROM adoption_applications WHERE id = ?').bind(String(input.application_id)).first<{animal_id:string;status:string}>();
     if (!application || application.status !== 'approved' || application.animal_id !== String(input.animal_id)) {
@@ -386,7 +403,22 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   const id = c.req.param('id');
   const existing = await c.env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ?`).bind(id).first<Record<string, unknown>>();
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Record not found.' } }, 404);
-  if (resource === 'website_content' && existing.status !== 'draft') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published and archived CMS versions are immutable. Create a new draft version to make changes.' } }, 409);
+  if (resource === 'animals' && parsed.value.current_status !== undefined) {
+    const nextStatus = String(parsed.value.current_status);
+    if (['adopted', 'fostered'].includes(nextStatus)) {
+      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Adopted or fostered status can only be set by the verified adoption/foster handover workflow.' } }, 409);
+    }
+    if (nextStatus === 'available_for_adoption' && (!actor.permissions.includes('adoption:approve') || Number(parsed.value.is_adoption_eligible ?? existing.is_adoption_eligible ?? 0) !== 1)) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Marking an animal available requires adoption approval permission and adoption eligibility.' } }, 403);
+    }
+    if (nextStatus === 'released' && !actor.permissions.includes('rescue:write')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Rescue permission is required to mark an animal released.' } }, 403);
+    }
+    if (nextStatus === 'deceased' && !actor.permissions.includes('medical:write')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Medical permission is required to record a deceased animal.' } }, 403);
+    }
+  }
+    if (resource === 'website_content' && existing.status !== 'draft') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published and archived CMS versions are immutable. Create a new draft version to make changes.' } }, 409);
   const setParts = keys.map((key) => `${key} = ?`);
   const updateBindings: (string | number | boolean | null)[] = keys.map((key) => parsed.value[key]!);
   if (resource === 'website_content' || resource === 'compliance_registrations') {
@@ -421,10 +453,10 @@ adminModuleRoutes.post('/animals/:id/publish', async (c) => {
     return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide published as true or false.' } }, 400);
   }
   const id = c.req.param('id');
-  const animal = await c.env.DB.prepare('SELECT id, is_published_public, current_status, deleted_at FROM animals WHERE id = ?')
-    .bind(id).first<{ id: string; is_published_public: number; current_status: string; deleted_at: string | null }>();
+  const animal = await c.env.DB.prepare('SELECT id, is_published_public, is_adoption_eligible, current_status, deleted_at FROM animals WHERE id = ?')
+    .bind(id).first<{ id: string; is_published_public: number; is_adoption_eligible: number; current_status: string; deleted_at: string | null }>();
   if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
-  if (body.published && (animal.deleted_at || !['available_for_adoption', 'adopted'].includes(animal.current_status))) {
+  if (body.published && (animal.deleted_at || !['available_for_adoption', 'adopted'].includes(animal.current_status) || (animal.current_status === 'available_for_adoption' && animal.is_adoption_eligible !== 1))) {
     return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Only active animals marked available for adoption or already adopted can appear on the public website.' } }, 409);
   }
   if (Boolean(animal.is_published_public) === body.published) {
