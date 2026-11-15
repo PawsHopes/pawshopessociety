@@ -2,7 +2,7 @@
 
 **Current decision: NOT APPROVED FOR PRODUCTION**
 
-The current repository contains a working foundation and roadmap placeholders. A successful compile or CI run does not mean the full NGO ERP is implemented, configured, or safe for real records.
+The staging branch now contains implemented admin workspaces and initial API workflows for animal registry, rescue, veterinary records, adoption/foster, finance, inventory, volunteers and CMS drafts. This is not a complete or production-approved NGO ERP: workflows still require owner UAT, edge-case testing, operational controls and release hardening. A successful compile or CI run does not establish that it is safe for real records.
 
 ## Implemented and verified in source
 
@@ -17,12 +17,12 @@ The current repository contains a working foundation and roadmap placeholders. A
 
 ## Known release blockers
 
-1. **Incomplete ERP modules.** The Animals, Rescue, Medical, Adoptions, Finance/Ledger, Inventory, Volunteers and CMS pages are roadmap placeholders. Their production UI/API workflows, business validation, authorization tests, audit coverage and end-to-end tests are not complete. Do not store live operational records in these modules.
-2. **Cloudflare infrastructure is not provisioned in this repository.** The only Worker config currently supplied is `workers/api/wrangler.toml.example`; it contains placeholder D1 and KV IDs. There is no verified production Worker deployment, production D1 binding, R2 binding, or production smoke-test evidence.
-3. **Production secrets and Access policy are not verifiable from GitHub.** Configure and verify `CF_ACCESS_AUD`, `SIGNED_URL_SECRET` (at least 32 random bytes), Razorpay secrets only when payment routes exist, and the Cloudflare Access application policy. Never commit these values.
+1. **ERP workflows need UAT and completion.** The staging branch now has module workspaces and API routes for Animals, Rescue, Medical, Adoptions/Foster, Finance/Ledger, Inventory, Volunteers and CMS drafts. Remaining work includes end-to-end tests for each role, full audit-failure/transaction atomicity checks, payment reconciliation/refunds, 12A/80G receipt controls, live CMS publishing integration, notifications/alert delivery and owner acceptance testing. Do not treat these first-pass workflows as production-ready.
+2. **Only staging infrastructure is provisioned.** Admin Pages `phs-phs` has a successful staging deployment with a same-origin Pages Function; staging D1 and KV are bound and migrations are applied. R2 is not activated and no buckets/bindings exist. There are no separate production D1/KV/R2 resources, production Access app, or production deployment. Keep production isolated until separately provisioned and reviewed.
+3. **Staging identity is configured but not browser-verified.** The staging Access app allows only the verified owner email and the Pages secret `SIGNED_URL_SECRET` has been generated. The owner must complete the first interactive Access login so the staging-only bootstrap can create the first Super Admin. Production Access policies and secrets must be created independently. Razorpay keys are not configured; add them only after payment integration and reconciliation tests are complete. Never commit secrets.
 4. **Rate limiting requires Cloudflare edge enforcement.** KV counters are best-effort under concurrent requests. Add Cloudflare WAF/rate-limit rules for public join submissions, uploads and other public endpoints. Ensure the production Worker has the `RATE_LIMIT_KV` binding; the public join route fails closed if it is missing.
-5. **Database migration verification is limited.** CI applies migration SQL to temporary SQLite and checks integrity/foreign keys. This is not a substitute for applying migrations to a separate staging D1 database, testing all constraints/triggers against D1, checking seed data, taking backups, and rehearsing a restore.
-6. **Repository protections are not enabled.** GitHub reports both `main` and `erp-development` as unprotected. Require pull requests, required status checks, and at least one independent review before merging. Keep production deployment secrets unavailable to untrusted pull-request workflows.
+5. **Database verification and recovery are incomplete.** All five migrations are applied to staging D1 and CI validates migrations/triggers against temporary SQLite. Staging D1 still needs complete business-level D1 tests, seed-data review, scheduled backup/PITR configuration where available, and a documented restore rehearsal before operational records are entered.
+6. **Repository protection needs owner/admin confirmation.** The connected GitHub integration cannot read or change branch-protection settings. Confirm rulesets for `main` and `erp-development`, requiring pull requests, independent review and CI/security checks. Keep production deployment secrets unavailable to untrusted pull-request workflows.
 7. **Dependency reproducibility.** CI creates a temporary npm lockfile for each run, audits it, and installs from it. Commit reviewed lockfiles for both npm projects before production to make builds reproducible across runs.
 8. **No full integration or penetration test evidence.** There is no verified production-like end-to-end test of Cloudflare Access, CORS, D1, R2, uploads, RBAC, audit failures, restore, or payment callbacks.
 
@@ -44,20 +44,20 @@ The current repository contains a working foundation and roadmap placeholders. A
 - [ ] Configure TLS, custom domains, DNS, HSTS suitability and security event alerts.
 
 ### D1 and data protection
-- [ ] Apply migrations to staging D1 and verify schema version, triggers, indexes and foreign keys.
+- [x] Apply all five migrations to staging D1; CI validates migration SQL and key triggers.\n- [ ] Complete D1 business-level validation, seed-data review, backups and restore rehearsal.
 - [ ] Test least-privilege access for every role and every document category.
 - [ ] Configure backups/PITR where available and complete a restore rehearsal.
 - [ ] Define retention, correction, export and deletion procedures for donor, adopter, volunteer, staff and animal medical records.
 - [ ] Verify audit entries are written for every sensitive mutation and that failures cannot silently leave partial business operations.
 
 ### R2 and uploads
-- [ ] Keep `PRIVATE_VAULT` private with no public custom domain.
+- [ ] Activate R2 and create staging buckets.\n- [ ] Bind `PUBLIC_MEDIA` and `PRIVATE_VAULT` to the Pages Function.\n- [ ] Keep `PRIVATE_VAULT` private with no public custom domain.
 - [ ] Limit public-media bucket contents to approved publishable assets.
 - [ ] Test MIME spoofing, oversized files, malformed multipart requests, path traversal names and access to another user's document token.
 - [ ] Decide whether malware scanning/quarantine is required before staff documents become downloadable.
 
 ### Business and financial workflows
-- [ ] Implement and test all modules listed above before entering live records.
+- [ ] Complete owner UAT and end-to-end tests for all implemented module workflows before entering live records.\n- [ ] Finish statutory receipt controls, payment reconciliation/refunds and live CMS publishing before enabling those operations.
 - [ ] Implement payment provider signature verification, idempotency, reconciliation and refund/reversal flows before enabling Razorpay.
 - [ ] Obtain qualified review of receipt wording, 12A/80G eligibility and statutory reporting. Software must not automatically mark donations as tax-deductible without verified legal status.
 - [ ] Test approval segregation, immutable ledger postings, reversal handling and audit evidence with sample data.
