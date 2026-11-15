@@ -74,13 +74,13 @@ The staging D1 database currently has two active Super Admin accounts, including
 
 ## 4. Approved-member Cloudflare Access synchronisation
 
-The Join Management API now attempts to add only the exact email of an approved applicant to the existing Allow policy. It reads the current policy, preserves the existing narrow email rules, refuses to modify a non-Allow policy or a policy containing broad Everyone/domain/service-token rules, and records sync status. A Super Admin can retry failed/pending syncs from Join Management. ERP approval remains separate from Access synchronisation: if Access sync is unavailable, the ERP account is active but the person cannot sign in until the Access step succeeds.
+The Join Management API now attempts to add only the exact email of an approved applicant to both existing Allow policies: the stable Admin hostname policy and the wildcard Pages deployment/preview hostname policy. It reads each current policy, preserves existing narrow email rules, refuses to modify a non-Allow policy or a policy containing broad Everyone/domain/service-token rules, and records sync status. A Super Admin can retry failed/pending syncs from Join Management. ERP approval remains separate from Access synchronisation: if Access sync is unavailable, the ERP account is active but the person cannot sign in until the Access step succeeds.
 
 To enable automatic synchronisation on staging:
 1. Create a Cloudflare API token restricted to this account with **Access: Apps and Policies Edit** permission. Do not use the Global API Key.
 2. In Cloudflare Pages → `phs-phs` → Settings → Environment variables → Production (the Pages project's production deployment is the ERP staging environment), add `CF_ACCESS_API_TOKEN` as an encrypted secret.
 3. Redeploy the `erp-development` branch so the Pages Function receives the secret.
-4. Test with a controlled test applicant email. Verify the exact email is appended to policy `3fe62b03-bb97-47d3-8839-02001fee7ce0`, the existing owner email remains, and Join Management reports `synced`.
+4. Test with a controlled test applicant email. Verify the exact email is appended to both policies `3fe62b03-bb97-47d3-8839-02001fee7ce0` and `2e71687b-0135-44cc-b3b9-d1c7ae1652f3`, the existing owner email remains in both, and Join Management reports `synced`.
 5. Remove the test member from the Access policy and disable/revoke the temporary test account after verification.
 
 Never paste the API token into chat, GitHub, source code, plain-text variables, or logs. If the secret is absent or the API token lacks permission, the UI will retain a pending/failed status and provide the manual fallback.
