@@ -168,7 +168,15 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   };
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
-  const canViewAttachments = !!resource && resource.fields.length > 0 && user.permissions.includes(resource.permission);
+  const canViewAttachments = !!resource && user.permissions.includes(resource.permission) && (
+    user.roleCode === 'super_admin' ||
+    ['animals', 'website_content'].includes(resource.key) ||
+    ([
+      'rescue_cases', 'medical_records', 'vaccinations', 'adoption_applications',
+      'foster_applications', 'adoption_agreements', 'donations', 'expenses',
+      'purchase_orders', 'compliance_registrations'
+    ].includes(resource.key) && user.permissions.includes('documents:private_read'))
+  );
   const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
