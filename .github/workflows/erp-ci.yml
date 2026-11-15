@@ -303,6 +303,10 @@ jobs:
         working-directory: workers/api
         run: npm ci --no-audit --no-fund
 
+      - name: Apply verified staging D1 migrations
+        working-directory: workers/api
+        run: npx wrangler d1 migrations apply pawshopes-erp-db-staging --remote --env staging --yes
+
       - name: Deploy staging Worker
         working-directory: workers/api
         run: npm run deploy:staging
