@@ -16,26 +16,21 @@ This runbook is staging-only. It must not change the public website, the existin
 - Zero Trust team: `mute-pond-e3e6.cloudflareaccess.com`
 - Staging D1: `pawshopes-erp-db-staging` (`a6fd7136-b618-4072-af6a-5373f4e727d1`)
 - Staging KV: `pawshopes-erp-rate-limit-staging` (`1156cf04f6b9496dabc7d580457f0c53`)
-- All five migrations are applied. The database currently has 15 animal records, 7 compliance records and no ERP users. Review existing seed/migrated records before operational use; do not delete or overwrite records without confirming their origin.
-- A random `SIGNED_URL_SECRET` has been generated and stored as a Pages secret. A new deployment is required before relying on that configuration.
+- Staging D1 schema objects through migrations `0001`–`0007` are present. The standard `d1_migrations` history table was reconciled and now records all seven migration files. A D1 SQL export snapshot was generated before that metadata repair. The database has 17 animal records, 2 volunteer records and 3 stock movements; 21 synthetic QA records were added for testing. Review existing records before operational use; do not delete or overwrite records without confirming their origin.
+- `SIGNED_URL_SECRET` is configured as a Pages secret. Its value is intentionally not exposed in this runbook; verify private-document signed-link behavior after deployment.
 - R2 is now activated. Two APAC staging buckets exist: `pawshopes-public-media-staging` (public development URL enabled: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`) and `pawshopes-private-vault-staging` (private; no public domain). Pages production deployment config has `PUBLIC_MEDIA` and `PRIVATE_VAULT` R2 bindings, and `PUBLIC_MEDIA_BASE_URL` is set to the public development URL. A new Pages deployment is required before the running Function receives the bindings.
 - The Pages Function at `apps/admin-erp/functions/api/[[path]].ts` serves the same Hono API on the Admin hostname. The latest Pages build and deployment completed successfully.
 - Interactive browser login and authenticated end-to-end smoke tests are not yet confirmed.
 
-## 1. R2 staging storage — owner action required
+## 1. R2 staging storage — provisioned
 
-The Cloudflare account currently returns zero R2 buckets. The account owner must first activate the R2 subscription in Cloudflare Dashboard:
+Cloudflare confirms that both staging buckets exist and are bound to the `phs-phs` Pages Function:
+- `pawshopes-public-media-staging` — public staging media; managed `r2.dev` domain enabled.
+- `pawshopes-private-vault-staging` — private documents; managed public domain disabled.
+- Pages bindings: `PUBLIC_MEDIA` and `PRIVATE_VAULT`.
+- `PUBLIC_MEDIA_BASE_URL` matches the public bucket domain.
 
-1. Open [Cloudflare R2 Overview](https://dash.cloudflare.com/?to=/:account/r2/overview).
-2. Select **Storage & databases → R2 → Overview**.
-3. Complete the R2 subscription checkout. Cloudflare includes a free monthly usage allowance, but usage beyond included limits is billable; review current pricing before confirming.
-4. Tell the implementation operator when R2 is enabled. Do not send payment details or API credentials in chat.
-
-After activation, provision only staging buckets:
-- `pawshopes-public-media-staging` — approved public animal/site media only.
-- `pawshopes-private-vault-staging` — private veterinary, adopter, donor and compliance documents; never enable public access.
-
-Bind them to the Pages Function as `PUBLIC_MEDIA` and `PRIVATE_VAULT`. The public-media bucket uses its Cloudflare-managed `r2.dev` URL for staging only. The private vault has no public domain. The Cloudflare account currently has no DNS zone for `pawshopessociety.org`, so a branded media custom domain cannot be attached from this account. Do not change existing website DNS to solve this.
+The buckets are provisioned, but application-level upload, record attachment, signed-link access and download still need authenticated end-to-end verification. Do not enable a public domain on the private vault. Do not change public website DNS for this staging setup.
 
 ## 2. Admin Pages and API
 
@@ -46,7 +41,7 @@ The Git-connected Pages project is configured with:
 - Output directory: `dist`
 - Preview deployments disabled.
 
-The Admin frontend uses same-origin `/api/v1/*` requests. The Pages Function imports the tested Hono API from `workers/api/src/index.ts`. D1 and KV are bound. R2 bindings must be added after the owner activates R2 and the two buckets are created.
+The Admin frontend uses same-origin `/api/v1/*` requests. The Pages Function imports the tested Hono API from `workers/api/src/index.ts`. D1 and KV are bound. R2 bindings `PUBLIC_MEDIA` and `PRIVATE_VAULT` are configured for this Pages project; end-to-end use still requires testing.
 
 Pages Function variables include:
 - `ENVIRONMENT=staging`
@@ -75,7 +70,7 @@ Owner verification:
 3. Confirm that the dashboard opens and displays the Super Admin role.
 4. Report any error text or screenshot with tokens, codes and personal data hidden.
 
-The D1 database currently has zero ERP users, so the bootstrap has not yet run. Do not create a public registration path for Super Admin.
+The staging D1 database currently has two active Super Admin accounts, including the configured owner email. The owner already has the required ERP role, so first-admin bootstrap is not required for that account. Do not create a public registration path or create duplicate Super Admin accounts.
 
 ## 4. Smoke tests required before operational use
 
