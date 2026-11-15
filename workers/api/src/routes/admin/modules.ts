@@ -321,9 +321,13 @@ adminModuleRoutes.post('/:resource', async (c) => {
   }
 
   if (resource === 'adoption_agreements') {
-    const application = await c.env.DB.prepare('SELECT animal_id, status FROM adoption_applications WHERE id = ?').bind(String(input.application_id)).first<{animal_id:string;status:string}>();
-    if (!application || application.status !== 'approved' || application.animal_id !== String(input.animal_id)) {
-      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'An adoption agreement requires an approved application for the same animal.' } }, 409);
+    const application = await c.env.DB.prepare('SELECT animal_id, status, home_check_status FROM adoption_applications WHERE id = ?').bind(String(input.application_id)).first<{animal_id:string;status:string;home_check_status:string}>();
+    if (!application || application.status !== 'approved' || application.animal_id !== String(input.animal_id) || application.home_check_status !== 'passed') {
+      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'An adoption agreement requires a home-check-passed approved application for the same animal.' } }, 409);
+    }
+    const animal = await c.env.DB.prepare('SELECT current_status, is_adoption_eligible, deleted_at FROM animals WHERE id = ?').bind(String(input.animal_id)).first<{current_status:string;is_adoption_eligible:number;deleted_at:string|null}>();
+    if (!animal || animal.deleted_at || animal.current_status !== 'available_for_adoption' || animal.is_adoption_eligible !== 0) {
+      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'The animal must be active, reserved by this approved application, and awaiting handover.' } }, 409);
     }
   }
 
@@ -461,6 +465,12 @@ adminModuleRoutes.post('/foster_applications/:id/activate', async (c) => {
   if (!application) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Foster application not found.' } }, 404);
   if (application.status !== 'approved') {
     return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only approved foster applications can be activated.' } }, 409);
+  }
+  const animal = await c.env.DB.prepare(
+    'SELECT current_status, is_foster_eligible, deleted_at FROM animals WHERE id = ?'
+  ).bind(application.animal_id).first<{ current_status: string; is_foster_eligible: number; deleted_at: string | null }>();
+  if (!animal || animal.deleted_at || animal.is_foster_eligible !== 1 || ['adopted', 'fostered', 'released', 'deceased'].includes(animal.current_status)) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'This animal is not currently eligible for foster placement.' } }, 409);
   }
   const result = await c.env.DB.prepare(
     "UPDATE foster_applications SET status = 'active', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'approved'"
