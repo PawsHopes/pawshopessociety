@@ -23,7 +23,7 @@ export const UsersPage: React.FC = () => {
   const [roles, setRoles] = useState<RoleRow[]>([]);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [roleCode, setRoleCode] = useState('volunteer');
+  const [roleCode, setRoleCode] = useState('auditor');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const load = () => {
