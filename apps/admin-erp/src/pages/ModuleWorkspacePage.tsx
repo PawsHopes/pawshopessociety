@@ -8,7 +8,7 @@ type Resource = { key: string; label: string; permission: string; writePermissio
 const text = (key: string, label: string, required = false): Field => ({ key, label, required });
 const date = (key: string, label: string, required = false): Field => ({ key, label, type: 'date', required });
 const num = (key: string, label: string, required = false): Field => ({ key, label, type: 'number', required });
-const area = (key: string, label: string): Field => ({ key, label, type: 'textarea' });
+const area = (key: string, label: string, required = false): Field => ({ key, label, type: 'textarea', required });
 const choice = (key: string, label: string, options: string[], required = false): Field => ({ key, label, type: 'select', options, required });
 
 const RESOURCES: Record<string, Resource[]> = {
@@ -198,7 +198,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     } else if (!window.confirm(action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
     const suffix = action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
     const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : undefined });
-    setFeedback(result.success ? (action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : 'Record ' + action + 'd.') : result.error?.message || 'Workflow action failed.');
+    setFeedback(result.success ? (action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? 'Record rejected.' : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
     await load();
   };
 
@@ -209,6 +209,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     : resource?.key === 'accounts' ? ['code','name','account_type','current_balance_paise','is_active']
     : resource?.key === 'fund_categories' ? ['code','name','is_restricted','description']
     : resource?.fields.map((f) => f.key).slice(0, 7) || [];
+  if (resource?.key === 'donations') columns.push('verification_status');
+  if (resource?.key === 'expenses') columns.push('approval_status','payment_status');
+  if (resource?.key === 'stock_movements') columns.push('approval_status');
+  if (resource?.key === 'adoption_applications' || resource?.key === 'foster_applications') columns.push('status');
 
   return <div className="space-y-6">
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
