@@ -298,8 +298,22 @@ adminUsersRoutes.patch(
       targetId
     ).run();
 
+    const saved = await c.env.DB.prepare(`
+      SELECT u.role_id, u.status, r.code as role_code
+      FROM users u
+      JOIN roles r ON r.id = u.role_id
+      WHERE u.id = ?
+    `).bind(targetId).first<{ role_id: string; role_code: string; status: string }>();
+
+    if (!saved || saved.role_id !== nextRoleId || saved.role_code !== nextRoleCode || saved.status !== nextStatus) {
+      return c.json({
+        success: false,
+        error: { code: 'PERSISTENCE_ERROR', message: 'The user update could not be verified. Please refresh and check the saved record.' }
+      }, 500);
+    }
+
     await appendAuditLog(c, {
-      action: 'USER_UPDATED',
+      action: parsed.data.roleCode !== undefined && existing.role_code !== nextRoleCode ? 'USER_ROLE_CHANGED' : 'USER_UPDATED',
       entityType: 'users',
       entityId: targetId,
       before: {
@@ -307,8 +321,8 @@ adminUsersRoutes.patch(
         status: existing.status
       },
       after: {
-        roleCode: nextRoleCode,
-        status: nextStatus
+        roleCode: saved.role_code,
+        status: saved.status
       }
     });
 
