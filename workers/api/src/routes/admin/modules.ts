@@ -389,6 +389,28 @@ adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
   return c.json({ success: true, data: { id, payment_status: 'paid', transaction_number: txnNo } });
 });
 
+
+adminModuleRoutes.get('/inventory/alerts', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('inventory:read')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory read permission required.' } }, 403);
+  const [lowStock, expiring, expired] = await Promise.all([
+    c.env.DB.prepare('SELECT id, sku, name, current_stock, min_stock_threshold, unit FROM inventory_items WHERE min_stock_threshold > 0 AND current_stock <= min_stock_threshold ORDER BY current_stock ASC LIMIT 100').all(),
+    c.env.DB.prepare("SELECT sm.id, sm.item_id, i.name AS item_name, sm.batch_number, sm.expiry_date, sm.quantity_delta FROM stock_movements sm JOIN inventory_items i ON i.id = sm.item_id WHERE sm.approval_status = 'approved' AND sm.expiry_date >= date('now') AND sm.expiry_date <= date('now', '+30 days') ORDER BY sm.expiry_date ASC LIMIT 100").all(),
+    c.env.DB.prepare("SELECT sm.id, sm.item_id, i.name AS item_name, sm.batch_number, sm.expiry_date, sm.quantity_delta FROM stock_movements sm JOIN inventory_items i ON i.id = sm.item_id WHERE sm.approval_status = 'approved' AND sm.expiry_date < date('now') ORDER BY sm.expiry_date ASC LIMIT 100").all(),
+  ]);
+  return c.json({ success: true, data: { lowStock: lowStock.results || [], expiring: expiring.results || [], expired: expired.results || [] } });
+});
+
+adminModuleRoutes.get('/medical/alerts', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('medical:read')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Medical read permission required.' } }, 403);
+  const [due, overdue] = await Promise.all([
+    c.env.DB.prepare("SELECT v.id, v.animal_id, a.name AS animal_name, v.vaccine_name, v.next_due_date FROM vaccinations v JOIN animals a ON a.id = v.animal_id WHERE v.next_due_date >= date('now') AND v.next_due_date <= date('now', '+30 days') ORDER BY v.next_due_date ASC LIMIT 100").all(),
+    c.env.DB.prepare("SELECT v.id, v.animal_id, a.name AS animal_name, v.vaccine_name, v.next_due_date FROM vaccinations v JOIN animals a ON a.id = v.animal_id WHERE v.next_due_date < date('now') ORDER BY v.next_due_date ASC LIMIT 100").all(),
+  ]);
+  return c.json({ success: true, data: { due: due.results || [], overdue: overdue.results || [] } });
+});
+
 function zRecord(value: unknown): { ok: true; value: Record<string, string | number | boolean | null> } | { ok: false } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return { ok: false };
   const entries = Object.entries(value as Record<string, unknown>);
