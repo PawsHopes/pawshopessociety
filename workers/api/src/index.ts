@@ -14,6 +14,7 @@ import { adminUsersRoutes } from './routes/admin/users';
 import { adminJoinRoutes } from './routes/admin/join';
 import { adminDocumentRoutes, publicFileProxyRoutes } from './routes/admin/documents';
 import { adminAuditLogRoutes } from './routes/admin/auditLogs';
+import { adminModuleRoutes } from './routes/admin/modules';
 
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
@@ -52,6 +53,7 @@ app.route('/api/v1/admin/users', adminUsersRoutes);
 app.route('/api/v1/admin/join', adminJoinRoutes);
 app.route('/api/v1/admin', adminDocumentRoutes);
 app.route('/api/v1/admin/audit-logs', adminAuditLogRoutes);
+app.route('/api/v1/admin/modules', adminModuleRoutes);
 
 app.notFound((c) =>
   c.json(
