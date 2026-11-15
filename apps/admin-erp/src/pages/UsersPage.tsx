@@ -64,7 +64,11 @@ export const UsersPage: React.FC = () => {
     const draft = userDrafts[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode };
     const res = await apiFetch(`/api/v1/admin/users/${u.id}`, {
       method: 'PATCH',
-      body: JSON.stringify({ fullName: draft.fullName, phone: draft.phone.trim() || null, roleCode: draft.roleCode }),
+      body: JSON.stringify({
+        fullName: draft.fullName,
+        phone: draft.phone.trim() || null,
+        ...(draft.roleCode !== u.roleCode ? { roleCode: draft.roleCode } : {}),
+      }),
     });
     if (res.success) {
       setFeedback(`Updated ${draft.fullName}'s account details and role.`);
@@ -182,7 +186,10 @@ export const UsersPage: React.FC = () => {
                 <td className="p-4"><input value={userDrafts[u.id]?.phone ?? u.phone ?? ''} maxLength={25} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), phone: e.target.value } }))} className="w-36 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" /></td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-brandOrange">
-                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">{roles.map((role) => <option key={role.code} value={role.code}>{role.name}</option>)}</select> : u.roleName}
+                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">{!roles.some((role) => role.code === u.roleCode) && (
+                    <option value={u.roleCode}>{u.roleName}</option>
+                  )}
+                  {roles.map((role) => <option key={role.code} value={role.code}>{role.name}</option>)}</select> : u.roleName}
                   </span>
                 </td>
                 <td className="p-4">
