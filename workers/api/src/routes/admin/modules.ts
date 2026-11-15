@@ -466,8 +466,12 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
     }
     const body = await c.req.json().catch(() => ({})) as { reason?: unknown };
     const reason = typeof body.reason === 'string' ? body.reason.slice(0, 1000) : null;
-    const result = await c.env.DB.prepare(`UPDATE ${table} SET status = 'approved', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN (${allowedStatuses})`).bind(actor.id, id).run();
-    if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Application changed before approval.' } }, 409);
+    const result = await c.env.DB.prepare(`UPDATE ${table} SET status = 'approved', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN (${allowedStatuses})`).bind(actor.id, id).run().catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (resource === 'adoption_applications' && (/Animal is not currently eligible/i.test(message) || /UNIQUE constraint failed: adoption_applications\.animal_id/i.test(message))) return null;
+      throw error;
+    });
+    if (!result || (result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Application changed or the animal is no longer available for adoption.' } }, 409);
     await appendAuditLog(c, { action: 'APPLICATION_APPROVED', entityType: resource, entityId: id, after: { status: 'approved', reason } });
     return c.json({ success: true, data: { id, status: 'approved' } });
   }
