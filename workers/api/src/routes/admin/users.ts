@@ -202,6 +202,13 @@ adminUsersRoutes.patch(
       }
     }
 
+    if (parsed.data.status !== undefined) {
+      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society administrator can suspend or reactivate users.' } }, 403);
+      }
+    }
+
     if (Object.keys(parsed.data).length === 0) {
       return c.json({
         success: false,
