@@ -81,7 +81,6 @@ adminDocumentRoutes.post('/uploads/public-media', async (c) => {
   if (!c.env.PUBLIC_MEDIA) return c.json({ success: false, error: { code: 'STORAGE_UNAVAILABLE', message: 'Public media storage is not enabled in this staging environment yet.' } }, 503);
   const user = c.get('authUser');
   const allowed =
-    user.roleCode === 'super_admin' ||
     user.permissions.includes('animals:write') ||
     user.permissions.includes('cms:write') ||
     user.permissions.includes('rescue:write');
