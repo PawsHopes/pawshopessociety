@@ -9,7 +9,7 @@ const policies = [
   { appId: '1dbcd4ff-450d-497c-abb4-d841f3904675', policyId: '2e71687b-0135-44cc-b3b9-d1c7ae1652f3' },
 ];
 
-const makePolicy = (policyId: string, include = [{ email: { email: 'hopezpaws@gmail.com' } }]) => ({
+const makePolicy = (policyId: string, include: Array<Record<string, unknown>> = [{ email: { email: 'hopezpaws@gmail.com' } }]) => ({
   id: policyId,
   name: 'Allow approved Paws Hopes Society members',
   decision: 'allow',
@@ -62,7 +62,7 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
   it('does not modify a policy containing a broad Everyone rule', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       success: true,
-      result: makePolicy(policies[0].policyId, [{ everyone: {} }]),
+      result: makePolicy(policies[0]!.policyId, [{ everyone: {} }]),
     }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const result = await syncApprovedEmailToCloudflareAccess(env('test-token'), 'member@example.com');
