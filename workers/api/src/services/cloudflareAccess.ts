@@ -106,7 +106,7 @@ export async function syncApprovedEmailToCloudflareAccess(
   emailInput: string
 ): Promise<AccessSyncResult> {
   const email = emailInput.trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { status: 'failed', message: 'The applicant email address is invalid.' };
   }
   if (!env.CF_ACCESS_API_TOKEN) {
