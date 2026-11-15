@@ -9,6 +9,7 @@ import { loadRbacUser } from './middleware/rbac';
 import { healthRoutes } from './routes/health';
 import { publicAnimalsRoutes } from './routes/public/animals';
 import { publicJoinRoutes } from './routes/public/join';
+import { publicContentRoutes } from './routes/public/content';
 import { adminMeRoutes } from './routes/admin/me';
 import { adminUsersRoutes } from './routes/admin/users';
 import { adminJoinRoutes } from './routes/admin/join';
@@ -43,6 +44,7 @@ app.use(
 // Public endpoints
 app.route('/api/v1/health', healthRoutes);
 app.route('/api/v1/public/animals', publicAnimalsRoutes);
+app.route('/api/v1/public/content', publicContentRoutes);
 app.use('/api/v1/public/join/*', rateLimit({ bucket: 'public-join', maxRequests: 8, windowSeconds: 600 }));
 app.route('/api/v1/public/join', publicJoinRoutes);
 app.route('/api/v1/files', publicFileProxyRoutes);
