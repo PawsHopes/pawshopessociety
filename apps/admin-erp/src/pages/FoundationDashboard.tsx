@@ -9,13 +9,13 @@ interface Props {
 type HealthStatus = 'checking' | 'online' | 'degraded';
 
 export const FoundationDashboard: React.FC<Props> = ({ user }) => {
-  const [health, setHealth] = useState<{ database: string; timestamp: string } | null>(null);
+  const [health, setHealth] = useState<{ database: string; storage?: { publicMedia: boolean; privateVault: boolean }; timestamp: string } | null>(null);
   const [healthStatus, setHealthStatus] = useState<HealthStatus>('checking');
   const [publicAnimalCount, setPublicAnimalCount] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
-    apiFetch<{ database: string; timestamp: string }>('/api/v1/health')
+    apiFetch<{ database: string; storage?: { publicMedia: boolean; privateVault: boolean }; timestamp: string }>('/api/v1/health')
       .then((res) => {
         if (!active) return;
         if (res.success && res.data?.database === 'ok') {
@@ -95,6 +95,17 @@ export const FoundationDashboard: React.FC<Props> = ({ user }) => {
             {publicAnimalCount !== null ? publicAnimalCount.toLocaleString() : 'Not available'}
           </p>
           <p className="text-xs text-slate-500 mt-1">Published and adopted records returned by the public API</p>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase text-slate-400">R2 Document Storage</span>
+            <Database className="w-5 h-5 text-brandOrange" />
+          </div>
+          <p className="text-xl font-extrabold mt-2">
+            {health?.storage?.publicMedia && health?.storage?.privateVault ? 'Ready' : healthStatus === 'online' ? 'Not enabled' : 'Checking…'}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">Public media: {health?.storage?.publicMedia ? 'available' : 'disabled'} · Private vault: {health?.storage?.privateVault ? 'available' : 'disabled'}</p>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
