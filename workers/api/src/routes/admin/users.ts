@@ -178,6 +178,10 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
+    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
+    }
+
     const targetId = c.req.param('id');
     const body = await c.req.json().catch(() => null);
     const parsed = updateUserSchema.safeParse(body);
