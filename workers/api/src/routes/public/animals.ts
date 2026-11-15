@@ -12,7 +12,7 @@ publicAnimalsRoutes.get('/', async (c) => {
      FROM animals
      WHERE is_published_public = 1
        AND deleted_at IS NULL
-       AND current_status IN ('available_for_adoption', 'adopted')
+       AND (current_status = 'adopted' OR (current_status = 'available_for_adoption' AND is_adoption_eligible = 1))
      ORDER BY created_at ASC`
   ).all<{
     id: string;
