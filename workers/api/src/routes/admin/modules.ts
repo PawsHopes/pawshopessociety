@@ -280,7 +280,7 @@ adminModuleRoutes.get('/:resource', async (c) => {
       limit,
       offset,
       resource,
-      readOnly: !config.write || config.immutable === true
+      readOnly: !config.write || config.immutable === true || !actor.permissions.includes(config.write)
     }
   });
 });
