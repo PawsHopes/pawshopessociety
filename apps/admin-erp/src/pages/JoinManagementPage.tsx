@@ -20,6 +20,9 @@ type JoinApplication = {
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
   linkLabel: string;
+  accessSyncStatus?: 'not_required' | 'pending' | 'synced' | 'failed';
+  accessSyncedAt?: string | null;
+  accessSyncError?: string | null;
 };
 
 const ROLES = [
@@ -34,6 +37,7 @@ const ROLES = [
 export const JoinManagementPage: React.FC = () => {
   const [links, setLinks] = useState<JoinLink[]>([]);
   const [applications, setApplications] = useState<JoinApplication[]>([]);
+  const [approvedApplications, setApprovedApplications] = useState<JoinApplication[]>([]);
   const [label, setLabel] = useState("Paws Hopes Society — Join");
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [newLink, setNewLink] = useState('');
@@ -41,14 +45,19 @@ export const JoinManagementPage: React.FC = () => {
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState(false);
   const [accessEmailToAdd, setAccessEmailToAdd] = useState('');
+  const [accessApplicationId, setAccessApplicationId] = useState('');
+  const [accessSyncStatus, setAccessSyncStatus] = useState<'pending' | 'failed' | 'synced'>('pending');
+  const [accessSyncMessage, setAccessSyncMessage] = useState('');
 
   const load = async () => {
-    const [linkRes, appRes] = await Promise.all([
+    const [linkRes, appRes, approvedRes] = await Promise.all([
       apiFetch<JoinLink[]>('/api/v1/admin/join/links'),
       apiFetch<JoinApplication[]>('/api/v1/admin/join/applications?status=pending'),
+      apiFetch<JoinApplication[]>('/api/v1/admin/join/applications?status=approved'),
     ]);
     if (linkRes.success && linkRes.data) setLinks(linkRes.data);
     if (appRes.success && appRes.data) setApplications(appRes.data);
+    if (approvedRes.success && approvedRes.data) setApprovedApplications(approvedRes.data);
   };
 
   useEffect(() => {
@@ -94,12 +103,40 @@ export const JoinManagementPage: React.FC = () => {
     const roleCode = roleByApplication[application.id] || 'volunteer';
     if (!window.confirm(`Approve ${application.fullName} as ${roleCode.replaceAll('_', ' ')}? This will create an active ERP account.`)) return;
 
-    const result = await apiFetch(`/api/v1/admin/join/applications/${application.id}/approve`, {
+    const result = await apiFetch<{
+      applicationId: string;
+      accessSyncStatus: 'pending' | 'failed' | 'synced';
+      accessSyncMessage: string;
+    }>(`/api/v1/admin/join/applications/${application.id}/approve`, {
       method: 'POST',
       body: JSON.stringify({ roleCode }),
     });
-    if (result.success) setAccessEmailToAdd(application.email);
-    setFeedback(result.success ? `${application.fullName} approved. Their ERP account is active${roleCode === 'volunteer' ? ' and a volunteer registry profile was created' : ''}. Complete the Cloudflare Access step below before they sign in.` : result.error?.message || 'Approval failed.');
+    if (result.success && result.data) {
+      setAccessApplicationId(application.id);
+      setAccessEmailToAdd(application.email);
+      setAccessSyncStatus(result.data.accessSyncStatus);
+      setAccessSyncMessage(result.data.accessSyncMessage);
+      setFeedback(result.data.accessSyncStatus === 'synced'
+        ? `${application.fullName} approved. ERP account created and Cloudflare Access updated.`
+        : `${application.fullName} approved and ERP account created. Cloudflare Access still needs attention.`);
+    } else {
+      setFeedback(result.error?.message || 'Approval failed.');
+    }
+    await load();
+  };
+
+  const retryAccessSync = async (applicationId: string, email: string) => {
+    const result = await apiFetch<{
+      accessSyncStatus: 'pending' | 'failed' | 'synced';
+      accessSyncMessage: string;
+    }>(`/api/v1/admin/join/applications/${applicationId}/access-sync`, { method: 'POST' });
+    if (result.data) {
+      setAccessApplicationId(applicationId);
+      setAccessEmailToAdd(email);
+      setAccessSyncStatus(result.data.accessSyncStatus);
+      setAccessSyncMessage(result.data.accessSyncMessage);
+    }
+    setFeedback(result.data?.accessSyncMessage || result.error?.message || 'Could not synchronise Cloudflare Access.');
     await load();
   };
 
@@ -127,22 +164,28 @@ export const JoinManagementPage: React.FC = () => {
 
       {feedback && <div role="status" className="rounded-xl bg-slate-900 p-3 text-sm text-white">{feedback}</div>}
 
-      {accessEmailToAdd && (
+      {accessEmailToAdd && accessSyncStatus !== 'synced' && (
         <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5" aria-labelledby="access-setup-title">
-          <h2 id="access-setup-title" className="text-base font-extrabold text-amber-950">One last step: grant Cloudflare Access</h2>
-          <p className="mt-1 text-sm text-amber-900">This applicant is approved in Paws Hopes Society ERP, but Cloudflare Access still blocks sign-in until their exact email is added.</p>
+          <h2 id="access-setup-title" className="text-base font-extrabold text-amber-950">Cloudflare Access needs attention</h2>
+          <p className="mt-1 text-sm text-amber-900">The ERP account is approved and active. The person cannot sign in until Cloudflare Access allows this exact email.</p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
             <code className="min-w-0 flex-1 break-all rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900">{accessEmailToAdd}</code>
             <button type="button" onClick={() => { void navigator.clipboard.writeText(accessEmailToAdd).then(() => setFeedback('Applicant email copied.')).catch(() => setFeedback('Copy failed. Please select and copy the email manually.')); }} className="rounded-lg border border-amber-400 px-3 py-2 text-sm font-bold text-amber-950">Copy email</button>
           </div>
-          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-amber-950">
-            <li>Open Cloudflare Dashboard → Zero Trust → Access → Applications.</li>
-            <li>Open <strong>Paws Hopes Society Admin ERP</strong> and select its Allow policy.</li>
-            <li>Under Include, add this exact email address as an Email rule. Keep the existing owner email.</li>
-            <li>Save the policy. The applicant can then open the ERP and authenticate using this same email.</li>
-          </ol>
-          <p className="mt-3 text-xs text-amber-900">Do not add pending or rejected applicants. Do not use an Everyone or whole-domain rule.</p>
-          <button type="button" onClick={() => setAccessEmailToAdd('')} className="mt-3 text-xs font-semibold text-amber-950 underline">Dismiss instructions</button>
+          <p className="mt-3 text-sm font-semibold text-amber-950">Sync status: {accessSyncStatus}</p>
+          <p className="mt-1 text-sm text-amber-900">{accessSyncMessage}</p>
+          <button type="button" onClick={() => { void retryAccessSync(accessApplicationId, accessEmailToAdd); }} className="mt-3 rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white">Retry Cloudflare Access sync</button>
+          <details className="mt-4 text-sm text-amber-950">
+            <summary className="cursor-pointer font-semibold">Manual fallback instructions</summary>
+            <ol className="mt-2 list-decimal space-y-1 pl-5">
+              <li>Open Cloudflare Dashboard → Zero Trust → Access → Applications.</li>
+              <li>Open <strong>Paws Hopes Society Admin ERP</strong> and select its Allow policy.</li>
+              <li>Under Include, add this exact email address as an Email rule. Keep the existing owner email.</li>
+              <li>Save the policy. The applicant can then authenticate using this same email.</li>
+            </ol>
+            <p className="mt-2 text-xs">Never add pending/rejected applicants, Everyone, or a whole email domain.</p>
+          </details>
+          <button type="button" onClick={() => setAccessEmailToAdd('')} className="mt-3 text-xs font-semibold text-amber-950 underline">Dismiss</button>
         </section>
       )}
 
@@ -210,6 +253,26 @@ export const JoinManagementPage: React.FC = () => {
                   <button onClick={() => reject(application)} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-700">Reject</button>
                 </div>
               </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-bold text-slate-900">Approved members — Access sync pending</h2>
+        {approvedApplications.filter((application) => application.accessSyncStatus !== 'synced').length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">All approved members are synchronised with Cloudflare Access.</p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            {approvedApplications.filter((application) => application.accessSyncStatus !== 'synced').map((application) => (
+              <div key={application.id} className="flex flex-col justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 sm:flex-row sm:items-center">
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900">{application.fullName}</p>
+                  <p className="break-all text-sm text-slate-700">{application.email}</p>
+                  <p className="mt-1 text-xs text-amber-900">Status: {application.accessSyncStatus || 'pending'}{application.accessSyncError ? ` · ${application.accessSyncError}` : ''}</p>
+                </div>
+                <button onClick={() => { void retryAccessSync(application.id, application.email); }} className="rounded-lg border border-amber-400 px-3 py-2 text-sm font-bold text-amber-950">Retry sync</button>
+              </div>
             ))}
           </div>
         )}
