@@ -76,6 +76,9 @@ export const UsersPage: React.FC = () => {
         <p className="text-sm text-slate-600">
           Assign roles and enforce least-privilege access across NGO staff and volunteers.
         </p>
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          New ERP accounts also need their email added to the Cloudflare Access allowlist before they can sign in. Creating an ERP user alone does not grant website access.
+        </p>
       </div>
 
       <form
