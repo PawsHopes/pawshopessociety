@@ -8,7 +8,7 @@ This runbook is staging-only. It must not change the public website, the existin
 - Admin URL: `https://phs-phs.pages.dev`
 - Source: `PawsHopes/pawshopessociety`, branch `erp-development`
 - Pages root: `apps/admin-erp`
-- Build: `npm run build`; output: `dist`
+- Build: `npm install --prefix ../../workers/api --no-save --no-package-lock --omit=dev && npm run build`; output: `dist`
 - Cloudflare Access app exists for `phs-phs.pages.dev`, allowing only `hopezpaws@gmail.com`
 - Zero Trust team: `mute-pond-e3e6.cloudflareaccess.com`
 - Staging D1 database: `pawshopes-erp-db-staging` (`a6fd7136-b618-4072-af6a-5373f4e727d1`)
