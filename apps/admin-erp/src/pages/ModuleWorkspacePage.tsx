@@ -133,6 +133,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [busy, setBusy] = useState(false);
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
+  const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
     if (!resource) return;
@@ -176,6 +177,30 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     setForm(next); setEditingId(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const actionsForRow = (row: Record<string,unknown>) => {
+    if (!resource) return [] as string[];
+    const status = String(row.status || row.approval_status || row.verification_status || '');
+    if (resource.key === 'donations' && status === 'pending' && user.permissions.includes('donations:verify')) return ['verify'];
+    if (resource.key === 'expenses' && status === 'pending' && user.permissions.includes('finance:approve')) return ['approve','reject'];
+    if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && user.permissions.includes('finance:ledger')) return ['paid'];
+    if (resource.key === 'stock_movements' && status === 'pending' && user.permissions.includes('inventory:approve')) return ['approve'];
+    if (['adoption_applications','foster_applications'].includes(resource.key) && !['approved','rejected','completed'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
+    return [];
+  };
+
+  const runWorkflow = async (action: string, row: Record<string,unknown>) => {
+    if (!resource) return;
+    const id = String(row.id || '');
+    let reason = '';
+    if (action === 'reject') {
+      reason = window.prompt('Enter the reason for rejection:') || '';
+      if (!reason.trim()) return;
+    } else if (!window.confirm(action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
+    const suffix = action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
+    const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : undefined });
+    setFeedback(result.success ? (action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : 'Record ' + action + 'd.') : result.error?.message || 'Workflow action failed.');
+    await load();
+  };
 
   if (!resources.length || !available.length) return <section className="rounded-2xl border border-slate-200 bg-white p-6"><h1 className="text-xl font-bold">Access unavailable</h1><p className="mt-2 text-sm text-slate-600">This module is not available to your current ERP role.</p></section>;
 
@@ -204,8 +229,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     </section>}
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{rows.length} records loaded · maximum 100 per search</p></div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
-      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{canEdit && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
-      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : String(row[col])}</td>)}{canEdit && <td className="px-4 py-3 text-right"><button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button></td>}</tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
+      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : String(row[col])}</td>)}{(canEdit || canWorkflow) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canEdit && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
     </section>
     <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
   </div>;
