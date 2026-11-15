@@ -206,13 +206,6 @@ adminUsersRoutes.patch(
       }
     }
 
-    if (parsed.data.status !== undefined) {
-      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
-      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
-        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society administrator can suspend or reactivate users.' } }, 403);
-      }
-    }
-
     if (Object.keys(parsed.data).length === 0) {
       return c.json({
         success: false,
@@ -243,13 +236,11 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    if (
-      existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL &&
-      (parsed.data.roleCode !== undefined || parsed.data.status !== undefined)
-    ) {
+    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+    if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== roleManagerEmail) {
       return c.json({
         success: false,
-        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected and cannot be demoted or suspended.' }
+        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected from changes by secondary administrators.' }
       }, 403);
     }
 
