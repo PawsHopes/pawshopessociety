@@ -204,7 +204,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   }, [resource?.key, user.permissions]);
   useEffect(() => { void load(); }, [resourceKey, moduleKey, search]);
 
-  const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); };
+  const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); setViewingAttachments(null); };
   const loadAttachments = async (recordId: string) => {
     if (!resource) return;
     const result = await apiFetch<{ items: Record<string, unknown>[] }>(`/api/v1/admin/modules/attachments/${resource.key}/${recordId}`);
