@@ -96,7 +96,7 @@ const RESOURCES: Record<string, Resource[]> = {
   ],
   volunteers: [
     { key: 'volunteers', label: 'Volunteer & Member Directory', permission: 'volunteers:read', writePermission: 'volunteers:write', fields: [
-      text('volunteer_code','Volunteer code',true), text('full_name','Full name',true), text('phone','Phone',true), text('email','Email'), area('address','Address'),
+      text('volunteer_code','Volunteer code',true), text('user_id','Linked ERP user ID (optional)'), text('full_name','Full name',true), text('phone','Phone',true), text('email','Email'), area('address','Address'),
       text('emergency_contact_name','Emergency contact'), text('emergency_contact_phone','Emergency phone'), text('skills_json','Skills (comma-separated)'), text('availability','Availability'),
       choice('role_type','Type',['volunteer','member']), choice('status','Status',['applicant','active','inactive']), date('joined_date','Joined date'), area('notes','Notes')
     ]},
@@ -135,6 +135,11 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [busy, setBusy] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachments, setAttachments] = useState<Record<string, unknown>[]>([]);
+  const updateFieldsForResource = (key: string): string[] | null => {
+    if (key === 'adoption_applications') return ['experience_notes','home_check_status','home_check_notes'];
+    if (key === 'foster_applications') return ['foster_start_date','expected_end_date','actual_end_date','notes'];
+    return null;
+  };
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
   const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
@@ -177,7 +182,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       purchase_orders: 'purchase_invoice', compliance_registrations: 'compliance_cert',
       stock_movements: 'purchase_invoice', volunteers: 'other', donors: 'other', veterinarians: 'other'
     };
-    for (const file of selectedFiles) {
+    const filesToUpload = [...selectedFiles];
+    for (const file of filesToUpload) {
       const data = new FormData();
       data.append('file', file);
       let uploadedId = '';
@@ -202,8 +208,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         const cms = await apiFetch(`/api/v1/admin/modules/website_content/${recordId}`, { method: 'PATCH', body: JSON.stringify({ media_asset_id: uploadedId }) });
         if (!cms.success) throw new Error(cms.error?.message || 'Image uploaded but could not be linked to the CMS draft.');
       }
+      setSelectedFiles((current) => current.filter((pending) => pending !== file));
     }
-    setSelectedFiles([]);
     await loadAttachments(recordId);
   };
   const openPrivateAttachment = async (documentId: string) => {
@@ -216,7 +222,13 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (!resource) return;
     setBusy(true); setFeedback('');
     const payload: Record<string,string|number|boolean|null> = {};
+    const updateFields: Record<string, string[]> = {
+      adoption_applications: ['experience_notes','home_check_status','home_check_notes'],
+      foster_applications: ['foster_start_date','expected_end_date','actual_end_date','notes']
+    };
     for (const field of resource.fields) {
+      if (editingId && updateFields[resource.key] && !updateFields[resource.key].includes(field.key)) continue;
+      if (editingId && resource.key === 'inventory_items' && field.key === 'opening_stock') continue;
       const value = form[field.key];
       if (value === undefined || value === '') continue;
       if (field.key === 'body_json' && resource.key === 'website_content') payload.body_json = JSON.stringify({ content: value });
@@ -226,10 +238,11 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       else if (field.key.startsWith('is_') || field.key === 'has_other_pets' || field.key === 'expiry_tracking_enabled') payload[field.key] = value === '1';
       else payload[field.key] = value;
     }
-    const result = await apiFetch<{ id?: string }>(editingId ? `/api/v1/admin/modules/${resource.key}/${editingId}` : `/api/v1/admin/modules/${resource.key}`, {
-      method: editingId ? 'PATCH' : 'POST', body: JSON.stringify(payload)
-    });
-    setBusy(false);
+    const result = editingId && Object.keys(payload).length === 0 && selectedFiles.length > 0
+      ? { success: true, data: { id: editingId } }
+      : await apiFetch<{ id?: string }>(editingId ? `/api/v1/admin/modules/${resource.key}/${editingId}` : `/api/v1/admin/modules/${resource.key}`, {
+          method: editingId ? 'PATCH' : 'POST', body: JSON.stringify(payload)
+        });
     if (result.success) {
       const savedId = editingId || result.data?.id;
       if (savedId && selectedFiles.length) {
@@ -248,6 +261,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       }
       await load();
     } else setFeedback(result.error?.message || 'Save failed.');
+    setBusy(false);
   };
 
   const beginEdit = (row: Record<string,unknown>) => {
@@ -265,6 +279,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         } else if (field.key === 'skills_json' && resource.key === 'volunteers') {
           try { const parsed = JSON.parse(String(value)); next[field.key] = Array.isArray(parsed) ? parsed.join(', ') : String(value); }
           catch { next[field.key] = String(value); }
+        } else if (['amount_paise','total_amount_paise'].includes(field.key)) {
+          next[field.key] = (Number(value) / 100).toFixed(2);
         } else next[field.key] = String(value);
       }
     }
@@ -323,9 +339,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <div className="mb-4 flex items-center justify-between"><h2 className="font-bold text-slate-900">{editingId ? 'Update record' : `Add ${resource.label}`}</h2>{editingId && <button type="button" onClick={reset} className="text-sm font-semibold text-slate-600 underline">Cancel edit</button>}</div>
       <form onSubmit={submit} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {resource.fields.map((field) => <label key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}><span className="mb-1 block text-xs font-bold text-slate-600">{field.label}{field.required ? ' *' : ''}</span>
-          {field.type === 'textarea' ? <textarea required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} rows={2} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          : field.type === 'select' ? <select required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="">Select…</option>{field.options?.map((option) => <option key={option} value={option}>{option.replaceAll('_',' ')}</option>)}</select>
-          : <input required={field.required} type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? 'any' : undefined} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />}
+          {field.type === 'textarea' ? <textarea disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key)} required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} rows={2} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          : field.type === 'select' ? <select disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key) || !!editingId && resource?.key === 'inventory_items' && field.key === 'opening_stock'} required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="">Select…</option>{field.options?.map((option) => <option key={option} value={option}>{option.replaceAll('_',' ')}</option>)}</select>
+          : <input disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key) || !!editingId && resource?.key === 'inventory_items' && field.key === 'opening_stock'} required={field.required} type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? 'any' : undefined} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />}
         </label>)}
         <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
           <label className="block text-sm font-semibold text-slate-800">Photos and documents (optional)</label>
@@ -343,7 +359,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{rows.length} records loaded · maximum 100 per search</p></div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
-      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : String(row[col])}</td>)}{(canEdit || canWorkflow) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canEdit && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
+      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
     </section>
     <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
   </div>;
