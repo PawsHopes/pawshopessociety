@@ -44,20 +44,23 @@ export const JoinManagementPage: React.FC = () => {
   const [roleByApplication, setRoleByApplication] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState(false);
+  const [canManageRoles, setCanManageRoles] = useState(false);
   const [accessEmailToAdd, setAccessEmailToAdd] = useState('');
   const [accessApplicationId, setAccessApplicationId] = useState('');
   const [accessSyncStatus, setAccessSyncStatus] = useState<'pending' | 'failed' | 'synced'>('pending');
   const [accessSyncMessage, setAccessSyncMessage] = useState('');
 
   const load = async () => {
-    const [linkRes, appRes, approvedRes] = await Promise.all([
+    const [linkRes, appRes, approvedRes, usersRes] = await Promise.all([
       apiFetch<JoinLink[]>('/api/v1/admin/join/links'),
       apiFetch<JoinApplication[]>('/api/v1/admin/join/applications?status=pending'),
       apiFetch<JoinApplication[]>('/api/v1/admin/join/applications?status=approved'),
+      apiFetch<{ canManageRoles: boolean }>('/api/v1/admin/users'),
     ]);
     if (linkRes.success && linkRes.data) setLinks(linkRes.data);
     if (appRes.success && appRes.data) setApplications(appRes.data);
     if (approvedRes.success && approvedRes.data) setApprovedApplications(approvedRes.data);
+    if (usersRes.success && usersRes.data) setCanManageRoles(usersRes.data.canManageRoles === true);
   };
 
   useEffect(() => {
@@ -155,7 +158,7 @@ export const JoinManagementPage: React.FC = () => {
       <header>
         <h1 className="text-2xl font-extrabold text-slate-900">Join Requests &amp; Verification</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Anyone with a valid link can apply. Only you, as Super Admin, can approve an applicant and assign ERP access.
+          Anyone with a valid link can apply. Only the designated primary administrator can approve applicants, assign ERP roles, and grant sign-in access.
         </p>
         <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           Approval creates the ERP account. You must separately add each approved email to Cloudflare Access before that person can sign in.
@@ -174,7 +177,7 @@ export const JoinManagementPage: React.FC = () => {
           </div>
           <p className="mt-3 text-sm font-semibold text-amber-950">Sync status: {accessSyncStatus}</p>
           <p className="mt-1 text-sm text-amber-900">{accessSyncMessage}</p>
-          <button type="button" onClick={() => { void retryAccessSync(accessApplicationId, accessEmailToAdd); }} className="mt-3 rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white">Retry Cloudflare Access sync</button>
+          <button type="button" disabled={!canManageRoles} onClick={() => { void retryAccessSync(accessApplicationId, accessEmailToAdd); }} className="mt-3 rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Retry Cloudflare Access sync</button>
           <details className="mt-4 text-sm text-amber-950">
             <summary className="cursor-pointer font-semibold">Manual fallback instructions</summary>
             <ol className="mt-2 list-decimal space-y-1 pl-5">
@@ -244,12 +247,12 @@ export const JoinManagementPage: React.FC = () => {
                 </div>
                 {application.message && <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{application.message}</p>}
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <select aria-label={`Role for ${application.fullName}`} value={roleByApplication[application.id] || 'volunteer'}
+                  <select disabled={!canManageRoles} aria-label={`Role for ${application.fullName}`} value={roleByApplication[application.id] || 'volunteer'}
                     onChange={(e) => setRoleByApplication((old) => ({ ...old, [application.id]: e.target.value }))}
                     className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
                     {ROLES.map((role) => <option key={role.code} value={role.code}>{role.label}</option>)}
                   </select>
-                  <button onClick={() => approve(application)} className="rounded-lg bg-green-700 px-4 py-2 text-sm font-bold text-white">Verify &amp; approve</button>
+                  <button disabled={!canManageRoles} title={!canManageRoles ? 'Only the designated primary administrator can approve applicants and assign roles.' : undefined} onClick={() => approve(application)} className="rounded-lg bg-green-700 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Verify &amp; approve</button>
                   <button onClick={() => reject(application)} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-700">Reject</button>
                 </div>
               </article>
@@ -271,7 +274,7 @@ export const JoinManagementPage: React.FC = () => {
                   <p className="break-all text-sm text-slate-700">{application.email}</p>
                   <p className="mt-1 text-xs text-amber-900">Status: {application.accessSyncStatus || 'pending'}{application.accessSyncError ? ` · ${application.accessSyncError}` : ''}</p>
                 </div>
-                <button onClick={() => { void retryAccessSync(application.id, application.email); }} className="rounded-lg border border-amber-400 px-3 py-2 text-sm font-bold text-amber-950">Retry sync</button>
+                <button disabled={!canManageRoles} title={!canManageRoles ? 'Only the designated primary administrator can grant Cloudflare Access.' : undefined} onClick={() => { void retryAccessSync(application.id, application.email); }} className="rounded-lg border border-amber-400 px-3 py-2 text-sm font-bold text-amber-950 disabled:cursor-not-allowed disabled:opacity-50">Retry sync</button>
               </div>
             ))}
           </div>
