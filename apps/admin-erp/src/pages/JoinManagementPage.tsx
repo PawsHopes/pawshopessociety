@@ -34,12 +34,13 @@ const ROLES = [
 export const JoinManagementPage: React.FC = () => {
   const [links, setLinks] = useState<JoinLink[]>([]);
   const [applications, setApplications] = useState<JoinApplication[]>([]);
-  const [label, setLabel] = useState("Paw's Hopez Society — Join");
+  const [label, setLabel] = useState("Paws Hopes Society — Join");
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [newLink, setNewLink] = useState('');
   const [roleByApplication, setRoleByApplication] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState(false);
+  const [accessEmailToAdd, setAccessEmailToAdd] = useState('');
 
   const load = async () => {
     const [linkRes, appRes] = await Promise.all([
@@ -97,7 +98,8 @@ export const JoinManagementPage: React.FC = () => {
       method: 'POST',
       body: JSON.stringify({ roleCode }),
     });
-    setFeedback(result.success ? `${application.fullName} approved. Their ERP account is active${roleCode === 'volunteer' ? ' and a volunteer registry profile was created' : ''}. Add their email to Cloudflare Access before sign-in.` : result.error?.message || 'Approval failed.');
+    if (result.success) setAccessEmailToAdd(application.email);
+    setFeedback(result.success ? `${application.fullName} approved. Their ERP account is active${roleCode === 'volunteer' ? ' and a volunteer registry profile was created' : ''}. Complete the Cloudflare Access step below before they sign in.` : result.error?.message || 'Approval failed.');
     await load();
   };
 
@@ -119,11 +121,30 @@ export const JoinManagementPage: React.FC = () => {
           Anyone with a valid link can apply. Only you, as Super Admin, can approve an applicant and assign ERP access.
         </p>
         <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-          After approval, add the applicant&apos;s email to the Cloudflare Access allowlist before they can sign in.
+          Approval creates the ERP account. You must separately add each approved email to Cloudflare Access before that person can sign in.
         </p>
       </header>
 
       {feedback && <div role="status" className="rounded-xl bg-slate-900 p-3 text-sm text-white">{feedback}</div>}
+
+      {accessEmailToAdd && (
+        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5" aria-labelledby="access-setup-title">
+          <h2 id="access-setup-title" className="text-base font-extrabold text-amber-950">One last step: grant Cloudflare Access</h2>
+          <p className="mt-1 text-sm text-amber-900">This applicant is approved in Paws Hopes Society ERP, but Cloudflare Access still blocks sign-in until their exact email is added.</p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <code className="min-w-0 flex-1 break-all rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900">{accessEmailToAdd}</code>
+            <button type="button" onClick={() => { void navigator.clipboard.writeText(accessEmailToAdd).then(() => setFeedback('Applicant email copied.')).catch(() => setFeedback('Copy failed. Please select and copy the email manually.')); }} className="rounded-lg border border-amber-400 px-3 py-2 text-sm font-bold text-amber-950">Copy email</button>
+          </div>
+          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-amber-950">
+            <li>Open Cloudflare Dashboard → Zero Trust → Access → Applications.</li>
+            <li>Open <strong>Paws Hopes Society Admin ERP</strong> and select its Allow policy.</li>
+            <li>Under Include, add this exact email address as an Email rule. Keep the existing owner email.</li>
+            <li>Save the policy. The applicant can then open the ERP and authenticate using this same email.</li>
+          </ol>
+          <p className="mt-3 text-xs text-amber-900">Do not add pending or rejected applicants. Do not use an Everyone or whole-domain rule.</p>
+          <button type="button" onClick={() => setAccessEmailToAdd('')} className="mt-3 text-xs font-semibold text-amber-950 underline">Dismiss instructions</button>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900">Create a shareable join link</h2>
