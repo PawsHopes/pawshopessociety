@@ -18,6 +18,7 @@ healthRoutes.get('/', async (c) => {
       data: {
         service: 'pawshopes-erp-api',
         database: dbStatus,
+        storage: { publicMedia: Boolean(c.env.PUBLIC_MEDIA), privateVault: Boolean(c.env.PRIVATE_VAULT) },
         timestamp: new Date().toISOString(),
       },
     },
