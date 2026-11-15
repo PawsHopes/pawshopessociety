@@ -118,6 +118,9 @@ export const JoinManagementPage: React.FC = () => {
         <p className="mt-1 text-sm text-slate-600">
           Anyone with a valid link can apply. Only you, as Super Admin, can approve an applicant and assign ERP access.
         </p>
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          After approval, add the applicant&apos;s email to the Cloudflare Access allowlist before they can sign in.
+        </p>
       </header>
 
       {feedback && <div role="status" className="rounded-xl bg-slate-900 p-3 text-sm text-white">{feedback}</div>}
