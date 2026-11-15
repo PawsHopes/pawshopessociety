@@ -1,0 +1,9 @@
+# Copy this file to .dev.vars for local wrangler dev ONLY. NEVER commit .dev.vars to GitHub!
+ENVIRONMENT=development
+DEV_BOOTSTRAP_ADMIN_EMAIL=admin@pawshopessociety.org
+CF_ACCESS_AUD=local-dev-aud
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+RAZORPAY_KEY_ID=rzp_test_placeholder
+RAZORPAY_KEY_SECRET=rzp_test_secret_placeholder
+RAZORPAY_WEBHOOK_SECRET=whsec_test_placeholder
+SIGNED_URL_SECRET=change-this-to-a-long-random-64-char-hex-secret-in-production

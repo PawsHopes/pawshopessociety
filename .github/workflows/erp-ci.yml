@@ -1,0 +1,213 @@
+name: ERP CI
+
+on:
+  push:
+    branches:
+      - erp-development
+  pull_request:
+    branches:
+      - main
+      - erp-development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Admin ERP build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        working-directory: apps/admin-erp
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Audit frontend dependencies
+        working-directory: apps/admin-erp
+        run: npm audit --audit-level=high
+
+      - name: Install audited frontend dependencies
+        working-directory: apps/admin-erp
+        run: npm ci --no-audit --no-fund
+
+      - name: Type-check and build admin ERP
+        working-directory: apps/admin-erp
+        run: npm run build
+
+  worker:
+    name: Worker API checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker dependencies
+        working-directory: workers/api
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Audit Worker dependencies
+        working-directory: workers/api
+        run: npm audit --audit-level=high
+
+      - name: Install audited Worker dependencies
+        working-directory: workers/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Type-check Worker API
+        working-directory: workers/api
+        run: npm run typecheck
+
+      - name: Run Worker tests
+        working-directory: workers/api
+        run: npm test
+
+      - name: Build staging Worker bundle without deploying
+        working-directory: workers/api
+        run: npm run build
+
+      - name: Upload staging Worker bundle for controlled Cloudflare deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-worker-bundle
+          path: workers/api/dist/**
+          if-no-files-found: error
+          retention-days: 1
+
+  database:
+    name: Database migration validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply all D1 migration SQL to a temporary SQLite database
+        run: |
+          python - <<'PY'
+          import sqlite3
+          from pathlib import Path
+
+          migration_dir = Path("database/migrations")
+          migrations = sorted(migration_dir.glob("*.sql"))
+          if not migrations:
+              raise SystemExit("No SQL migration files found.")
+
+          db = sqlite3.connect(":memory:")
+          db.execute("PRAGMA foreign_keys = ON")
+
+          for migration in migrations:
+              print(f"Validating {migration}")
+              try:
+                  db.executescript(migration.read_text(encoding="utf-8"))
+              except sqlite3.Error as exc:
+                  raise SystemExit(f"Migration failed: {migration}: {exc}") from exc
+
+          violations = db.execute("PRAGMA foreign_key_check").fetchall()
+          if violations:
+              raise SystemExit(f"Foreign-key violations after migrations: {violations[:10]}")
+          integrity = db.execute("PRAGMA integrity_check").fetchone()[0]
+          if integrity != "ok":
+              raise SystemExit(f"SQLite integrity check failed: {integrity}")
+          print(f"Successfully applied {len(migrations)} migration files; foreign keys and integrity checks passed.")
+          
+          # Seed only deterministic reference data for workflow trigger tests.
+          for seed_name in ("0001_roles_permissions.sql", "0002_chart_of_accounts_and_compliance.sql"):
+              seed_path = Path("database/seeds") / seed_name
+              db.executescript(seed_path.read_text(encoding="utf-8"))
+
+          db.execute(
+              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+              ("ci-admin", "ci-admin@example.test", "CI Admin", "role_super_admin", "active"),
+          )
+          db.execute(
+              "INSERT INTO inventory_items (id, sku, name, category, unit) VALUES (?, ?, ?, ?, ?)",
+              ("ci-food", "CI-FOOD-001", "CI dog food", "dog_food", "kg"),
+          )
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
+                 VALUES (?, ?, 'purchase_in', 10, 'pending', ?)""",
+              ("ci-stock-in", "ci-food", "ci-admin"),
+          )
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 0
+          db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-in'")
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 10
+
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
+                 VALUES (?, ?, 'issue_out', -11, 'pending', ?)""",
+              ("ci-stock-out", "ci-food", "ci-admin"),
+          )
+          try:
+              db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-out'")
+              raise SystemExit("Negative stock approval unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          assert db.execute("SELECT approval_status FROM stock_movements WHERE id='ci-stock-out'").fetchone()[0] == "pending"
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 10
+
+          db.execute(
+              "INSERT INTO inventory_items (id, sku, name, category, unit, opening_stock, current_stock) VALUES (?, ?, ?, ?, ?, ?, 0)",
+              ("ci-opening", "CI-OPEN-001", "CI opening stock", "dog_food", "kg", 7),
+          )
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, approved_by, recorded_by)
+                 VALUES (?, ?, 'opening', 7, 'approved', ?, ?)""",
+              ("ci-opening-movement", "ci-opening", "ci-admin", "ci-admin"),
+          )
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-opening'").fetchone()[0] == 7
+
+          asset_id = db.execute("SELECT id FROM accounts WHERE account_type='asset' AND is_active=1 LIMIT 1").fetchone()[0]
+          income_id = db.execute("SELECT id FROM accounts WHERE account_type='income' AND is_active=1 LIMIT 1").fetchone()[0]
+          fund_id = db.execute("SELECT id FROM fund_categories LIMIT 1").fetchone()[0]
+          db.execute(
+              """INSERT INTO financial_transactions
+                 (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id,
+                  fund_category_id, amount_paise, reference_type, reference_id, narration, created_by)
+                 VALUES (?, ?, '2026-11-15', 'income', ?, ?, ?, 1234, 'donation', 'ci-donation', 'CI donation', ?)""",
+              ("ci-txn", "CI-TXN-001", asset_id, income_id, fund_id, "ci-admin"),
+          )
+          assert db.execute("SELECT current_balance_paise FROM accounts WHERE id=?", (asset_id,)).fetchone()[0] == 1234
+          assert db.execute("SELECT current_balance_paise FROM accounts WHERE id=?", (income_id,)).fetchone()[0] == 1234
+          try:
+              db.execute(
+                  """INSERT INTO financial_transactions
+                     (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id,
+                      fund_category_id, amount_paise, reference_type, reference_id, narration, created_by)
+                     VALUES (?, ?, '2026-11-15', 'income', ?, ?, ?, 1234, 'donation', 'ci-donation', 'Duplicate', ?)""",
+                  ("ci-txn-duplicate", "CI-TXN-002", asset_id, income_id, fund_id, "ci-admin"),
+              )
+              raise SystemExit("Duplicate donation ledger posting unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute("UPDATE financial_transactions SET narration='tampered' WHERE id='ci-txn'")
+              raise SystemExit("Immutable financial transaction update unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+
+          print("Workflow trigger tests passed: approved stock updates quantities, negative stock is blocked, ledger balances update, duplicate source postings and ledger edits are blocked.")
+          PY

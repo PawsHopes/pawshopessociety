@@ -1,0 +1,25 @@
+{
+  "name": "pawshopes-erp-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy:staging": "wrangler deploy --env staging",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate:local": "wrangler d1 migrations apply pawshopes-erp-db-staging --local",
+    "db:seed:local": "wrangler d1 execute pawshopes-erp-db-staging --local --file=../../database/seeds/0001_roles_permissions.sql && wrangler d1 execute pawshopes-erp-db-staging --local --file=../../database/seeds/0002_chart_of_accounts_and_compliance.sql && wrangler d1 execute pawshopes-erp-db-staging --local --file=../../database/seeds/0003_migrated_animals.sql",
+    "build": "wrangler deploy --dry-run --outdir=dist --env staging"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261114.1",
+    "typescript": "^5.7.2",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.162.0"
+  }
+}
