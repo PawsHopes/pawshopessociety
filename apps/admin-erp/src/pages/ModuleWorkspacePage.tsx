@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiFetch, type AuthUser } from '../lib/api';
 
-type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email' | 'textarea' | 'select' | 'checkbox'; required?: boolean; options?: string[] };
+type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email' | 'textarea' | 'select' | 'checkbox'; required?: boolean; options?: string[]; relationResource?: string };
 type Resource = { key: string; label: string; permission: string; writePermission?: string; fields: Field[] };
 
 const text = (key: string, label: string, required = false): Field => ({ key, label, required });
@@ -10,12 +10,13 @@ const date = (key: string, label: string, required = false): Field => ({ key, la
 const num = (key: string, label: string, required = false): Field => ({ key, label, type: 'number', required });
 const area = (key: string, label: string, required = false): Field => ({ key, label, type: 'textarea', required });
 const choice = (key: string, label: string, options: string[], required = false): Field => ({ key, label, type: 'select', options, required });
+const relation = (key: string, label: string, relationResource: string, required = false): Field => ({ key, label, type: 'select', relationResource, required });
 
 const RESOURCES: Record<string, Resource[]> = {
   animals: [{ key: 'animals', label: 'Animal Registry', permission: 'animals:read', writePermission: 'animals:write', fields: [
     text('animal_code','Animal code',true), text('name','Name',true), choice('species','Species',['Dog','Cat','Monkey','Bird','Squirrel','Guinea Pig','Reptile','Other'],true),
     text('breed','Breed'), choice('gender','Gender',['Male','Female','Unknown']), text('estimated_age_text','Estimated age'), date('rescue_date','Rescue date'),
-    text('rescue_location','Rescue location'), text('microchip_or_tag','Microchip / tag'), text('kennel_zone','Kennel / zone'), text('legacy_slug','Legacy slug'), text('estimated_dob','Estimated date of birth'), text('identification_marks','Identification marks'), text('rescue_source','Rescue source'), text('rescue_case_id','Rescue case ID'), date('sterilization_date','Sterilization date'), text('caretaker_user_id','Caretaker user ID'), area('adopted_note','Adoption note'),
+    text('rescue_location','Rescue location'), text('microchip_or_tag','Microchip / tag'), text('kennel_zone','Kennel / zone'), text('legacy_slug','Legacy slug'), text('estimated_dob','Estimated date of birth'), text('identification_marks','Identification marks'), text('rescue_source','Rescue source'), relation('rescue_case_id','Rescue case','rescue_cases'), date('sterilization_date','Sterilization date'), text('caretaker_user_id','Caretaker user ID'), area('adopted_note','Adoption note'),
     choice('vaccination_status','Vaccination',['not_vaccinated','partial','up_to_date','pending']), choice('sterilization_status','Sterilization',['not_sterilized','scheduled','sterilized','not_applicable']),
     choice('current_status','Lifecycle status',['rescued','under_assessment','under_treatment','recovering','available_for_adoption','fostered','adopted','released','deceased']),
     choice('is_adoption_eligible','Adoption eligible',['0','1']), choice('is_foster_eligible','Foster eligible',['0','1']), choice('is_published_public','Publish publicly',['0','1']),
@@ -26,12 +27,12 @@ const RESOURCES: Record<string, Resource[]> = {
     text('location_address','Rescue location / address',true), choice('priority','Priority',['low','medium','high','critical']),
     choice('status','Case status',['new','verified','assigned','in_progress','rescued','not_rescued','closed']),
     choice('species','Species',['Dog','Cat','Monkey','Bird','Squirrel','Guinea Pig','Reptile','Other']), text('animal_description','Animal description',true), area('complaint_details','Reported issue',true),
-    text('assigned_volunteer_id','Assigned volunteer ID'), area('rescue_team_notes','Team notes'), area('outcome_notes','Outcome notes')
+    relation('assigned_volunteer_id','Assigned volunteer','volunteers'), area('rescue_team_notes','Team notes'), area('outcome_notes','Outcome notes')
   ]}],
   medical: [
     { key: 'medical_records', label: 'Consultations & Treatments', permission: 'medical:read', writePermission: 'medical:write', fields: [
-      text('animal_id','Animal record ID',true), date('visit_date','Visit date',true), choice('record_type','Record type',['consultation','surgery','sterilization','deworming','lab_test','emergency','follow_up'],true),
-      text('veterinarian_id','Veterinarian ID'), text('diagnosis','Diagnosis',true), area('symptoms','Symptoms'), area('prescription_text','Prescription'), area('medication_history_notes','Medication history'), area('treatment_notes','Treatment notes'), date('follow_up_date','Follow-up date')
+      relation('animal_id','Animal record', 'animals', true), date('visit_date','Visit date',true), choice('record_type','Record type',['consultation','surgery','sterilization','deworming','lab_test','emergency','follow_up'],true),
+      relation('veterinarian_id','Veterinarian','veterinarians'), text('diagnosis','Diagnosis',true), area('symptoms','Symptoms'), area('prescription_text','Prescription'), area('medication_history_notes','Medication history'), area('treatment_notes','Treatment notes'), date('follow_up_date','Follow-up date')
     ]},
     { key: 'vaccinations', label: 'Vaccinations', permission: 'medical:read', writePermission: 'medical:write', fields: [
       text('animal_id','Animal record ID',true), text('vaccine_name','Vaccine name',true), text('batch_number','Batch number'),
@@ -53,7 +54,7 @@ const RESOURCES: Record<string, Resource[]> = {
       text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), date('actual_end_date','Actual end'), area('notes','Notes')
     ]},
     { key: 'adoption_agreements', label: 'Adoption Agreements & Follow-ups', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
-      text('agreement_number','Agreement number',true), text('application_id','Application ID',true), text('animal_id','Animal record ID',true), date('handover_date','Handover date',true),
+      text('agreement_number','Agreement number',true), relation('application_id','Adoption application','adoption_applications',true), text('animal_id','Animal record ID',true), date('handover_date','Handover date',true),
       date('follow_up_30d_date','30-day follow-up'), area('follow_up_30d_notes','30-day notes'), date('follow_up_90d_date','90-day follow-up'), area('follow_up_90d_notes','90-day notes')
     ]}
   ],
@@ -62,13 +63,13 @@ const RESOURCES: Record<string, Resource[]> = {
       text('donor_code','Donor code',true), text('full_name','Donor name',true), text('email','Email'), text('phone','Phone'), text('pan_number','PAN'), area('address','Address'), choice('donor_type','Donor type',['individual','corporate','institutional'])
     ]},
     { key: 'donations', label: 'Donation Register', permission: 'donations:read', writePermission: 'donations:write', fields: [
-      text('donor_id','Donor ID',true), text('fund_category_id','Fund category ID',true), text('account_id','Receiving account ID',true), date('donation_date','Donation date',true),
+      relation('donor_id','Donor','donors',true), relation('fund_category_id','Fund category','fund_categories',true), relation('account_id','Receiving account','accounts',true), date('donation_date','Donation date',true),
       num('amount_paise','Amount (₹)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
     ]},
     { key: 'expenses', label: 'Expense Claims', permission: 'finance:read', writePermission: 'expenses:submit', fields: [
       text('expense_code','Expense code',true), date('expense_date','Expense date',true), choice('category','Category',['animal_food','vet_consultation','medicines','vaccination','sterilization','transportation','rescue_operations','shelter_maintenance','utilities','equipment','administrative','other'],true),
-      text('fund_category_id','Fund category ID',true), text('account_id','Payment account ID',true), num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true),
-      text('vendor_payee','Vendor / payee',true), text('animal_id','Animal ID'), text('rescue_case_id','Rescue case ID'), area('description','Description')
+      text('fund_category_id','Fund category ID',true), relation('account_id','Payment account','accounts',true), num('amount_paise','Amount (₹)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true),
+      text('vendor_payee','Vendor / payee',true), relation('animal_id','Animal','animals'), text('rescue_case_id','Rescue case ID'), area('description','Description')
     ]},
     { key: 'financial_transactions', label: 'Immutable Ledger', permission: 'finance:read', fields: [] },
     { key: 'accounts', label: 'Chart of Accounts', permission: 'finance:read', fields: [] },
@@ -81,17 +82,17 @@ const RESOURCES: Record<string, Resource[]> = {
   inventory: [
     { key: 'inventory_items', label: 'Stock Catalogue', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicines','vaccines','supplements','cleaning_supplies','medical_equipment','other'],true),
-      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('min_stock_threshold','Low-stock threshold'), choice('expiry_tracking_enabled','Track expiry',['0','1']), text('preferred_supplier_id','Preferred supplier ID')
+      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('min_stock_threshold','Low-stock threshold'), choice('expiry_tracking_enabled','Track expiry',['0','1']), relation('preferred_supplier_id','Preferred supplier','suppliers')
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('item_id','Inventory item ID',true), choice('movement_type','Movement type',['opening','purchase_in','issue_out','expired_writeoff','adjustment'],true), num('quantity_delta','Quantity change',true),
-      text('batch_number','Batch number'), date('expiry_date','Expiry date'), text('animal_id','Animal ID'), text('purchase_order_id','Purchase order ID'), area('notes','Notes')
+      relation('item_id','Inventory item','inventory_items',true), choice('movement_type','Movement type',['opening','purchase_in','issue_out','expired_writeoff','adjustment'],true), num('quantity_delta','Quantity change',true),
+      text('batch_number','Batch number'), date('expiry_date','Expiry date'), text('animal_id','Animal ID'), relation('purchase_order_id','Purchase order','purchase_orders'), area('notes','Notes')
     ]},
     { key: 'suppliers', label: 'Suppliers', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
     ]},
     { key: 'purchase_orders', label: 'Purchase Orders', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)'), text('expense_id','Related expense ID (optional)')
+      text('po_number','PO number',true), relation('supplier_id','Supplier','suppliers',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)'), relation('expense_id','Related expense','expenses')
     ]}
   ],
   volunteers: [
@@ -101,7 +102,7 @@ const RESOURCES: Record<string, Resource[]> = {
       choice('role_type','Type',['volunteer','member']), choice('status','Status',['applicant','active','inactive']), date('joined_date','Joined date'), area('notes','Notes')
     ]},
     { key: 'volunteer_tasks', label: 'Tasks & Attendance', permission: 'volunteers:read', writePermission: 'volunteers:write', fields: [
-      text('volunteer_id','Volunteer ID',true), choice('task_type','Task type',['feeding','rescue','shelter_care','medical_assist','event','transport','admin'],true),
+      relation('volunteer_id','Volunteer','volunteers',true), choice('task_type','Task type',['feeding','rescue','shelter_care','medical_assist','event','transport','admin'],true),
       text('title','Task title',true), area('description','Description'), date('scheduled_date','Scheduled date',true), num('hours_logged','Hours logged'), choice('attendance_status','Attendance',['assigned','completed','missed','cancelled'])
     ]}
   ],
@@ -109,6 +110,17 @@ const RESOURCES: Record<string, Resource[]> = {
     text('page_slug','Page slug',true), text('section_key','Section key',true), text('title','Section title',true), area('body_json','Page content',true),
     text('seo_title','SEO title'), area('seo_description','SEO description')
   ]}]
+};
+
+const relationDisplay = (resource: string, row: Record<string, unknown>): string => {
+  const name = String(row.name || row.full_name || row.applicant_name || row.case_code || row.po_number || row.expense_code || row.title || 'Record');
+  const code = String(row.animal_code || row.volunteer_code || row.donor_code || row.code || row.sku || '');
+  const detail = resource === 'rescue_cases' ? String(row.location_address || '')
+    : resource === 'veterinarians' ? String(row.clinic_name || '')
+    : resource === 'adoption_applications' ? String(row.applicant_name || '')
+    : resource === 'expenses' ? String(row.vendor_payee || '')
+    : '';
+  return [name, code, detail].filter(Boolean).join(' · ');
 };
 
 const TITLES: Record<string,string> = {
@@ -126,6 +138,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [resourceKey, setResourceKey] = useState('');
   const resource = available.find((r) => r.key === resourceKey) || available[0];
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [relationOptions, setRelationOptions] = useState<Record<string, { value: string; label: string }[]>>({});
   const [form, setForm] = useState<Record<string,string>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -164,6 +177,21 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         .then((res) => { if (res.success && res.data) setMedicalAlerts(res.data); });
     }
   }, [moduleKey, user.permissions]);
+  useEffect(() => {
+    let active = true;
+    const sources = Array.from(new Set((resource?.fields || []).map((field) => field.relationResource).filter((value): value is string => !!value)));
+    if (sources.length === 0) { setRelationOptions({}); return () => { active = false; }; }
+    Promise.all(sources.map(async (source) => {
+      try {
+        const result = await apiFetch<{ items: Record<string, unknown>[] }>(`/api/v1/admin/modules/${source}?limit=200`);
+        const options = result.success && result.data ? result.data.items.map((row) => ({ value: String(row.id || ''), label: relationDisplay(source, row) })).filter((item) => item.value) : [];
+        return [source, options] as const;
+      } catch { return [source, []] as const; }
+    })).then((entries) => {
+      if (active) setRelationOptions(Object.fromEntries(entries));
+    });
+    return () => { active = false; };
+  }, [resource?.key, user.permissions]);
   useEffect(() => { void load(); }, [resourceKey, moduleKey, search]);
 
   const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); };
@@ -336,7 +364,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <form onSubmit={submit} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {resource.fields.map((field) => <label key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}><span className="mb-1 block text-xs font-bold text-slate-600">{field.label}{field.required ? ' *' : ''}</span>
           {field.type === 'textarea' ? <textarea disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key)} required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} rows={2} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          : field.type === 'select' ? <select disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key) || !!editingId && resource?.key === 'inventory_items' && field.key === 'opening_stock'} required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="">Select…</option>{field.options?.map((option) => <option key={option} value={option}>{option.replaceAll('_',' ')}</option>)}</select>
+          : field.type === 'select' && field.relationResource && (relationOptions[field.relationResource] || []).length === 0 ? <input disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key)} required={field.required} type="text" placeholder="Enter existing record ID" value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          : field.type === 'select' ? <select disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key) || !!editingId && resource?.key === 'inventory_items' && field.key === 'opening_stock'} required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="">{field.relationResource ? 'Choose a linked record…' : 'Select…'}</option>{field.relationResource ? relationOptions[field.relationResource]?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>) : field.options?.map((option) => <option key={option} value={option}>{option.replaceAll('_',' ')}</option>)}</select>
           : <input disabled={!!editingId && !!updateFieldsForResource(resource?.key || '') && !updateFieldsForResource(resource?.key || '')!.includes(field.key) || !!editingId && resource?.key === 'inventory_items' && field.key === 'opening_stock'} required={field.required} type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? 'any' : undefined} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />}
         </label>)}
         <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
