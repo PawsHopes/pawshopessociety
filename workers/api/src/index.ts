@@ -15,6 +15,7 @@ import { adminJoinRoutes } from './routes/admin/join';
 import { adminDocumentRoutes, publicFileProxyRoutes } from './routes/admin/documents';
 import { adminAuditLogRoutes } from './routes/admin/auditLogs';
 import { adminModuleRoutes } from './routes/admin/modules';
+import { bootstrapRoutes } from './routes/bootstrap';
 
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
@@ -38,6 +39,10 @@ app.use(
     maxAge: 86400,
   })
 );
+
+// Access-verified, one-time staging bootstrap (before RBAC user lookup).
+app.use('/api/v1/bootstrap/*', cfAccessAuth);
+app.route('/api/v1/bootstrap', bootstrapRoutes);
 
 // Public endpoints
 app.route('/api/v1/health', healthRoutes);
