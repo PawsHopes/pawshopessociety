@@ -209,7 +209,11 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const values: Record<string, unknown> = { ...(config.defaults || {}), ...input, ...(config.serverFields?.(actor.id) || {}) };
   if (resource === 'donations') values.verification_status = 'pending';
   if (resource === 'expenses') values.approval_status = 'pending';
-  if (resource === 'website_content') values.status = 'draft';
+  if (resource === 'website_content') {
+    values.status = 'draft';
+    const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?').bind(String(values.page_slug), String(values.section_key)).first<{ next_version: number }>();
+    values.version_number = version?.next_version ?? 1;
+  }
   if (resource === 'stock_movements') values.approval_status = 'pending';
   const id = crypto.randomUUID();
   const columns = ['id', ...Object.keys(values)];
@@ -237,8 +241,18 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   const id = c.req.param('id');
   const existing = await c.env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ?`).bind(id).first<Record<string, unknown>>();
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Record not found.' } }, 404);
-  const setClause = keys.map((key) => `${key} = ?`).join(', ');
-  await c.env.DB.prepare(`UPDATE ${config.table} SET ${setClause}, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`).bind(...keys.map((key) => parsed.value[key]), id).run();
+  if (resource === 'website_content' && existing.status === 'published') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published CMS versions are immutable. Create a new version to make changes.' } }, 409);
+  const setParts = keys.map((key) => `${key} = ?`);
+  const updateBindings: (string | number | boolean | null)[] = keys.map((key) => parsed.value[key]);
+  if (resource === 'website_content' || resource === 'compliance_registrations') {
+    setParts.push('updated_by = ?');
+    updateBindings.push(actor.id);
+  }
+  if (resource === 'rescue_cases' && parsed.value.status === 'closed' && existing.status !== 'closed') {
+    setParts.push("closed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')");
+  }
+  setParts.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')");
+  await c.env.DB.prepare(`UPDATE ${config.table} SET ${setParts.join(', ')} WHERE id = ?`).bind(...updateBindings, id).run();
   if (resource === 'animals' && parsed.value.current_status !== undefined && parsed.value.current_status !== existing.current_status) {
     await c.env.DB.prepare('INSERT INTO animal_status_history (id, animal_id, from_status, to_status, reason, changed_by) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), id, existing.current_status ?? null, parsed.value.current_status, 'Status updated in Admin ERP', actor.id).run();
