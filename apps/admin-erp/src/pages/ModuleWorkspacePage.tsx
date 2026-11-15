@@ -50,7 +50,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'foster_applications', label: 'Foster Applications', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
       text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
-      text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), choice('status','Status',['application','verification','approved','active','completed','rejected']), area('notes','Notes')
+      text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), area('notes','Notes')
     ]},
     { key: 'adoption_agreements', label: 'Adoption Agreements & Follow-ups', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
       text('agreement_number','Agreement number',true), text('application_id','Application ID',true), text('animal_id','Animal record ID',true), date('handover_date','Handover date',true),
