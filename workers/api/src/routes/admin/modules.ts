@@ -243,7 +243,7 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Record not found.' } }, 404);
   if (resource === 'website_content' && existing.status === 'published') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published CMS versions are immutable. Create a new version to make changes.' } }, 409);
   const setParts = keys.map((key) => `${key} = ?`);
-  const updateBindings: (string | number | boolean | null)[] = keys.map((key) => parsed.value[key]);
+  const updateBindings: (string | number | boolean | null)[] = keys.map((key) => parsed.value[key]!);
   if (resource === 'website_content' || resource === 'compliance_registrations') {
     setParts.push('updated_by = ?');
     updateBindings.push(actor.id);
