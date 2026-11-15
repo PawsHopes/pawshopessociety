@@ -502,11 +502,14 @@ adminModuleRoutes.post('/donations/:id/verify', async (c) => {
   const txnNo = `PHS-TXN-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
   const ip = c.req.header('CF-Connecting-IP') || null;
   const ua = c.req.header('User-Agent') || null;
-  await c.env.DB.batch([
+  const results = await c.env.DB.batch([
     c.env.DB.prepare("UPDATE donations SET verification_status = 'verified', verified_by = ?, verified_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND verification_status = 'pending'").bind(actor.id, id),
-    c.env.DB.prepare("INSERT INTO financial_transactions (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id, fund_category_id, amount_paise, reference_type, reference_id, narration, created_by) VALUES (?, ?, ?, 'income', ?, ?, ?, ?, 'donation', ?, ?, ?)").bind(txnId, txnNo, String(donation.donation_date), String(donation.account_id), income.id, String(donation.fund_category_id), Number(donation.amount_paise), id, `Donation verified: ${id}`, actor.id),
-    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) VALUES (?, ?, ?, 'DONATION_VERIFIED', 'donations', ?, ?, ?, ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ verification_status: 'verified', txn_number: txnNo }), ip, ua)
+    c.env.DB.prepare("INSERT INTO financial_transactions (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id, fund_category_id, amount_paise, reference_type, reference_id, narration, created_by) SELECT ?, ?, ?, 'income', ?, ?, ?, ?, 'donation', ?, ?, ? WHERE EXISTS (SELECT 1 FROM donations WHERE id = ? AND verification_status = 'verified' AND verified_by = ?) AND NOT EXISTS (SELECT 1 FROM financial_transactions WHERE reference_type = 'donation' AND reference_id = ? AND entry_type = 'income')").bind(txnId, txnNo, String(donation.donation_date), String(donation.account_id), income.id, String(donation.fund_category_id), Number(donation.amount_paise), id, `Donation verified: ${id}`, actor.id, id, actor.id, id),
+    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) SELECT ?, ?, ?, 'DONATION_VERIFIED', 'donations', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM financial_transactions WHERE id = ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ verification_status: 'verified', txn_number: txnNo }), ip, ua, txnId)
   ]);
+  if ((results[0]?.meta?.changes ?? 0) !== 1 || (results[1]?.meta?.changes ?? 0) !== 1 || (results[2]?.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Donation was already verified or its ledger posting already exists.' } }, 409);
+  }
   return c.json({ success: true, data: { id, verification_status: 'verified', transaction_number: txnNo } });
 });
 
@@ -525,11 +528,14 @@ adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
   const txnNo = `PHS-TXN-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
   const ip = c.req.header('CF-Connecting-IP') || null;
   const ua = c.req.header('User-Agent') || null;
-  await c.env.DB.batch([
+  const results = await c.env.DB.batch([
     c.env.DB.prepare("UPDATE expenses SET payment_status = 'paid', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND approval_status = 'approved' AND payment_status = 'unpaid'").bind(id),
-    c.env.DB.prepare("INSERT INTO financial_transactions (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id, fund_category_id, amount_paise, reference_type, reference_id, narration, created_by) VALUES (?, ?, ?, 'expense', ?, ?, ?, ?, 'expense', ?, ?, ?)").bind(txnId, txnNo, String(expense.expense_date), expenseAccount.id, String(expense.account_id), String(expense.fund_category_id), Number(expense.amount_paise), id, `Expense paid: ${id}`, actor.id),
-    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) VALUES (?, ?, ?, 'EXPENSE_PAID_AND_POSTED', 'expenses', ?, ?, ?, ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ payment_status: 'paid', txn_number: txnNo }), ip, ua)
+    c.env.DB.prepare("INSERT INTO financial_transactions (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id, fund_category_id, amount_paise, reference_type, reference_id, narration, created_by) SELECT ?, ?, ?, 'expense', ?, ?, ?, ?, 'expense', ?, ?, ? WHERE EXISTS (SELECT 1 FROM expenses WHERE id = ? AND approval_status = 'approved' AND payment_status = 'paid') AND NOT EXISTS (SELECT 1 FROM financial_transactions WHERE reference_type = 'expense' AND reference_id = ? AND entry_type = 'expense')").bind(txnId, txnNo, String(expense.expense_date), expenseAccount.id, String(expense.account_id), String(expense.fund_category_id), Number(expense.amount_paise), id, `Expense paid: ${id}`, actor.id, id, id),
+    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) SELECT ?, ?, ?, 'EXPENSE_PAID_AND_POSTED', 'expenses', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM financial_transactions WHERE id = ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ payment_status: 'paid', txn_number: txnNo }), ip, ua, txnId)
   ]);
+  if ((results[0]?.meta?.changes ?? 0) !== 1 || (results[1]?.meta?.changes ?? 0) !== 1 || (results[2]?.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Expense was already marked paid or its ledger posting already exists.' } }, 409);
+  }
   return c.json({ success: true, data: { id, payment_status: 'paid', transaction_number: txnNo } });
 });
 
