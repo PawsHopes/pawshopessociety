@@ -10,8 +10,6 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
-
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
@@ -48,8 +46,7 @@ adminUsersRoutes.get(
       }, 403);
     }
 
-    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-    const users = await c.env.DB.prepare(`
+        const users = await c.env.DB.prepare(`
       SELECT u.id, u.email, u.full_name as fullName,
         u.phone, u.status, u.last_login_at as lastLoginAt,
         u.created_at as createdAt,
@@ -68,7 +65,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: Boolean(roleManagerEmail) && actor.email.toLowerCase() === roleManagerEmail
+        canManageRoles: actor.roleCode === 'super_admin'
       }
     });
   }
@@ -101,11 +98,6 @@ adminUsersRoutes.post(
     }
 
     const email = parsed.data.email.toLowerCase().trim();
-    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-    if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create ERP users and assign their initial roles.' } }, 403);
-    }
-
     const role = await c.env.DB.prepare(
       'SELECT id, code FROM roles WHERE code = ?'
     ).bind(parsed.data.roleCode).first<{ id: string; code: string }>();
@@ -178,10 +170,6 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
-    }
-
     const targetId = c.req.param('id');
     const body = await c.req.json().catch(() => null);
     const parsed = updateUserSchema.safeParse(body);
@@ -194,20 +182,6 @@ adminUsersRoutes.patch(
           details: parsed.error.issues
         }
       }, 400);
-    }
-
-    if (parsed.data.roleCode !== undefined) {
-      const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
-        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society account can change user roles.' } }, 403);
-      }
-    }
-
-    if (parsed.data.status !== undefined) {
-      const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
-        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society administrator can suspend or reactivate users.' } }, 403);
-      }
     }
 
     if (Object.keys(parsed.data).length === 0) {
@@ -238,14 +212,6 @@ adminUsersRoutes.patch(
         success: false,
         error: { code: 'NOT_FOUND', message: 'User not found.' }
       }, 404);
-    }
-
-    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-    if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== roleManagerEmail) {
-      return c.json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected from changes by secondary administrators.' }
-      }, 403);
     }
 
     if (
