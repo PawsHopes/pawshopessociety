@@ -1,4 +1,4 @@
-# Paw's Hopez Society Admin ERP — staging deployment runbook
+# Paws Hopes Society Admin ERP — staging deployment runbook
 
 This runbook is staging-only. It must not change the public website, the existing public Pages project, the `main` branch, or production data.
 
