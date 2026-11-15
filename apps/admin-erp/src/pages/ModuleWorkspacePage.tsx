@@ -15,30 +15,30 @@ const RESOURCES: Record<string, Resource[]> = {
   animals: [{ key: 'animals', label: 'Animal Registry', permission: 'animals:read', writePermission: 'animals:write', fields: [
     text('animal_code','Animal code',true), text('name','Name',true), choice('species','Species',['Dog','Cat','Monkey','Bird','Squirrel','Guinea Pig','Reptile','Other'],true),
     text('breed','Breed'), choice('gender','Gender',['Male','Female','Unknown']), text('estimated_age_text','Estimated age'), date('rescue_date','Rescue date'),
-    text('rescue_location','Rescue location'), text('microchip_or_tag','Microchip / tag'), text('kennel_zone','Kennel / zone'),
+    text('rescue_location','Rescue location'), text('microchip_or_tag','Microchip / tag'), text('kennel_zone','Kennel / zone'), text('legacy_slug','Legacy slug'), text('estimated_dob','Estimated date of birth'), text('identification_marks','Identification marks'), text('rescue_source','Rescue source'), text('rescue_case_id','Rescue case ID'), date('sterilization_date','Sterilization date'), text('caretaker_user_id','Caretaker user ID'), area('adopted_note','Adoption note'),
     choice('vaccination_status','Vaccination',['not_vaccinated','partial','up_to_date','pending']), choice('sterilization_status','Sterilization',['not_sterilized','scheduled','sterilized','not_applicable']),
     choice('current_status','Lifecycle status',['rescued','under_assessment','under_treatment','recovering','available_for_adoption','fostered','adopted','released','deceased']),
     choice('is_adoption_eligible','Adoption eligible',['0','1']), choice('is_foster_eligible','Foster eligible',['0','1']), choice('is_published_public','Publish publicly',['0','1']),
     area('health_summary','Health summary'), area('public_description','Public description'), area('internal_notes','Internal notes')
   ]}],
   rescue: [{ key: 'rescue_cases', label: 'Rescue Cases', permission: 'rescue:read', writePermission: 'rescue:write', fields: [
-    text('case_code','Case code',true), text('reporter_name','Reporter name',true), text('reporter_phone','Reporter phone',true), text('reporter_email','Reporter email'),
+    text('case_code','Case code',true), text('reporter_name','Reporter name',true), text('reporter_phone','Reporter phone',true), text('reporter_email','Reporter email'), num('latitude','Latitude'), num('longitude','Longitude'),
     text('location_address','Rescue location / address',true), choice('priority','Priority',['low','medium','high','critical']),
     choice('status','Case status',['new','verified','assigned','in_progress','rescued','not_rescued','closed']),
-    text('species','Species'), text('animal_description','Animal description',true), area('complaint_details','Reported issue',true),
+    choice('species','Species',['Dog','Cat','Monkey','Bird','Squirrel','Guinea Pig','Reptile','Other']), text('animal_description','Animal description',true), area('complaint_details','Reported issue',true),
     text('assigned_volunteer_id','Assigned volunteer ID'), area('rescue_team_notes','Team notes'), area('outcome_notes','Outcome notes')
   ]}],
   medical: [
     { key: 'medical_records', label: 'Consultations & Treatments', permission: 'medical:read', writePermission: 'medical:write', fields: [
       text('animal_id','Animal record ID',true), date('visit_date','Visit date',true), choice('record_type','Record type',['consultation','surgery','sterilization','deworming','lab_test','emergency','follow_up'],true),
-      text('veterinarian_id','Veterinarian ID'), text('diagnosis','Diagnosis',true), area('symptoms','Symptoms'), area('prescription_text','Prescription'), area('treatment_notes','Treatment notes'), date('follow_up_date','Follow-up date')
+      text('veterinarian_id','Veterinarian ID'), text('diagnosis','Diagnosis',true), area('symptoms','Symptoms'), area('prescription_text','Prescription'), area('medication_history_notes','Medication history'), area('treatment_notes','Treatment notes'), date('follow_up_date','Follow-up date')
     ]},
     { key: 'vaccinations', label: 'Vaccinations', permission: 'medical:read', writePermission: 'medical:write', fields: [
       text('animal_id','Animal record ID',true), text('vaccine_name','Vaccine name',true), text('batch_number','Batch number'),
       date('administered_date','Administered date',true), date('next_due_date','Next due date'), text('veterinarian_id','Veterinarian ID'), area('notes','Notes')
     ]},
     { key: 'veterinarians', label: 'Veterinarians & Clinics', permission: 'medical:read', writePermission: 'medical:write', fields: [
-      text('name','Veterinarian name',true), text('clinic_name','Clinic'), text('registration_number','Registration number'), text('phone','Phone'), text('email','Email'), area('address','Address')
+      text('name','Veterinarian name',true), text('clinic_name','Clinic'), text('registration_number','Registration number'), text('phone','Phone'), text('email','Email'), area('address','Address'), choice('is_active','Active',['1','0'])
     ]}
   ],
   adoptions: [
@@ -46,7 +46,7 @@ const RESOURCES: Record<string, Resource[]> = {
       text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
       text('applicant_email','Email'), area('applicant_address','Address',true), text('housing_type','Housing type'), choice('has_other_pets','Other pets',['0','1']),
       choice('home_check_status','Home check',['pending','scheduled','passed','failed']), area('home_check_notes','Home check notes'),
-      choice('status','Application status',['application','initial_review','verification','approved','rejected','handover','follow_up','completed']), area('experience_notes','Experience')
+      area('experience_notes','Experience')
     ]},
     { key: 'foster_applications', label: 'Foster Applications', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
       text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
@@ -63,7 +63,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'donations', label: 'Donation Register', permission: 'donations:read', writePermission: 'donations:write', fields: [
       text('donor_id','Donor ID',true), text('fund_category_id','Fund category ID',true), text('account_id','Receiving account ID',true), date('donation_date','Donation date',true),
-      num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
+      num('amount_paise','Amount (₹)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
     ]},
     { key: 'expenses', label: 'Expense Claims', permission: 'finance:read', writePermission: 'expenses:submit', fields: [
       text('expense_code','Expense code',true), date('expense_date','Expense date',true), choice('category','Category',['animal_food','vet_consultation','medicines','vaccination','sterilization','transportation','rescue_operations','shelter_maintenance','utilities','equipment','administrative','other'],true),
@@ -91,13 +91,13 @@ const RESOURCES: Record<string, Resource[]> = {
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
     ]},
     { key: 'purchase_orders', label: 'Purchase Orders', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (paise)')
+      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)')
     ]}
   ],
   volunteers: [
     { key: 'volunteers', label: 'Volunteer & Member Directory', permission: 'volunteers:read', writePermission: 'volunteers:write', fields: [
       text('volunteer_code','Volunteer code',true), text('full_name','Full name',true), text('phone','Phone',true), text('email','Email'), area('address','Address'),
-      text('emergency_contact_name','Emergency contact'), text('emergency_contact_phone','Emergency phone'), area('skills_json','Skills (JSON array)'), text('availability','Availability'),
+      text('emergency_contact_name','Emergency contact'), text('emergency_contact_phone','Emergency phone'), text('skills_json','Skills (comma-separated)'), text('availability','Availability'),
       choice('role_type','Type',['volunteer','member']), choice('status','Status',['applicant','active','inactive']), date('joined_date','Joined date'), area('notes','Notes')
     ]},
     { key: 'volunteer_tasks', label: 'Tasks & Attendance', permission: 'volunteers:read', writePermission: 'volunteers:write', fields: [
@@ -106,8 +106,8 @@ const RESOURCES: Record<string, Resource[]> = {
     ]}
   ],
   cms: [{ key: 'website_content', label: 'Website Content Drafts', permission: 'cms:read', writePermission: 'cms:write', fields: [
-    text('page_slug','Page slug',true), text('section_key','Section key',true), text('title','Section title',true), area('body_json','Page content (plain text)',true),
-    text('media_asset_id','Media asset ID'), text('seo_title','SEO title'), area('seo_description','SEO description')
+    text('page_slug','Page slug',true), text('section_key','Section key',true), text('title','Section title',true), area('body_json','Page content',true),
+    text('seo_title','SEO title'), area('seo_description','SEO description')
   ]}]
 };
 
@@ -133,6 +133,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [inventoryAlerts, setInventoryAlerts] = useState<{lowStock: Record<string,unknown>[]; expiring: Record<string,unknown>[]; expired: Record<string,unknown>[]} | null>(null);
   const [medicalAlerts, setMedicalAlerts] = useState<{due: Record<string,unknown>[]; overdue: Record<string,unknown>[]} | null>(null);
   const [busy, setBusy] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<Record<string, unknown>[]>([]);
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
   const canWorkflow = !!resource && ((resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
@@ -159,7 +161,56 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   }, [moduleKey, user.permissions]);
   useEffect(() => { void load(); }, [resourceKey, moduleKey, search]);
 
-  const reset = () => { setForm({}); setEditingId(null); };
+  const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); };
+  const loadAttachments = async (recordId: string) => {
+    if (!resource) return;
+    const result = await apiFetch<{ items: Record<string, unknown>[] }>(`/api/v1/admin/modules/attachments/${resource.key}/${recordId}`);
+    if (result.success && result.data) setAttachments(result.data.items);
+  };
+  const uploadAttachments = async (recordId: string) => {
+    if (!resource || selectedFiles.length === 0) return;
+    const publicMedia = ['animals', 'website_content'].includes(resource.key);
+    const categories: Record<string, string> = {
+      rescue_cases: 'rescue_evidence', medical_records: 'prescription', vaccinations: 'vaccination_cert',
+      adoption_applications: 'applicant_id', foster_applications: 'applicant_id', adoption_agreements: 'adoption_agreement',
+      donations: 'donor_proof', expenses: 'expense_invoice', inventory_items: 'purchase_invoice',
+      purchase_orders: 'purchase_invoice', compliance_registrations: 'compliance_cert',
+      stock_movements: 'purchase_invoice', volunteers: 'other', donors: 'other', veterinarians: 'other'
+    };
+    for (const file of selectedFiles) {
+      const data = new FormData();
+      data.append('file', file);
+      let uploadedId = '';
+      if (publicMedia) {
+        data.append('altText', file.name);
+        const result = await apiFetch<{ id: string }>('/api/v1/admin/uploads/public-media', { method: 'POST', body: data });
+        if (!result.success || !result.data) throw new Error(result.error?.message || `Could not upload ${file.name}`);
+        uploadedId = result.data.id;
+      } else {
+        data.append('docCategory', categories[resource.key] || 'other');
+        data.append('title', `${resource.label}: ${file.name}`);
+        const result = await apiFetch<{ id: string }>('/api/v1/admin/uploads/private-doc', { method: 'POST', body: data });
+        if (!result.success || !result.data) throw new Error(result.error?.message || `Could not upload ${file.name}`);
+        uploadedId = result.data.id;
+      }
+      const linked = await apiFetch<{ id: string }>(`/api/v1/admin/modules/attachments/${resource.key}/${recordId}`, {
+        method: 'POST',
+        body: JSON.stringify(publicMedia ? { mediaAssetId: uploadedId, label: file.name } : { documentId: uploadedId, label: file.name })
+      });
+      if (!linked.success) throw new Error(linked.error?.message || `Could not attach ${file.name}`);
+      if (resource.key === 'website_content' && publicMedia) {
+        const cms = await apiFetch(`/api/v1/admin/modules/website_content/${recordId}`, { method: 'PATCH', body: JSON.stringify({ media_asset_id: uploadedId }) });
+        if (!cms.success) throw new Error(cms.error?.message || 'Image uploaded but could not be linked to the CMS draft.');
+      }
+    }
+    setSelectedFiles([]);
+    await loadAttachments(recordId);
+  };
+  const openPrivateAttachment = async (documentId: string) => {
+    const result = await apiFetch<{ url: string }>(`/api/v1/admin/documents/${documentId}/signed-url`);
+    if (result.success && result.data?.url) window.open(result.data.url, '_blank', 'noopener,noreferrer');
+    else setFeedback(result.error?.message || 'Unable to open this private file.');
+  };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!resource) return;
@@ -169,16 +220,34 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       const value = form[field.key];
       if (value === undefined || value === '') continue;
       if (field.key === 'body_json' && resource.key === 'website_content') payload.body_json = JSON.stringify({ content: value });
+      else if (field.key === 'skills_json' && resource.key === 'volunteers') payload.skills_json = JSON.stringify(value.split(',').map((item) => item.trim()).filter(Boolean));
+      else if (field.type === 'number' && ['amount_paise','total_amount_paise'].includes(field.key)) payload[field.key] = Math.round(Number(value) * 100);
       else if (field.type === 'number') payload[field.key] = Number(value);
       else if (field.key.startsWith('is_') || field.key === 'has_other_pets') payload[field.key] = value === '1';
       else payload[field.key] = value;
     }
-    const result = await apiFetch(editingId ? `/api/v1/admin/modules/${resource.key}/${editingId}` : `/api/v1/admin/modules/${resource.key}`, {
+    const result = await apiFetch<{ id?: string }>(editingId ? `/api/v1/admin/modules/${resource.key}/${editingId}` : `/api/v1/admin/modules/${resource.key}`, {
       method: editingId ? 'PATCH' : 'POST', body: JSON.stringify(payload)
     });
     setBusy(false);
-    if (result.success) { setFeedback(editingId ? 'Record updated.' : 'Record created.'); reset(); await load(); }
-    else setFeedback(result.error?.message || 'Save failed.');
+    if (result.success) {
+      const savedId = editingId || result.data?.id;
+      if (savedId && selectedFiles.length) {
+        setEditingId(savedId);
+        try {
+          const count = selectedFiles.length;
+          await uploadAttachments(savedId);
+          setFeedback(`Record saved and ${count} file(s) uploaded.`);
+          reset();
+        } catch (error) {
+          setFeedback(`Record saved, but an attachment failed: ${error instanceof Error ? error.message : 'Upload error'}. Your selected files remain available; retry Save changes.`);
+        }
+      } else {
+        setFeedback(editingId ? 'Record updated.' : 'Record created.');
+        reset();
+      }
+      await load();
+    } else setFeedback(result.error?.message || 'Save failed.');
   };
 
   const beginEdit = (row: Record<string,unknown>) => {
@@ -193,10 +262,13 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
             const parsed = JSON.parse(String(value)) as { content?: unknown };
             next[field.key] = typeof parsed.content === 'string' ? parsed.content : JSON.stringify(parsed, null, 2);
           } catch { next[field.key] = String(value); }
+        } else if (field.key === 'skills_json' && resource.key === 'volunteers') {
+          try { const parsed = JSON.parse(String(value)); next[field.key] = Array.isArray(parsed) ? parsed.join(', ') : String(value); }
+          catch { next[field.key] = String(value); }
         } else next[field.key] = String(value);
       }
     }
-    setForm(next); setEditingId(id);
+    setForm(next); setEditingId(id); void loadAttachments(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const actionsForRow = (row: Record<string,unknown>) => {
@@ -255,6 +327,16 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
           : field.type === 'select' ? <select required={field.required} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="">Select…</option>{field.options?.map((option) => <option key={option} value={option}>{option.replaceAll('_',' ')}</option>)}</select>
           : <input required={field.required} type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? 'any' : undefined} value={form[field.key] || ''} onChange={(e) => setForm((v) => ({...v,[field.key]:e.target.value}))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />}
         </label>)}
+        <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+          <label className="block text-sm font-semibold text-slate-800">Photos and documents (optional)</label>
+          <p className="mt-1 text-xs text-slate-600">Choose multiple JPG, PNG, WebP images or PDF files. Maximum 10 MB per file. Files are stored in R2 and linked to this record after saving.</p>
+          <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))} className="mt-3 block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:font-semibold file:text-orange-800" />
+          {selectedFiles.length > 0 && <ul className="mt-2 list-disc pl-5 text-xs text-slate-600">{selectedFiles.map((file, index) => <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>)}</ul>}
+          {attachments.length > 0 && <div className="mt-3 border-t border-slate-200 pt-3"><p className="mb-2 text-xs font-bold text-slate-700">Already attached</p><ul className="space-y-1">{attachments.map((item) => <li key={String(item.id)} className="flex flex-wrap items-center gap-2 text-xs">
+            {item.public_url ? <a className="text-blue-700 underline" href={String(item.public_url)} target="_blank" rel="noreferrer">{String(item.media_file_name || item.label || 'Open image')}</a> : <button type="button" className="text-blue-700 underline" onClick={() => void openPrivateAttachment(String(item.document_id))}>{String(item.document_file_name || item.label || 'Open private document')}</button>}
+            <span className="text-slate-500">{String(item.doc_category || item.media_mime_type || item.document_mime_type || '')}</span>
+          </li>)}</ul></div>}
+        </div>
         <div className="flex items-end gap-2 md:col-span-2 xl:col-span-3"><button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
       </form>
     </section>}
