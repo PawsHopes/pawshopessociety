@@ -11,6 +11,11 @@ export const adminUsersRoutes = new Hono<{
 }>();
 
 const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const FULL_ADMIN_EMAILS = new Set([
+  PRIMARY_ADMIN_EMAIL,
+  'infosecayush@gmail.com',
+  'yivam24770@jcaton.com',
+]);
 
 const ROLE_CODES = [
   'super_admin',
@@ -67,7 +72,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: actor.email.toLowerCase() === PRIMARY_ADMIN_EMAIL
+        canManageRoles: FULL_ADMIN_EMAILS.has(actor.email.toLowerCase())
       }
     });
   }
@@ -86,7 +91,7 @@ adminUsersRoutes.post(
       }, 403);
     }
 
-    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+    if (!FULL_ADMIN_EMAILS.has(actor.email.toLowerCase())) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can create users and assign initial roles.' } }, 403);
     }
 
