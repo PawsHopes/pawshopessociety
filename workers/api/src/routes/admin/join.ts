@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
 import { requirePermission } from '../../middleware/rbac';
 import { appendAuditLog } from '../../services/audit';
+import { syncApprovedEmailToCloudflareAccess } from '../../services/cloudflareAccess';
 
 export const adminJoinRoutes = new Hono<{
   Bindings: Bindings;
@@ -145,7 +146,9 @@ adminJoinRoutes.get('/applications', async (c) => {
     ? await c.env.DB.prepare(`
         SELECT a.id, a.full_name AS fullName, a.email, a.phone, a.message,
           a.status, a.submitted_at AS submittedAt, a.reviewed_at AS reviewedAt,
-          a.rejection_reason AS rejectionReason, l.label AS linkLabel
+          a.rejection_reason AS rejectionReason, l.label AS linkLabel,
+          a.access_sync_status AS accessSyncStatus, a.access_synced_at AS accessSyncedAt,
+          a.access_sync_error AS accessSyncError
         FROM join_applications a
         JOIN join_links l ON l.id = a.join_link_id
         ORDER BY a.submitted_at DESC LIMIT 200
@@ -153,7 +156,9 @@ adminJoinRoutes.get('/applications', async (c) => {
     : await c.env.DB.prepare(`
         SELECT a.id, a.full_name AS fullName, a.email, a.phone, a.message,
           a.status, a.submitted_at AS submittedAt, a.reviewed_at AS reviewedAt,
-          a.rejection_reason AS rejectionReason, l.label AS linkLabel
+          a.rejection_reason AS rejectionReason, l.label AS linkLabel,
+          a.access_sync_status AS accessSyncStatus, a.access_synced_at AS accessSyncedAt,
+          a.access_sync_error AS accessSyncError
         FROM join_applications a
         JOIN join_links l ON l.id = a.join_link_id
         WHERE a.status = ?
@@ -213,7 +218,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
       c.env.DB.prepare(`
         UPDATE join_applications
         SET status = 'approved', reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
-            created_user_id = ?
+            created_user_id = ?, access_sync_status = 'pending', access_sync_error = NULL, access_synced_at = NULL
         WHERE id = ? AND status = 'pending'
           AND NOT EXISTS (SELECT 1 FROM users WHERE email = ?)
       `).bind(actor.id, userId, applicationId, application.email),
@@ -242,14 +247,67 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
     return c.json({ success: false, error: { code: 'CONFLICT', message: 'The application may already have been reviewed or the email may already exist.' } }, 409);
   }
 
+  const accessSync = await syncApprovedEmailToCloudflareAccess(c.env, application.email);
+  await c.env.DB.prepare(`
+    UPDATE join_applications
+    SET access_sync_status = ?, access_synced_at = ?, access_sync_error = ?
+    WHERE id = ? AND status = 'approved'
+  `).bind(
+    accessSync.status,
+    accessSync.status === 'synced' ? new Date().toISOString() : null,
+    accessSync.status === 'synced' ? null : accessSync.message,
+    applicationId
+  ).run();
+
   await appendAuditLog(c, {
     action: 'JOIN_APPLICATION_APPROVED',
     entityType: 'join_applications',
     entityId: applicationId,
-    after: { userId, volunteerId, email: application.email, roleCode: role.code }
+    after: { userId, volunteerId, email: application.email, roleCode: role.code, accessSyncStatus: accessSync.status }
   });
 
-  return c.json({ success: true, data: { applicationId, userId, volunteerId, email: application.email, roleCode: role.code, status: 'active' } });
+  return c.json({ success: true, data: { applicationId, userId, volunteerId, email: application.email, roleCode: role.code, status: 'active', accessSyncStatus: accessSync.status, accessSyncMessage: accessSync.message } });
+});
+
+adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
+  const actor = c.get('authUser');
+  if (actor.roleCode !== 'super_admin') {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can synchronise Cloudflare Access.' } }, 403);
+  }
+
+  const id = c.req.param('id');
+  const application = await c.env.DB.prepare(`
+    SELECT id, email, status, created_user_id
+    FROM join_applications WHERE id = ?
+  `).bind(id).first<{ id: string; email: string; status: string; created_user_id: string | null }>();
+
+  if (!application || application.status !== 'approved' || !application.created_user_id) {
+    return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Approved application with an active ERP user was not found.' } }, 404);
+  }
+
+  const accessSync = await syncApprovedEmailToCloudflareAccess(c.env, application.email);
+  await c.env.DB.prepare(`
+    UPDATE join_applications
+    SET access_sync_status = ?, access_synced_at = ?, access_sync_error = ?
+    WHERE id = ? AND status = 'approved'
+  `).bind(
+    accessSync.status,
+    accessSync.status === 'synced' ? new Date().toISOString() : null,
+    accessSync.status === 'synced' ? null : accessSync.message,
+    id
+  ).run();
+
+  await appendAuditLog(c, {
+    action: 'JOIN_APPLICATION_ACCESS_SYNC',
+    entityType: 'join_applications',
+    entityId: id,
+    after: { email: application.email, accessSyncStatus: accessSync.status }
+  });
+
+  return c.json({ success: accessSync.status === 'synced', data: {
+    applicationId: id, email: application.email,
+    accessSyncStatus: accessSync.status, accessSyncMessage: accessSync.message
+  } }, accessSync.status === 'synced' ? 200 : 503);
 });
 
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
