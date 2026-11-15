@@ -97,7 +97,7 @@ export const JoinManagementPage: React.FC = () => {
       method: 'POST',
       body: JSON.stringify({ roleCode }),
     });
-    setFeedback(result.success ? `${application.fullName} approved. Their ERP account is active, subject to Cloudflare Access.` : result.error?.message || 'Approval failed.');
+    setFeedback(result.success ? `${application.fullName} approved. Their ERP account is active${roleCode === 'volunteer' ? ' and a volunteer registry profile was created' : ''}. Add their email to Cloudflare Access before sign-in.` : result.error?.message || 'Approval failed.');
     await load();
   };
 
