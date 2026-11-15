@@ -1,4 +1,4 @@
-# Paw's Hopez Society ERP — Production Readiness Gate
+# Paws Hopes Society ERP — Production Readiness Gate
 
 **Current decision: NOT APPROVED FOR PRODUCTION**
 
