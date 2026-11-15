@@ -142,6 +142,8 @@ const RESOURCES: Record<string, ResourceConfig> = {
     fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','status'],
     required: ['page_slug','section_key','title','body_json'], search: ['page_slug','section_key','title'], order: 'updated_at',
     defaults: { status: 'draft', version_number: 1 }, serverFields: (actorId) => ({ updated_by: actorId }),
+    // Publishing status is server-controlled; only a dedicated publishing workflow may change it.
+    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description'],
   },
 };
 
@@ -409,7 +411,8 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
     if (row.submitted_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot approve your own expense claim.' } }, 403);
     if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending expense claims can be approved.' } }, 409);
-    await c.env.DB.prepare("UPDATE expenses SET approval_status = 'approved', approved_by = ?, approved_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND approval_status = 'pending'").bind(actor.id, id).run();
+    const approvalResult = await c.env.DB.prepare("UPDATE expenses SET approval_status = 'approved', approved_by = ?, approved_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND approval_status = 'pending'").bind(actor.id, id).run();
+    if ((approvalResult.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Expense was already reviewed.' } }, 409);
     await appendAuditLog(c, { action: 'EXPENSE_APPROVED', entityType: 'expenses', entityId: id, after: { approval_status: 'approved' } });
     return c.json({ success: true, data: { id, approved: true } });
   }
@@ -446,7 +449,8 @@ adminModuleRoutes.post('/:resource/:id/reject', async (c) => {
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
     if (row.submitted_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot review your own expense claim.' } }, 403);
     if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending expense claims can be rejected.' } }, 409);
-    await c.env.DB.prepare("UPDATE expenses SET approval_status = 'rejected', approved_by = ?, approved_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?").bind(actor.id, id).run();
+    const rejectionResult = await c.env.DB.prepare("UPDATE expenses SET approval_status = 'rejected', approved_by = ?, approved_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND approval_status = 'pending'").bind(actor.id, id).run();
+    if ((rejectionResult.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Expense was already reviewed.' } }, 409);
     await appendAuditLog(c, { action: 'EXPENSE_REJECTED', entityType: 'expenses', entityId: id, after: { approval_status: 'rejected', reason } });
     return c.json({ success: true, data: { id, status: 'rejected' } });
   }
