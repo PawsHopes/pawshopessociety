@@ -18,8 +18,8 @@ export interface AuthUser {
 
 export interface Bindings {
   DB: D1Database;
-  PUBLIC_MEDIA: R2Bucket;
-  PRIVATE_VAULT: R2Bucket;
+  PUBLIC_MEDIA?: R2Bucket;
+  PRIVATE_VAULT?: R2Bucket;
   RATE_LIMIT_KV?: KVNamespace;
   ENVIRONMENT: 'development' | 'staging' | 'production';
   PUBLIC_SITE_ORIGIN: string;
