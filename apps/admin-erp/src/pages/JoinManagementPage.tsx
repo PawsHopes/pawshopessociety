@@ -212,7 +212,7 @@ export const JoinManagementPage: React.FC = () => {
             </select>
           </label>
           <div className="flex items-end">
-            <button disabled={busy} className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-bold text-white disabled:opacity-50">
+            <button disabled={busy || !canManageRoles} title={!canManageRoles ? "Only the designated primary administrator can manage join links." : undefined} className="w-full rounded-lg bg-orange-600 px-4 py-2.5 font-bold text-white disabled:opacity-50">
               {busy ? 'Creating…' : 'Create join link'}
             </button>
           </div>
@@ -253,7 +253,7 @@ export const JoinManagementPage: React.FC = () => {
                     {ROLES.map((role) => <option key={role.code} value={role.code}>{role.label}</option>)}
                   </select>
                   <button disabled={!canManageRoles} title={!canManageRoles ? 'Only the designated primary administrator can approve applicants and assign roles.' : undefined} onClick={() => approve(application)} className="rounded-lg bg-green-700 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Verify &amp; approve</button>
-                  <button onClick={() => reject(application)} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-700">Reject</button>
+                  <button disabled={!canManageRoles} title={!canManageRoles ? "Only the designated primary administrator can reject applications." : undefined} onClick={() => reject(application)} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-700 disabled:cursor-not-allowed disabled:opacity-50">Reject</button>
                 </div>
               </article>
             ))}
@@ -297,7 +297,7 @@ export const JoinManagementPage: React.FC = () => {
                   <td className="p-2">{link.expiresAt ? new Date(link.expiresAt).toLocaleDateString() : 'Never'}</td>
                   <td className="p-2">{link.revokedAt ? 'Revoked' : 'Active'}</td>
                   <td className="p-2">
-                    {!link.revokedAt && <button onClick={() => revokeLink(link.id)} className="text-xs font-bold text-red-700 underline">Revoke</button>}
+                    {!link.revokedAt && <button disabled={!canManageRoles} title={!canManageRoles ? "Only the designated primary administrator can revoke join links." : undefined} onClick={() => revokeLink(link.id)} className="text-xs font-bold text-red-700 underline disabled:cursor-not-allowed disabled:opacity-50">Revoke</button>}
                   </td>
                 </tr>
               ))}
