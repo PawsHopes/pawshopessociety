@@ -20,7 +20,7 @@ type ResourceConfig = {
 const RESOURCES: Record<string, ResourceConfig> = {
   animals: {
     table: 'animals', read: 'animals:read', write: 'animals:write',
-    fields: ['animal_code','legacy_slug','name','species','breed','gender','estimated_age_text','estimated_dob','identification_marks','microchip_or_tag','rescue_date','rescue_location','rescue_source','rescue_case_id','health_summary','vaccination_status','sterilization_status','sterilization_date','kennel_zone','caretaker_user_id','is_adoption_eligible','is_foster_eligible','is_published_public','public_description','adopted_note','internal_notes','current_status'],
+    fields: ['animal_code','legacy_slug','name','species','breed','gender','estimated_age_text','estimated_dob','identification_marks','microchip_or_tag','rescue_date','rescue_location','rescue_source','rescue_case_id','health_summary','vaccination_status','sterilization_status','sterilization_date','kennel_zone','caretaker_user_id','is_adoption_eligible','is_foster_eligible','public_description','adopted_note','internal_notes','current_status'],
     required: ['animal_code','name','species'], search: ['animal_code','name','breed','microchip_or_tag'], order: 'created_at',
     defaults: { gender: 'Unknown', vaccination_status: 'pending', sterilization_status: 'not_sterilized', is_adoption_eligible: 0, is_foster_eligible: 0, is_published_public: 0, current_status: 'rescued' },
   },
@@ -410,6 +410,34 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   return c.json({ success: true, data: { id, updated: true } });
 });
 
+
+adminModuleRoutes.post('/animals/:id/publish', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:publish')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal publishing permission required.' } }, 403);
+  }
+  const body = await c.req.json().catch(() => null) as { published?: unknown } | null;
+  if (typeof body?.published !== 'boolean') {
+    return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide published as true or false.' } }, 400);
+  }
+  const id = c.req.param('id');
+  const animal = await c.env.DB.prepare('SELECT id, is_published_public FROM animals WHERE id = ?')
+    .bind(id).first<{ id: string; is_published_public: number }>();
+  if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
+  if (Boolean(animal.is_published_public) === body.published) {
+    return c.json({ success: true, data: { id, is_published_public: body.published, unchanged: true } });
+  }
+  await c.env.DB.prepare("UPDATE animals SET is_published_public = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?")
+    .bind(body.published ? 1 : 0, id).run();
+  await appendAuditLog(c, {
+    action: body.published ? 'ANIMAL_PUBLISHED_PUBLICLY' : 'ANIMAL_UNPUBLISHED_PUBLICLY',
+    entityType: 'animals',
+    entityId: id,
+    before: { is_published_public: Boolean(animal.is_published_public) },
+    after: { is_published_public: body.published }
+  });
+  return c.json({ success: true, data: { id, is_published_public: body.published } });
+});
 
 adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   const resource = c.req.param('resource');
