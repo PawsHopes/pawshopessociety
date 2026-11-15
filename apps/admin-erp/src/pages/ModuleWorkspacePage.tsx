@@ -148,6 +148,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [resourceKey, setResourceKey] = useState('');
   const resource = available.find((r) => r.key === resourceKey) || available[0];
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const pageSize = 100;
   const [relationOptions, setRelationOptions] = useState<Record<string, { value: string; label: string }[]>>({});
   const [form, setForm] = useState<Record<string,string>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -182,13 +185,15 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const load = async () => {
     if (!resource) return;
     const requestId = ++loadRequestId.current;
-    const result = await apiFetch<{ items: Record<string,unknown>[] }>(`/api/v1/admin/modules/${resource.key}?limit=100&q=${encodeURIComponent(search)}`);
+    const result = await apiFetch<{ items: Record<string,unknown>[]; total: number }>(`/api/v1/admin/modules/${resource.key}?limit=${pageSize}&offset=${page * pageSize}&q=${encodeURIComponent(search)}`);
     if (requestId !== loadRequestId.current) return;
-    if (result.success && result.data) setRows(result.data.items);
-    else setFeedback(result.error?.message || 'Unable to load records.');
+    if (result.success && result.data) {
+      setRows(result.data.items);
+      setTotal(result.data.total);
+    } else setFeedback(result.error?.message || 'Unable to load records.');
   };
 
-  useEffect(() => { setResourceKey(''); setForm({}); setEditingId(null); setSearch(''); setFeedback(''); }, [moduleKey]);
+  useEffect(() => { setResourceKey(''); setForm({}); setEditingId(null); setSearch(''); setPage(0); setTotal(0); setFeedback(''); }, [moduleKey]);
   useEffect(() => {
     setInventoryAlerts(null);
     setMedicalAlerts(null);
@@ -216,7 +221,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     });
     return () => { active = false; };
   }, [resource?.key, user.permissions]);
-  useEffect(() => { void load(); return () => { loadRequestId.current += 1; }; }, [resourceKey, moduleKey, search]);
+  useEffect(() => { void load(); return () => { loadRequestId.current += 1; }; }, [resourceKey, moduleKey, search, page]);
 
   const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); setViewingAttachments(null); };
   const loadAttachments = async (recordId: string) => {
@@ -393,7 +398,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   return <div className="space-y-6">
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div><p className="text-xs font-bold uppercase tracking-wider text-orange-700">Paw&apos;s Hopez Society · NGO ERP</p><h1 className="mt-1 text-2xl font-extrabold text-slate-900">{TITLES[moduleKey] || 'ERP Module'}</h1><p className="mt-1 text-sm text-slate-600">Operational records, workflows and history.</p></div>
-      <div className="sm:w-72"><label className="mb-1 block text-xs font-bold uppercase text-slate-500">Workspace</label><select value={resource?.key || ''} onChange={(e) => { setResourceKey(e.target.value); reset(); }} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">{available.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</select></div>
+      <div className="sm:w-72"><label className="mb-1 block text-xs font-bold uppercase text-slate-500">Workspace</label><select value={resource?.key || ''} onChange={(e) => { setResourceKey(e.target.value); setPage(0); setTotal(0); reset(); }} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">{available.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</select></div>
     </header>
     {feedback && <div role="status" className="rounded-xl bg-slate-900 px-4 py-3 text-sm text-white">{feedback}</div>}
     {moduleKey === 'inventory' && inventoryAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Inventory alerts</strong><p className="mt-1">Low stock: {inventoryAlerts.lowStock.length} · Expired batches: {inventoryAlerts.expired.length} · Expiring in 30 days: {inventoryAlerts.expiring.length}</p></section>}
@@ -431,7 +436,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       </li>)}</ul>}
     </section>}
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{rows.length} records loaded · maximum 100 per search</p></div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
+      <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{total} matching record(s) · showing up to {pageSize} per page</p></div><input value={search} onChange={(e) => { setPage(0); setSearch(e.target.value); }} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow || canViewAttachments) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
       <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow || canViewAttachments ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow || canViewAttachments) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canViewAttachments && <button type="button" onClick={() => void showAttachments(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Files</button>}{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
     </section>
