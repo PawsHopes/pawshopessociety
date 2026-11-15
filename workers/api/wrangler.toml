@@ -10,7 +10,7 @@ ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev"
 CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com"
 CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316"
 STAGING_BOOTSTRAP_ADMIN_EMAIL = "hopezpaws@gmail.com"
-PUBLIC_MEDIA_BASE_URL = "https://media-staging.pawshopessociety.org"
+PUBLIC_MEDIA_BASE_URL = "https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev"
 
 [[d1_databases]]
 binding = "DB"
@@ -35,7 +35,7 @@ crons = ["30 2 * * *"]
 
 [env.staging]
 name = "pawshopes-erp-api-staging"
-vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", STAGING_BOOTSTRAP_ADMIN_EMAIL = "hopezpaws@gmail.com", PUBLIC_MEDIA_BASE_URL = "https://media-staging.pawshopessociety.org" }
+vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", STAGING_BOOTSTRAP_ADMIN_EMAIL = "hopezpaws@gmail.com", PUBLIC_MEDIA_BASE_URL = "https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB"
