@@ -101,7 +101,7 @@ export const loadRbacUser = createMiddleware<{
     email: userRow.email,
     fullName: userRow.full_name,
     roleCode: userRow.role_code,
-    roleName: userRow.role_name,
+    roleName: userRow.role_code === 'super_admin' && userRow.email.toLowerCase() !== 'hopezpaws@gmail.com' ? 'Super Admin (Read-Only)' : userRow.role_name,
     permissions,
   };
 
