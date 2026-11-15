@@ -147,6 +147,81 @@ const RESOURCES: Record<string, ResourceConfig> = {
 
 export const adminModuleRoutes = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
+const ATTACHMENT_RESOURCES = new Set(Object.keys(RESOURCES));
+
+adminModuleRoutes.get('/attachments/:resource/:recordId', async (c) => {
+  const resource = c.req.param('resource');
+  const recordId = c.req.param('recordId');
+  const config = RESOURCES[resource];
+  const actor = c.get('authUser');
+  if (!config || !ATTACHMENT_RESOURCES.has(resource)) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Unknown ERP resource.' } }, 404);
+  if (!actor.permissions.includes(config.read)) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You do not have permission to view these attachments.' } }, 403);
+  const record = await c.env.DB.prepare(`SELECT id FROM ${config.table} WHERE id = ?`).bind(recordId).first<{id:string}>();
+  if (!record) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'ERP record not found.' } }, 404);
+  const result = await c.env.DB.prepare(`
+    SELECT ra.id, ra.resource, ra.record_id, ra.media_asset_id, ra.document_id, ra.label, ra.created_at,
+      ma.public_url, ma.file_name AS media_file_name, ma.mime_type AS media_mime_type,
+      d.title AS document_title, d.file_name AS document_file_name, d.mime_type AS document_mime_type,
+      d.doc_category
+    FROM record_attachments ra
+    LEFT JOIN media_assets ma ON ma.id = ra.media_asset_id
+    LEFT JOIN documents d ON d.id = ra.document_id
+    WHERE ra.resource = ? AND ra.record_id = ?
+    ORDER BY ra.created_at DESC
+  `).bind(resource, recordId).all();
+  return c.json({ success: true, data: { items: result.results || [] } });
+});
+
+adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
+  const resource = c.req.param('resource');
+  const recordId = c.req.param('recordId');
+  const config = RESOURCES[resource];
+  const actor = c.get('authUser');
+  if (!config) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Unknown ERP resource.' } }, 404);
+  if (!config.write || !actor.permissions.includes(config.write)) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You do not have permission to attach files to this record.' } }, 403);
+  const body = await c.req.json().catch(() => null) as { mediaAssetId?: unknown; documentId?: unknown; label?: unknown } | null;
+  const mediaAssetId = typeof body?.mediaAssetId === 'string' ? body.mediaAssetId : '';
+  const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
+  if (!!mediaAssetId === !!documentId) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide exactly one uploaded image or private document ID.' } }, 400);
+  const record = await c.env.DB.prepare(`SELECT id FROM ${config.table} WHERE id = ?`).bind(recordId).first<{id:string}>();
+  if (!record) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Save the ERP record before attaching files.' } }, 404);
+
+  if (mediaAssetId) {
+    const asset = await c.env.DB.prepare('SELECT id, uploaded_by FROM media_assets WHERE id = ?').bind(mediaAssetId).first<{id:string;uploaded_by:string|null}>();
+    if (!asset || (asset.uploaded_by !== actor.id && actor.roleCode !== 'super_admin')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Image not found or not uploaded by your account.' } }, 403);
+  } else {
+    const doc = await c.env.DB.prepare('SELECT id, uploaded_by FROM documents WHERE id = ?').bind(documentId).first<{id:string;uploaded_by:string|null}>();
+    if (!doc || (doc.uploaded_by !== actor.id && actor.roleCode !== 'super_admin')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Document not found or not uploaded by your account.' } }, 403);
+  }
+
+  const attachmentId = crypto.randomUUID();
+  const label = typeof body?.label === 'string' ? body.label.trim().slice(0, 180) : null;
+  await c.env.DB.prepare(`
+    INSERT INTO record_attachments (id, resource, record_id, media_asset_id, document_id, label, uploaded_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(attachmentId, resource, recordId, mediaAssetId || null, documentId || null, label, actor.id).run();
+
+  if (resource === 'animals' && mediaAssetId) {
+    const primary = await c.env.DB.prepare('SELECT COUNT(*) AS count FROM animal_media WHERE animal_id = ? AND is_primary = 1').bind(recordId).first<{count:number}>();
+    await c.env.DB.prepare(`
+      INSERT OR IGNORE INTO animal_media (id, animal_id, media_asset_id, is_primary, caption, sort_order)
+      VALUES (?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM animal_media WHERE animal_id = ?))
+    `).bind(crypto.randomUUID(), recordId, mediaAssetId, primary?.count ? 0 : 1, label, recordId).run();
+  }
+  if (resource === 'website_content' && mediaAssetId) {
+    await c.env.DB.prepare("UPDATE website_content SET media_asset_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'draft'")
+      .bind(mediaAssetId, recordId).run();
+  }
+
+  await appendAuditLog(c, {
+    action: 'ERP_ATTACHMENT_ADDED',
+    entityType: resource,
+    entityId: recordId,
+    after: { attachmentId, mediaAssetId: mediaAssetId || null, documentId: documentId || null, label }
+  });
+  return c.json({ success: true, data: { id: attachmentId } }, 201);
+});
+
 adminModuleRoutes.get('/:resource', async (c) => {
   const resource = c.req.param('resource');
   const config = RESOURCES[resource];
