@@ -10,6 +10,8 @@ export const adminJoinRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
+const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+
 const ROLE_CODES = [
   'finance_manager',
   'vet_staff',
@@ -34,7 +36,7 @@ const rejectSchema = z.object({
 
 function isPrimaryAdmin(c: any) {
   const actor = c.get('authUser');
-  const configuredEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  const configuredEmail = PRIMARY_ADMIN_EMAIL;
   return Boolean(configuredEmail) && actor?.email?.toLowerCase() === configuredEmail;
 }
 
@@ -172,7 +174,7 @@ adminJoinRoutes.get('/applications', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const actor = c.get('authUser');
-  const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
   if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can approve applicants and assign ERP roles.' } }, 403);
   }
@@ -274,7 +276,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
-  const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
   if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can grant Cloudflare Access to approved users.' } }, 403);
   }
