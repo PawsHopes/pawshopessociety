@@ -26,6 +26,7 @@ export interface Bindings {
   ADMIN_ERP_ORIGIN: string;
   CF_ACCESS_TEAM_DOMAIN: string;
   CF_ACCESS_AUD: string;
+  CF_ACCESS_API_TOKEN?: string;
   PUBLIC_MEDIA_BASE_URL: string;
   DEV_BOOTSTRAP_ADMIN_EMAIL?: string;
   STAGING_BOOTSTRAP_ADMIN_EMAIL?: string;
