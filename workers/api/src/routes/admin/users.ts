@@ -48,7 +48,7 @@ adminUsersRoutes.get(
       }, 403);
     }
 
-    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
     const users = await c.env.DB.prepare(`
       SELECT u.id, u.email, u.full_name as fullName,
         u.phone, u.status, u.last_login_at as lastLoginAt,
@@ -101,7 +101,7 @@ adminUsersRoutes.post(
     }
 
     const email = parsed.data.email.toLowerCase().trim();
-    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
     if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create ERP users and assign their initial roles.' } }, 403);
     }
@@ -193,14 +193,14 @@ adminUsersRoutes.patch(
     }
 
     if (parsed.data.roleCode !== undefined) {
-      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
       if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
         return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society account can change user roles.' } }, 403);
       }
     }
 
     if (parsed.data.status !== undefined) {
-      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
       if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
         return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society administrator can suspend or reactivate users.' } }, 403);
       }
@@ -236,7 +236,7 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+    const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
     if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== roleManagerEmail) {
       return c.json({
         success: false,
