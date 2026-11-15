@@ -118,4 +118,72 @@ jobs:
           if integrity != "ok":
               raise SystemExit(f"SQLite integrity check failed: {integrity}")
           print(f"Successfully applied {len(migrations)} migration files; foreign keys and integrity checks passed.")
+          
+          # Seed only deterministic reference data for workflow trigger tests.
+          for seed_name in ("0001_roles_permissions.sql", "0002_chart_of_accounts_and_compliance.sql"):
+              seed_path = Path("database/seeds") / seed_name
+              db.executescript(seed_path.read_text(encoding="utf-8"))
+
+          db.execute(
+              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+              ("ci-admin", "ci-admin@example.test", "CI Admin", "role_super_admin", "active"),
+          )
+          db.execute(
+              "INSERT INTO inventory_items (id, sku, name, category, unit) VALUES (?, ?, ?, ?, ?)",
+              ("ci-food", "CI-FOOD-001", "CI dog food", "dog_food", "kg"),
+          )
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
+                 VALUES (?, ?, 'purchase_in', 10, 'pending', ?)""",
+              ("ci-stock-in", "ci-food", "ci-admin"),
+          )
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 0
+          db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-in'")
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 10
+
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
+                 VALUES (?, ?, 'issue_out', -11, 'pending', ?)""",
+              ("ci-stock-out", "ci-food", "ci-admin"),
+          )
+          try:
+              db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-out'")
+              raise SystemExit("Negative stock approval unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          assert db.execute("SELECT approval_status FROM stock_movements WHERE id='ci-stock-out'").fetchone()[0] == "pending"
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 10
+
+          asset_id = db.execute("SELECT id FROM accounts WHERE account_type='asset' AND is_active=1 LIMIT 1").fetchone()[0]
+          income_id = db.execute("SELECT id FROM accounts WHERE account_type='income' AND is_active=1 LIMIT 1").fetchone()[0]
+          fund_id = db.execute("SELECT id FROM fund_categories LIMIT 1").fetchone()[0]
+          db.execute(
+              """INSERT INTO financial_transactions
+                 (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id,
+                  fund_category_id, amount_paise, reference_type, reference_id, narration, created_by)
+                 VALUES (?, ?, '2026-11-15', 'income', ?, ?, ?, 1234, 'donation', 'ci-donation', 'CI donation', ?)""",
+              ("ci-txn", "CI-TXN-001", asset_id, income_id, fund_id, "ci-admin"),
+          )
+          assert db.execute("SELECT current_balance_paise FROM accounts WHERE id=?", (asset_id,)).fetchone()[0] == 1234
+          assert db.execute("SELECT current_balance_paise FROM accounts WHERE id=?", (income_id,)).fetchone()[0] == 1234
+          try:
+              db.execute(
+                  """INSERT INTO financial_transactions
+                     (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id,
+                      fund_category_id, amount_paise, reference_type, reference_id, narration, created_by)
+                     VALUES (?, ?, '2026-11-15', 'income', ?, ?, ?, 1234, 'donation', 'ci-donation', 'Duplicate', ?)""",
+                  ("ci-txn-duplicate", "CI-TXN-002", asset_id, income_id, fund_id, "ci-admin"),
+              )
+              raise SystemExit("Duplicate donation ledger posting unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute("UPDATE financial_transactions SET narration='tampered' WHERE id='ci-txn'")
+              raise SystemExit("Immutable financial transaction update unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+
+          print("Workflow trigger tests passed: approved stock updates quantities, negative stock is blocked, ledger balances update, duplicate source postings and ledger edits are blocked.")
           PY
