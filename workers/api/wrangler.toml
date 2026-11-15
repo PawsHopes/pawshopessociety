@@ -17,6 +17,7 @@ binding = "DB"
 database_name = "pawshopes-erp-db-staging"
 database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
 migrations_dir = "../../database/migrations"
+migrations_table = "d1_migrations"
 
 [[r2_buckets]]
 binding = "PUBLIC_MEDIA"
@@ -42,6 +43,7 @@ binding = "DB"
 database_name = "pawshopes-erp-db-staging"
 database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
 migrations_dir = "../../database/migrations"
+migrations_table = "d1_migrations"
 
 [[env.staging.r2_buckets]]
 binding = "PUBLIC_MEDIA"
