@@ -57,7 +57,7 @@ adminUsersRoutes.get(
     `).all();
 
     const roles = await c.env.DB.prepare(
-      SELECT id, code, name, description FROM roles WHERE code <> 'volunteer' ORDER BY rowid
+      "SELECT id, code, name, description FROM roles WHERE code <> 'volunteer' ORDER BY rowid"
     ).all();
 
     return c.json({
