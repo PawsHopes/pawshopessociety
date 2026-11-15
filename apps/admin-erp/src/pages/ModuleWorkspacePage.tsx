@@ -130,6 +130,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [inventoryAlerts, setInventoryAlerts] = useState<{lowStock: Record<string,unknown>[]; expiring: Record<string,unknown>[]; expired: Record<string,unknown>[]} | null>(null);
+  const [medicalAlerts, setMedicalAlerts] = useState<{due: Record<string,unknown>[]; overdue: Record<string,unknown>[]} | null>(null);
   const [busy, setBusy] = useState(false);
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
@@ -143,6 +145,18 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   };
 
   useEffect(() => { setResourceKey(''); setForm({}); setEditingId(null); setSearch(''); setFeedback(''); }, [moduleKey]);
+  useEffect(() => {
+    setInventoryAlerts(null);
+    setMedicalAlerts(null);
+    if (moduleKey === 'inventory' && user.permissions.includes('inventory:read')) {
+      apiFetch<{lowStock: Record<string,unknown>[]; expiring: Record<string,unknown>[]; expired: Record<string,unknown>[]}>( '/api/v1/admin/modules/inventory/alerts')
+        .then((res) => { if (res.success && res.data) setInventoryAlerts(res.data); });
+    }
+    if (moduleKey === 'medical' && user.permissions.includes('medical:read')) {
+      apiFetch<{due: Record<string,unknown>[]; overdue: Record<string,unknown>[]}>( '/api/v1/admin/modules/medical/alerts')
+        .then((res) => { if (res.success && res.data) setMedicalAlerts(res.data); });
+    }
+  }, [moduleKey, user.permissions]);
   useEffect(() => { void load(); }, [resourceKey, moduleKey, search]);
 
   const reset = () => { setForm({}); setEditingId(null); };
@@ -222,6 +236,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <div className="sm:w-72"><label className="mb-1 block text-xs font-bold uppercase text-slate-500">Workspace</label><select value={resource?.key || ''} onChange={(e) => { setResourceKey(e.target.value); reset(); }} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">{available.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</select></div>
     </header>
     {feedback && <div role="status" className="rounded-xl bg-slate-900 px-4 py-3 text-sm text-white">{feedback}</div>}
+    {moduleKey === 'inventory' && inventoryAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Inventory alerts</strong><p className="mt-1">Low stock: {inventoryAlerts.lowStock.length} · Expired batches: {inventoryAlerts.expired.length} · Expiring in 30 days: {inventoryAlerts.expiring.length}</p></section>}
+    {moduleKey === 'medical' && medicalAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Vaccination reminders</strong><p className="mt-1">Overdue: {medicalAlerts.overdue.length} · Due within 30 days: {medicalAlerts.due.length}</p></section>}
     {canWrite && resource && resource.fields.length > 0 && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between"><h2 className="font-bold text-slate-900">{editingId ? 'Update record' : `Add ${resource.label}`}</h2>{editingId && <button type="button" onClick={reset} className="text-sm font-semibold text-slate-600 underline">Cancel edit</button>}</div>
       <form onSubmit={submit} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
