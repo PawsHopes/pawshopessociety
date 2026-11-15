@@ -50,7 +50,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'foster_applications', label: 'Foster Applications', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
       text('application_code','Application code',true), text('animal_id','Animal record ID',true), text('applicant_name','Applicant name',true), text('applicant_phone','Phone',true),
-      text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), area('notes','Notes')
+      text('applicant_email','Email'), area('applicant_address','Address',true), date('foster_start_date','Foster start'), date('expected_end_date','Expected end'), date('actual_end_date','Actual end'), area('notes','Notes')
     ]},
     { key: 'adoption_agreements', label: 'Adoption Agreements & Follow-ups', permission: 'adoption:read', writePermission: 'adoption:write', fields: [
       text('agreement_number','Agreement number',true), text('application_id','Application ID',true), text('animal_id','Animal record ID',true), date('handover_date','Handover date',true),
@@ -81,7 +81,7 @@ const RESOURCES: Record<string, Resource[]> = {
   inventory: [
     { key: 'inventory_items', label: 'Stock Catalogue', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicines','vaccines','supplements','cleaning_supplies','medical_equipment','other'],true),
-      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
+      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('min_stock_threshold','Low-stock threshold'), choice('expiry_tracking_enabled','Track expiry',['0','1']), text('preferred_supplier_id','Preferred supplier ID')
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('item_id','Inventory item ID',true), choice('movement_type','Movement type',['opening','purchase_in','issue_out','expired_writeoff','adjustment'],true), num('quantity_delta','Quantity change',true),
@@ -223,7 +223,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       else if (field.key === 'skills_json' && resource.key === 'volunteers') payload.skills_json = JSON.stringify(value.split(',').map((item) => item.trim()).filter(Boolean));
       else if (field.type === 'number' && ['amount_paise','total_amount_paise'].includes(field.key)) payload[field.key] = Math.round(Number(value) * 100);
       else if (field.type === 'number') payload[field.key] = Number(value);
-      else if (field.key.startsWith('is_') || field.key === 'has_other_pets') payload[field.key] = value === '1';
+      else if (field.key.startsWith('is_') || field.key === 'has_other_pets' || field.key === 'expiry_tracking_enabled') payload[field.key] = value === '1';
       else payload[field.key] = value;
     }
     const result = await apiFetch<{ id?: string }>(editingId ? `/api/v1/admin/modules/${resource.key}/${editingId}` : `/api/v1/admin/modules/${resource.key}`, {
