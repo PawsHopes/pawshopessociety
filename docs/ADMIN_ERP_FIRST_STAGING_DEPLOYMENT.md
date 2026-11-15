@@ -10,15 +10,15 @@ This runbook is staging-only. It must not change the public website, the existin
 - Pages root: `apps/admin-erp`
 - Build command: `npm install --prefix ../../workers/api --no-save --no-package-lock --omit=dev && npm run build`
 - Output directory: `dist`
-- Latest confirmed successful Pages deployment: commit `6c456fe830e79124f6cefa1b654de85243a7ba09`
-- ERP CI and Security Analysis passed for that commit: frontend build, Worker API checks, migration validation, CodeQL and secret scanning.
+- Latest verified application-code deployment: commit `6ed04ebce52aa5d0434b84124040185832d00af8` (`https://d4e56253.phs-phs.pages.dev`)
+- ERP CI and Security Analysis passed for that application-code commit: frontend build, Worker API checks, migration validation, CodeQL and secret scanning.
 - Cloudflare Access app protects `phs-phs.pages.dev` and currently allows only `hopezpaws@gmail.com`.
 - Zero Trust team: `mute-pond-e3e6.cloudflareaccess.com`
 - Staging D1: `pawshopes-erp-db-staging` (`a6fd7136-b618-4072-af6a-5373f4e727d1`)
 - Staging KV: `pawshopes-erp-rate-limit-staging` (`1156cf04f6b9496dabc7d580457f0c53`)
-- Staging D1 schema objects through migrations `0001`–`0007` are present. The standard `d1_migrations` history table was reconciled and now records all seven migration files. A D1 SQL export snapshot was generated before that metadata repair. The database has 17 animal records, 2 volunteer records and 3 stock movements; 21 synthetic QA records were added for testing. Review existing records before operational use; do not delete or overwrite records without confirming their origin.
+- Staging D1 schema objects through migrations `0001`–`0008` are present. The standard `d1_migrations` history table was reconciled and now records all eight migration files. D1 SQL export snapshots were generated before the metadata repair and adoption-reservation migration. The database has 17 animal records, 2 volunteer records and 3 stock movements; 21 synthetic QA records were added for testing. The adoption-reservation trigger was verified with a temporary animal and two applications: the first approval reserved the animal, the second was blocked, and all temporary test records were removed. Review existing records before operational use; do not delete or overwrite records without confirming their origin.
 - `SIGNED_URL_SECRET` is configured as a Pages secret. Its value is intentionally not exposed in this runbook; verify private-document signed-link behavior after deployment.
-- R2 is now activated. Two APAC staging buckets exist: `pawshopes-public-media-staging` (public development URL enabled: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`) and `pawshopes-private-vault-staging` (private; no public domain). Pages production deployment config has `PUBLIC_MEDIA` and `PRIVATE_VAULT` R2 bindings, and `PUBLIC_MEDIA_BASE_URL` is set to the public development URL. A new Pages deployment is required before the running Function receives the bindings.
+- R2 is activated. The public staging bucket `pawshopes-public-media-staging` has its managed `r2.dev` domain enabled; `pawshopes-private-vault-staging` has no public domain. The latest verified application-code deployment includes the `PUBLIC_MEDIA` and `PRIVATE_VAULT` bindings. Application-level upload, record linking, signed access and download still need authenticated end-to-end verification.
 - The Pages Function at `apps/admin-erp/functions/api/[[path]].ts` serves the same Hono API on the Admin hostname. The latest Pages build and deployment completed successfully.
 - Interactive browser login and authenticated end-to-end smoke tests are not yet confirmed.
 
