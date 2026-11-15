@@ -203,9 +203,10 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   }
 
   const userId = crypto.randomUUID();
+  const volunteerId = parsed.data.roleCode === 'volunteer' ? crypto.randomUUID() : null;
 
   try {
-    const results = await c.env.DB.batch([
+    const statements = [
       c.env.DB.prepare(`
         UPDATE join_applications
         SET status = 'approved', reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
@@ -220,8 +221,17 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
           WHERE id = ? AND status = 'approved' AND created_user_id = ?
         )
       `).bind(userId, application.email, application.full_name, application.phone, role.id, applicationId, userId)
-    ]);
-    if (!results[0]?.meta.changes || !results[1]?.meta.changes) {
+    ];
+    if (volunteerId) {
+      statements.push(c.env.DB.prepare(`
+        INSERT INTO volunteers (id, volunteer_code, full_name, email, phone, skills_json, joined_date, status, created_by)
+        SELECT ?, 'VOL-' || strftime('%Y%m%d','now') || '-' || substr(hex(randomblob(4)),1,8),
+          ?, ?, ?, '[]', date('now'), 'active', ?
+        WHERE EXISTS (SELECT 1 FROM users WHERE id = ? AND role_id = ?)
+      `).bind(volunteerId, application.full_name, application.email, application.phone, actor.id, userId, role.id));
+    }
+    const results = await c.env.DB.batch(statements);
+    if (!results[0]?.meta.changes || !results[1]?.meta.changes || (volunteerId && !results[2]?.meta.changes)) {
       return c.json({ success: false, error: { code: 'CONFLICT', message: 'The application has already been reviewed or could not be approved.' } }, 409);
     }
   } catch {
@@ -232,10 +242,10 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
     action: 'JOIN_APPLICATION_APPROVED',
     entityType: 'join_applications',
     entityId: applicationId,
-    after: { userId, email: application.email, roleCode: role.code }
+    after: { userId, volunteerId, email: application.email, roleCode: role.code }
   });
 
-  return c.json({ success: true, data: { applicationId, userId, email: application.email, roleCode: role.code, status: 'active' } });
+  return c.json({ success: true, data: { applicationId, userId, volunteerId, email: application.email, roleCode: role.code, status: 'active' } });
 });
 
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
