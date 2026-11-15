@@ -24,7 +24,7 @@ const createUserSchema = z.object({
   email: z.string().email().max(180),
   fullName: z.string().min(2).max(120),
   phone: z.string().max(25).nullable().optional(),
-  roleCode: z.enum(ROLE_CODES),
+  roleCode: z.enum(['super_admin','finance_manager','vet_staff','rescue_coord','adoption_coord','auditor']),
 });
 
 const updateUserSchema = z.object({
@@ -58,7 +58,7 @@ adminUsersRoutes.get(
     `).all();
 
     const roles = await c.env.DB.prepare(
-      'SELECT id, code, name, description FROM roles ORDER BY rowid'
+      SELECT id, code, name, description FROM roles WHERE code <> 'volunteer' ORDER BY rowid
     ).all();
 
     return c.json({
