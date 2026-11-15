@@ -63,12 +63,12 @@ const RESOURCES: Record<string, Resource[]> = {
     ]},
     { key: 'donations', label: 'Donation Register', permission: 'donations:read', writePermission: 'donations:write', fields: [
       text('donor_id','Donor ID',true), text('fund_category_id','Fund category ID',true), text('account_id','Receiving account ID',true), date('donation_date','Donation date',true),
-      num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
+      num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true), text('transaction_reference','Transaction reference'), area('purpose','Purpose')
     ]},
     { key: 'expenses', label: 'Expense Claims', permission: 'finance:read', writePermission: 'expenses:submit', fields: [
       text('expense_code','Expense code',true), date('expense_date','Expense date',true), choice('category','Category',['animal_food','vet_consultation','medicines','vaccination','sterilization','transportation','rescue_operations','shelter_maintenance','utilities','equipment','administrative','other'],true),
-      text('fund_category_id','Fund category ID',true), text('account_id','Payment account ID',true), num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','razorpay','cheque','other'],true),
-      text('vendor_payee','Vendor / payee'), text('animal_id','Animal ID'), text('rescue_case_id','Rescue case ID'), area('description','Description')
+      text('fund_category_id','Fund category ID',true), text('account_id','Payment account ID',true), num('amount_paise','Amount (paise)',true), choice('payment_mode','Payment mode',['upi','bank_transfer','cash','card','other'],true),
+      text('vendor_payee','Vendor / payee',true), text('animal_id','Animal ID'), text('rescue_case_id','Rescue case ID'), area('description','Description')
     ]},
     { key: 'financial_transactions', label: 'Immutable Ledger', permission: 'finance:read', fields: [] },
     { key: 'accounts', label: 'Chart of Accounts', permission: 'finance:read', fields: [] },
@@ -80,7 +80,7 @@ const RESOURCES: Record<string, Resource[]> = {
   ],
   inventory: [
     { key: 'inventory_items', label: 'Stock Catalogue', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicine','medical_supply','cleaning','equipment','supplements','other'],true),
+      text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicines','vaccines','supplements','cleaning_supplies','medical_equipment','other'],true),
       text('unit','Unit',true), num('opening_stock','Opening stock'), num('current_stock','Current stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
@@ -91,7 +91,7 @@ const RESOURCES: Record<string, Resource[]> = {
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
     ]},
     { key: 'purchase_orders', label: 'Purchase Orders', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','submitted','approved','received','cancelled']), num('total_amount_paise','Total amount (paise)')
+      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (paise)')
     ]}
   ],
   volunteers: [
@@ -132,6 +132,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState(false);
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
+  const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
 
   const load = async () => {
     if (!resource) return;
@@ -203,8 +204,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     </section>}
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">{resource?.label}</h2><p className="text-xs text-slate-500">{rows.length} records loaded · maximum 100 per search</p></div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search records…" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64" /></div>
-      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{canWrite && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
-      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canWrite ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : String(row[col])}</td>)}{canWrite && <td className="px-4 py-3 text-right"><button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button></td>}</tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{canEdit && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
+      <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : String(row[col])}</td>)}{canEdit && <td className="px-4 py-3 text-right"><button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button></td>}</tr>)}</tbody></table></div>
     </section>
     <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
   </div>;
