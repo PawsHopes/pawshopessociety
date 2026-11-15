@@ -1,6 +1,6 @@
 name = "pawshopes-erp-api"
 main = "src/index.ts"
-compatibility_date = "2024-11-01"
+compatibility_date = "2026-11-15"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
@@ -8,6 +8,7 @@ ENVIRONMENT = "development"
 PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev"
 ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev"
 CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com"
+CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316"
 PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org"
 
 # Bindings for local development / staging
@@ -39,7 +40,7 @@ vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "pawshopes-erp-db-staging"
-database_id = "REPLACE_WITH_STAGING_D1_ID"
+database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
 migrations_dir = "../../database/migrations"
 
 [[env.staging.r2_buckets]]
@@ -52,11 +53,11 @@ bucket_name = "pawshopes-private-vault-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "REPLACE_WITH_STAGING_KV_ID"
+id = "1156cf04f6b9496dabc7d580457f0c53"
 
 [env.production]
 name = "pawshopes-erp-api-production"
-vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://erp-pawshopes.pages.dev", CF_ACCESS_TEAM_DOMAIN = "pawshopessociety.cloudflareaccess.com", PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org" }
+vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://phs-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", PUBLIC_MEDIA_BASE_URL = "https://media.pawshopessociety.org" }
 
 [[env.production.d1_databases]]
 binding = "DB"
