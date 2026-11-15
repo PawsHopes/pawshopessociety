@@ -42,7 +42,7 @@ function page(title: string, content: string, status = 200) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(title)} — Paw's Hopez Society</title>
+<title>${escapeHtml(title)} — Paws Hopes Society</title>
 </head>
 <body>
 <main>
@@ -95,7 +95,7 @@ publicJoinRoutes.get('/:token', async (c) => {
   if (!link) {
     return page(
       'Invitation link unavailable',
-      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopez Society for a current link.</p>',
+      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopes Society for a current link.</p>',
       404
     );
   }
@@ -103,7 +103,7 @@ publicJoinRoutes.get('/:token', async (c) => {
   const action = `/api/v1/public/join/${encodeURIComponent(token)}`;
 
   return page(
-    'Apply to join Paws Hopez Society',
+    'Apply to join Paws Hopes Society',
     `<p>Submit your details below. Your application will remain pending until a Society administrator verifies and approves it. Submitting this form does not create an ERP account or grant access.</p>
 <form method="post" action="${action}">
   <p><label>Full name<br><input name="fullName" required minlength="2" maxlength="120" autocomplete="name"></label></p>
@@ -124,7 +124,7 @@ publicJoinRoutes.post('/:token', async (c) => {
   if (!link) {
     return page(
       'Invitation link unavailable',
-      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopez Society.</p>',
+      '<p>This join link is invalid, expired or has been revoked. Please contact Paws Hopes Society.</p>',
       404
     );
   }
@@ -149,7 +149,7 @@ publicJoinRoutes.post('/:token', async (c) => {
     phone: params.get('phone') || '',
     message: params.get('message') || '',
   };
-  const receivedMessage = '<p>Thank you for your interest in Paws Hopez Society. If your application can be accepted, it will be reviewed by an authorised administrator. This submission does not grant ERP access.</p>';
+  const receivedMessage = '<p>Thank you for your interest in Paws Hopes Society. If your application can be accepted, it will be reviewed by an authorised administrator. This submission does not grant ERP access.</p>';
   const honeypot = typeof body.website === 'string' ? body.website.trim() : '';
   if (honeypot) {
     return page('Application received', receivedMessage);
