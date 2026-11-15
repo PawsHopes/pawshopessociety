@@ -81,10 +81,10 @@ const RESOURCES: Record<string, Resource[]> = {
   inventory: [
     { key: 'inventory_items', label: 'Stock Catalogue', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicines','vaccines','supplements','cleaning_supplies','medical_equipment','other'],true),
-      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('current_stock','Current stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
+      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('item_id','Inventory item ID',true), choice('movement_type','Movement type',['opening','purchase','issue','adjustment','write_off','return'],true), num('quantity_delta','Quantity change',true),
+      text('item_id','Inventory item ID',true), choice('movement_type','Movement type',['opening','purchase_in','issue_out','expired_writeoff','adjustment'],true), num('quantity_delta','Quantity change',true),
       text('batch_number','Batch number'), date('expiry_date','Expiry date'), text('animal_id','Animal ID'), text('purchase_order_id','Purchase order ID'), area('notes','Notes')
     ]},
     { key: 'suppliers', label: 'Suppliers', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
@@ -106,7 +106,7 @@ const RESOURCES: Record<string, Resource[]> = {
     ]}
   ],
   cms: [{ key: 'website_content', label: 'Website Content Drafts', permission: 'cms:read', writePermission: 'cms:write', fields: [
-    text('page_slug','Page slug',true), text('section_key','Section key',true), text('title','Title',true), area('body_json','Content body (JSON)',true),
+    text('page_slug','Page slug',true), text('section_key','Section key',true), text('title','Section title',true), area('body_json','Page content (plain text)',true),
     text('media_asset_id','Media asset ID'), text('seo_title','SEO title'), area('seo_description','SEO description')
   ]}]
 };
@@ -168,7 +168,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     for (const field of resource.fields) {
       const value = form[field.key];
       if (value === undefined || value === '') continue;
-      if (field.type === 'number') payload[field.key] = Number(value);
+      if (field.key === 'body_json' && resource.key === 'website_content') payload.body_json = JSON.stringify({ content: value });
+      else if (field.type === 'number') payload[field.key] = Number(value);
       else if (field.key.startsWith('is_') || field.key === 'has_other_pets') payload[field.key] = value === '1';
       else payload[field.key] = value;
     }
@@ -186,7 +187,14 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     const next: Record<string,string> = {};
     for (const field of resource.fields) {
       const value = row[field.key];
-      if (value !== null && value !== undefined) next[field.key] = String(value);
+      if (value !== null && value !== undefined) {
+        if (field.key === 'body_json' && resource.key === 'website_content') {
+          try {
+            const parsed = JSON.parse(String(value)) as { content?: unknown };
+            next[field.key] = typeof parsed.content === 'string' ? parsed.content : JSON.stringify(parsed, null, 2);
+          } catch { next[field.key] = String(value); }
+        } else next[field.key] = String(value);
+      }
     }
     setForm(next); setEditingId(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -226,6 +234,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   if (resource?.key === 'donations') columns.push('verification_status');
   if (resource?.key === 'expenses') columns.push('approval_status','payment_status');
   if (resource?.key === 'stock_movements') columns.push('approval_status');
+  if (resource?.key === 'inventory_items') columns.push('current_stock');
   if (resource?.key === 'adoption_applications' || resource?.key === 'foster_applications') columns.push('status');
 
   if (resource && !columns.includes('id')) columns.unshift('id');
