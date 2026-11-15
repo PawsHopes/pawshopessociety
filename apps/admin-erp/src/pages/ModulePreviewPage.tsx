@@ -17,7 +17,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     permission: 'animals:read',
   },
   rescue: {
-    title: '24/7 Emergency Rescue Case Management',
+    title: 'Rescue Case Management',
     phase: 'Phase 4 (Core ERP)',
     summary: 'Track rescue calls from intake through verification, assignment, rescue, and closure with field notes.',
     permission: 'rescue:read',
