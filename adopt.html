@@ -253,28 +253,46 @@
         return map[species] || 'fa-paw';
       }
 
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+      }
+
+      function safeImageUrl(value) {
+        const url = String(value || '');
+        return /^(https:\/\/|\/)/i.test(url) ? url : '';
+      }
+
       function buildCard(animal, isAdopted) {
-        const imgList = animal.images && animal.images.length > 0 ? animal.images : (animal.photo ? [animal.photo] : []);
-        const firstPhoto = imgList.length > 0 ? imgList[0] : '';
-        const photoBlock = firstPhoto ? `<img src="${firstPhoto}" alt="${animal.name}" loading="lazy" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">` : `<div class="photo-placeholder w-full h-64"><i class="fas ${speciesIcon(animal.species)} fa-3x" aria-hidden="true"></i><span>Photo Coming Soon</span></div>`;
+        const sourceImages = Array.isArray(animal.images) && animal.images.length ? animal.images : (animal.photo ? [animal.photo] : []);
+        const imgList = sourceImages.map(safeImageUrl).filter(Boolean);
+        const firstPhoto = imgList[0] || '';
+        const name = escapeHtml(animal.name || 'Rescued animal');
+        const species = escapeHtml(animal.species || 'Other');
+        const gender = escapeHtml(animal.gender || 'Unknown');
+        const age = escapeHtml(animal.age || '');
+        const description = escapeHtml(animal.description || '');
+        const identifier = escapeHtml(animal.id || animal.name || '');
+        const photoBlock = firstPhoto ? `<img src="${escapeHtml(firstPhoto)}" alt="${name}" loading="lazy" decoding="async" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">` : `<div class="photo-placeholder w-full h-64"><i class="fas ${speciesIcon(animal.species)} fa-3x" aria-hidden="true"></i><span>Photo Coming Soon</span></div>`;
         const badgeColor = isAdopted ? 'bg-green-100 dark:bg-green-950 text-brandGreen' : 'bg-orange-100 dark:bg-orange-950 text-brandOrange';
         const badgeText = isAdopted ? 'Adopted' : 'Available';
-        const breedText = animal.breed ? `${animal.breed} &middot; ` : '';
-        const noteBlock = animal.adoptedNote ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${animal.adoptedNote}</p>` : '';
+        const breedText = animal.breed ? `${escapeHtml(animal.breed)} &middot; ` : '';
+        const noteBlock = animal.adoptedNote ? `<p class="text-xs text-brandGreen font-semibold mt-3"><i class="fas fa-heart mr-1" aria-hidden="true"></i>${escapeHtml(animal.adoptedNote)}</p>` : '';
 
         return `
-          <div class="adoption-card bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer group flex flex-col" data-aos="fade-up" data-species="${animal.species}" data-gender="${animal.gender}" data-id="${animal.id || animal.name}" onclick="openModal('${animal.id || animal.name}')">
+          <div class="adoption-card bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer group flex flex-col" role="button" tabindex="0" data-aos="fade-up" data-species="${species}" data-gender="${gender}" data-id="${identifier}">
             <div class="overflow-hidden relative">
               ${photoBlock}
               <div class="absolute top-4 left-4"><span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full uppercase shadow-md">${badgeText}</span></div>
             </div>
             <div class="p-6 flex-1 flex flex-col">
               <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-brandOrange transition-colors">${animal.name}</h3>
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">${animal.gender}</span>
+                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-brandOrange transition-colors">${name}</h3>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">${gender}</span>
               </div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${breedText}${animal.species} &middot; ${animal.age}</p>
-              <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">${animal.description}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${breedText}${species} &middot; ${age}</p>
+              <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">${description}</p>
               ${noteBlock}
               <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brandOrange">
                 <span><i class="fas fa-images mr-1"></i> View Gallery (${imgList.length} photos)</span>
@@ -294,6 +312,23 @@
 
       render('adoptable-grid', 'adoptable-empty', window.AVAILABLE_FOR_ADOPTION, false);
       render('adopted-grid', 'adopted-empty', window.ADOPTED_ANIMALS, true);
+
+      ['adoptable-grid', 'adopted-grid'].forEach((listId) => {
+        const list = document.getElementById(listId);
+        if (!list) return;
+        list.addEventListener('click', (event) => {
+          const card = event.target.closest('.adoption-card');
+          if (card && list.contains(card)) openModal(card.dataset.id);
+        });
+        list.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          const card = event.target.closest('.adoption-card');
+          if (card && list.contains(card)) {
+            event.preventDefault();
+            openModal(card.dataset.id);
+          }
+        });
+      });
 
       let currentSpecies = 'all';
       let currentGender = 'all';
@@ -342,8 +377,14 @@
         .then((payload) => {
           const data = payload && payload.success && payload.data;
           if (!data || !Array.isArray(data.available) || !Array.isArray(data.adopted)) return;
-          window.AVAILABLE_FOR_ADOPTION = data.available;
-          window.ADOPTED_ANIMALS = data.adopted;
+          const normalizeAnimal = (animal) => ({
+            ...animal,
+            id: String(animal.id || animal.name || ''),
+            name: String(animal.name || 'Rescued animal'),
+            images: (Array.isArray(animal.images) ? animal.images : []).map(safeImageUrl).filter(Boolean)
+          });
+          window.AVAILABLE_FOR_ADOPTION = data.available.map(normalizeAnimal);
+          window.ADOPTED_ANIMALS = data.adopted.map(normalizeAnimal);
           render('adoptable-grid', 'adoptable-empty', window.AVAILABLE_FOR_ADOPTION, false);
           render('adopted-grid', 'adopted-empty', window.ADOPTED_ANIMALS, true);
           applyFilters();
