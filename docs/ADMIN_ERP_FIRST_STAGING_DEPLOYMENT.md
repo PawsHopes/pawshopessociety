@@ -72,7 +72,22 @@ Owner verification:
 
 The staging D1 database currently has two active Super Admin accounts, including the configured owner email. The owner already has the required ERP role, so first-admin bootstrap is not required for that account. Do not create a public registration path or create duplicate Super Admin accounts.
 
-## 4. Smoke tests required before operational use
+## 4. Approved-member Cloudflare Access synchronisation
+
+The Join Management API now attempts to add only the exact email of an approved applicant to the existing Allow policy. It reads the current policy, preserves the existing narrow email rules, refuses to modify a non-Allow policy or a policy containing broad Everyone/domain/service-token rules, and records sync status. A Super Admin can retry failed/pending syncs from Join Management. ERP approval remains separate from Access synchronisation: if Access sync is unavailable, the ERP account is active but the person cannot sign in until the Access step succeeds.
+
+To enable automatic synchronisation on staging:
+1. Create a Cloudflare API token restricted to this account with **Access: Apps and Policies Edit** permission. Do not use the Global API Key.
+2. In Cloudflare Pages → `phs-phs` → Settings → Environment variables → Production (the Pages project's production deployment is the ERP staging environment), add `CF_ACCESS_API_TOKEN` as an encrypted secret.
+3. Redeploy the `erp-development` branch so the Pages Function receives the secret.
+4. Test with a controlled test applicant email. Verify the exact email is appended to policy `3fe62b03-bb97-47d3-8839-02001fee7ce0`, the existing owner email remains, and Join Management reports `synced`.
+5. Remove the test member from the Access policy and disable/revoke the temporary test account after verification.
+
+Never paste the API token into chat, GitHub, source code, plain-text variables, or logs. If the secret is absent or the API token lacks permission, the UI will retain a pending/failed status and provide the manual fallback.
+
+Migration `0009_access_sync_status.sql` adds persistent sync status/error/timestamp fields. It has been applied to staging D1 after a SQL export snapshot.
+
+## 5. Smoke tests required before operational use
 
 1. Unauthenticated Admin requests redirect to Cloudflare Access.
 2. Public animal/join/health endpoints bypass Access only on explicit public path overrides.
@@ -88,7 +103,7 @@ The staging D1 database currently has two active Super Admin accounts, including
 
 Do not enter real donor, medical, financial or volunteer records until staging UAT, security checks and backup/restore rehearsal pass.
 
-## 5. R2 bucket configuration now in place
+## 6. R2 bucket configuration now in place
 
 - `pawshopes-public-media-staging` — APAC, Standard; managed `r2.dev` URL enabled for staging testing only.
 - `pawshopes-private-vault-staging` — APAC, Standard; remains private with no public endpoint.
@@ -96,6 +111,6 @@ Do not enter real donor, medical, financial or volunteer records until staging U
 - Public media base URL: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`.
 - Bucket bindings take effect only after a new Pages deployment. Test actual upload and private signed download after deployment.
 
-## 6. Production remains out of scope
+## 7. Production remains out of scope
 
 No production D1, KV, R2, production Access app, production secret set or production deployment has been approved. Do not merge the ERP PR, deploy production, change DNS, or point the public website at the staging API without separate explicit approval.
