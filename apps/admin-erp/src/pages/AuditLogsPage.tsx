@@ -7,7 +7,9 @@ interface AuditRow {
   action: string;
   entityType: string;
   entityId: string;
+  beforeJson: string | null;
   afterJson: string | null;
+  ipAddress: string | null;
   createdAt: string;
 }
 
@@ -37,13 +39,14 @@ export const AuditLogsPage: React.FC = () => {
               <th className="p-3.5">Actor</th>
               <th className="p-3.5">Action</th>
               <th className="p-3.5">Entity</th>
-              <th className="p-3.5">Details</th>
+              <th className="p-3.5">Before / after</th>
+              <th className="p-3.5">IP address</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-slate-400">
+                <td colSpan={6} className="p-6 text-center text-slate-400">
                   No audit events recorded yet.
                 </td>
               </tr>
@@ -60,9 +63,13 @@ export const AuditLogsPage: React.FC = () => {
                   <td className="p-3.5 font-mono text-slate-600">
                     {l.entityType}:{l.entityId.slice(0, 8)}
                   </td>
-                  <td className="p-3.5 font-mono text-slate-500 max-w-xs truncate">
-                    {l.afterJson || '-'}
+                  <td className="p-3.5 font-mono text-slate-500 max-w-md">
+                    <details>
+                      <summary className="cursor-pointer text-blue-700">View change details</summary>
+                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">Before: {l.beforeJson || '—'}{"\n"}After: {l.afterJson || '—'}</pre>
+                    </details>
                   </td>
+                  <td className="p-3.5 font-mono text-slate-500">{l.ipAddress || '—'}</td>
                 </tr>
               ))
             )}
