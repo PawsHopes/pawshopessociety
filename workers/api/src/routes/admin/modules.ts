@@ -386,7 +386,7 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   const id = c.req.param('id');
   const existing = await c.env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ?`).bind(id).first<Record<string, unknown>>();
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Record not found.' } }, 404);
-  if (resource === 'website_content' && existing.status === 'published') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published CMS versions are immutable. Create a new version to make changes.' } }, 409);
+  if (resource === 'website_content' && existing.status !== 'draft') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Published and archived CMS versions are immutable. Create a new draft version to make changes.' } }, 409);
   const setParts = keys.map((key) => `${key} = ?`);
   const updateBindings: (string | number | boolean | null)[] = keys.map((key) => parsed.value[key]!);
   if (resource === 'website_content' || resource === 'compliance_registrations') {
