@@ -81,7 +81,7 @@ const RESOURCES: Record<string, Resource[]> = {
   inventory: [
     { key: 'inventory_items', label: 'Stock Catalogue', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('sku','SKU',true), text('name','Item name',true), choice('category','Category',['dog_food','cat_food','medicines','vaccines','supplements','cleaning_supplies','medical_equipment','other'],true),
-      text('unit','Unit',true), num('opening_stock','Opening stock'), num('current_stock','Current stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
+      choice('unit','Unit',['kg','g','l','ml','tablet','vial','bottle','pack','piece'],true), num('opening_stock','Opening stock'), num('current_stock','Current stock'), num('min_stock_threshold','Low-stock threshold'), text('preferred_supplier_id','Preferred supplier ID')
     ]},
     { key: 'stock_movements', label: 'Stock Movements', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
       text('item_id','Inventory item ID',true), choice('movement_type','Movement type',['opening','purchase','issue','adjustment','write_off','return'],true), num('quantity_delta','Quantity change',true),
