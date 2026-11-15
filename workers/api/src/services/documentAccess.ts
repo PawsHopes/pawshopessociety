@@ -51,6 +51,7 @@ export function canReadDocumentCategory(
     return false;
   }
 
+  if (category === 'other') return false;
   const permission = READ_PERMISSION[category];
 
   return permission !== undefined &&
@@ -63,6 +64,7 @@ export function canUploadDocumentCategory(
 ): boolean {
   if (user.roleCode === 'super_admin') return true;
 
+  if (category === 'other') return false;
   const permission = WRITE_PERMISSION[category];
 
   return permission !== undefined &&
