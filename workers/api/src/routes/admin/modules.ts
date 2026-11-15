@@ -421,9 +421,12 @@ adminModuleRoutes.post('/animals/:id/publish', async (c) => {
     return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide published as true or false.' } }, 400);
   }
   const id = c.req.param('id');
-  const animal = await c.env.DB.prepare('SELECT id, is_published_public FROM animals WHERE id = ?')
-    .bind(id).first<{ id: string; is_published_public: number }>();
+  const animal = await c.env.DB.prepare('SELECT id, is_published_public, current_status, deleted_at FROM animals WHERE id = ?')
+    .bind(id).first<{ id: string; is_published_public: number; current_status: string; deleted_at: string | null }>();
   if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
+  if (body.published && (animal.deleted_at || !['available_for_adoption', 'adopted'].includes(animal.current_status))) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Only active animals marked available for adoption or already adopted can appear on the public website.' } }, 409);
+  }
   if (Boolean(animal.is_published_public) === body.published) {
     return c.json({ success: true, data: { id, is_published_public: body.published, unchanged: true } });
   }
