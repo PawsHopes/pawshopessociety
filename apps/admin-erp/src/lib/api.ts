@@ -30,11 +30,44 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Api
     headers.set('X-Dev-User-Email', devEmail);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    credentials: 'include',
-  });
-
-  return (await res.json()) as ApiResponse<T>;
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      credentials: 'include',
+    });
+    const responseText = await res.text();
+    let payload: unknown;
+    try {
+      payload = JSON.parse(responseText);
+    } catch {
+      return {
+        success: false,
+        error: {
+          code: res.status === 401 ? 'UNAUTHORIZED' : 'INVALID_RESPONSE',
+          message: res.redirected
+            ? 'Your session may have expired. Sign in again and retry.'
+            : `The ERP API returned an unexpected response (HTTP ${res.status}).`,
+        },
+      };
+    }
+    if (payload && typeof payload === 'object' && 'success' in payload) {
+      return payload as ApiResponse<T>;
+    }
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_RESPONSE',
+        message: `The ERP API returned an unexpected response (HTTP ${res.status}).`,
+      },
+    };
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Could not reach the ERP API. Check your connection and try again.',
+      },
+    };
+  }
 }
