@@ -301,6 +301,9 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const missing = (config.required || []).filter((key) => input[key] === undefined || input[key] === null || input[key] === '');
   if (missing.length) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: `Required fields missing: ${missing.join(', ')}` } }, 400);
 
+  if (resource === 'animals' && (input.is_adoption_eligible !== undefined || input.is_foster_eligible !== undefined) && !actor.permissions.includes('adoption:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption permission is required to change animal adoption or foster eligibility.' } }, 403);
+  }
   if (resource === 'animals') {
     const nextStatus = String(input.current_status || 'rescued');
     if (['adopted', 'fostered'].includes(nextStatus)) {
@@ -403,6 +406,9 @@ adminModuleRoutes.patch('/:resource/:id', async (c) => {
   const id = c.req.param('id');
   const existing = await c.env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ?`).bind(id).first<Record<string, unknown>>();
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Record not found.' } }, 404);
+  if (resource === 'animals' && (parsed.value.is_adoption_eligible !== undefined || parsed.value.is_foster_eligible !== undefined) && !actor.permissions.includes('adoption:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption permission is required to change animal adoption or foster eligibility.' } }, 403);
+  }
   if (resource === 'animals' && parsed.value.current_status !== undefined) {
     const nextStatus = String(parsed.value.current_status);
     if (['adopted', 'fostered'].includes(nextStatus)) {
