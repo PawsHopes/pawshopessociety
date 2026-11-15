@@ -75,7 +75,7 @@ const RESOURCES: Record<string, Resource[]> = {
     { key: 'fund_categories', label: 'Fund Categories', permission: 'finance:read', fields: [] },
     { key: 'compliance_registrations', label: 'Statutory Compliance', permission: 'compliance:read', writePermission: 'compliance:write', fields: [
       choice('reg_type','Registration type',['society_registration','pan','ngo_darpan','12a','80g','awbi','csr1']), text('registration_number','Registration number'), text('issuing_authority','Issuing authority',true),
-      choice('status','Status',['not_applied','applied','active','expired','rejected']), date('valid_from','Valid from'), date('valid_until','Valid until'), area('notes','Notes')
+      choice('status','Status',['not_applied','applied','provisional','active','expired','rejected']), date('valid_from','Valid from'), date('valid_until','Valid until'), area('notes','Notes')
     ]}
   ],
   inventory: [
