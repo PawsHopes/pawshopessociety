@@ -28,6 +28,7 @@ export interface Bindings {
   CF_ACCESS_AUD: string;
   PUBLIC_MEDIA_BASE_URL: string;
   DEV_BOOTSTRAP_ADMIN_EMAIL?: string;
+  STAGING_BOOTSTRAP_ADMIN_EMAIL?: string;
   TURNSTILE_SECRET_KEY?: string;
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
