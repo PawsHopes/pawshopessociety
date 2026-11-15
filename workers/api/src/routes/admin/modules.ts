@@ -104,7 +104,7 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   inventory_items: {
     table: 'inventory_items', read: 'inventory:read', write: 'inventory:write',
-    fields: ['sku','name','category','unit','min_stock_threshold','expiry_tracking_enabled','preferred_supplier_id'],
+    fields: ['sku','name','category','unit','opening_stock','min_stock_threshold','expiry_tracking_enabled','preferred_supplier_id'],
     required: ['sku','name','category','unit'], search: ['sku','name','category'], order: 'name',
     defaults: { opening_stock: 0, current_stock: 0, min_stock_threshold: 0, expiry_tracking_enabled: 0 },
   },
@@ -183,6 +183,15 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const missing = (config.required || []).filter((key) => input[key] === undefined || input[key] === null || input[key] === '');
   if (missing.length) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: `Required fields missing: ${missing.join(', ')}` } }, 400);
 
+  if (resource === 'medical_records' || resource === 'vaccinations') {
+    const animalId = String(input.animal_id || '');
+    const animal = await c.env.DB.prepare('SELECT id FROM animals WHERE id = ?').bind(animalId).first<{ id: string }>();
+    if (!animal) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Select an existing animal record. Use the animal record ID from the Animals workspace, not its name or animal code.' } }, 400);
+    if (input.veterinarian_id) {
+      const vet = await c.env.DB.prepare('SELECT id FROM veterinarians WHERE id = ? AND is_active = 1').bind(String(input.veterinarian_id)).first<{ id: string }>();
+      if (!vet) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Select an existing active veterinarian record, or leave Veterinarian ID blank.' } }, 400);
+    }
+  }
   if (resource === 'stock_movements') {
     const movement = String(input.movement_type || '');
     const quantity = Number(input.quantity_delta);
@@ -214,6 +223,7 @@ adminModuleRoutes.post('/:resource', async (c) => {
     const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?').bind(String(values.page_slug), String(values.section_key)).first<{ next_version: number }>();
     values.version_number = version?.next_version ?? 1;
   }
+  if (resource === 'inventory_items') values.current_stock = Number(values.opening_stock ?? 0);
   if (resource === 'stock_movements') values.approval_status = 'pending';
   const id = crypto.randomUUID();
   const columns = ['id', ...Object.keys(values)];
