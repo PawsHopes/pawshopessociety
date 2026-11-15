@@ -60,8 +60,6 @@ export function canUploadDocumentCategory(
   user: AuthUser,
   category: string
 ): boolean {
-  if (user.roleCode === 'super_admin') return true;
-
   if (category === 'other') return false;
   const permission = WRITE_PERMISSION[category];
 
