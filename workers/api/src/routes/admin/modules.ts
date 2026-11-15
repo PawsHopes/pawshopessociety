@@ -354,6 +354,8 @@ adminModuleRoutes.post('/donations/:id/verify', async (c) => {
   const donation = await c.env.DB.prepare("SELECT * FROM donations WHERE id = ?").bind(id).first<Record<string, unknown>>();
   if (!donation) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Donation not found.' } }, 404);
   if (donation.verification_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending donations can be verified.' } }, 409);
+  const receivingAccount = await c.env.DB.prepare("SELECT id, account_type, is_active FROM accounts WHERE id = ?").bind(String(donation.account_id)).first<{id:string;account_type:string;is_active:number}>();
+  if (!receivingAccount || receivingAccount.account_type !== 'asset' || receivingAccount.is_active !== 1) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Donation must be assigned to an active cash/bank asset account.' } }, 409);
   const income = await c.env.DB.prepare("SELECT id FROM accounts WHERE account_type = 'income' AND is_active = 1 ORDER BY code LIMIT 1").first<{id:string}>();
   if (!income) return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'No active income account is configured.' } }, 409);
   const txnId = crypto.randomUUID();
@@ -375,6 +377,8 @@ adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
   const expense = await c.env.DB.prepare('SELECT * FROM expenses WHERE id = ?').bind(id).first<Record<string, unknown>>();
   if (!expense) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
   if (expense.approval_status !== 'approved' || expense.payment_status !== 'unpaid') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only approved, unpaid expenses can be posted as paid.' } }, 409);
+  const paymentAccount = await c.env.DB.prepare("SELECT id, account_type, is_active FROM accounts WHERE id = ?").bind(String(expense.account_id)).first<{id:string;account_type:string;is_active:number}>();
+  if (!paymentAccount || paymentAccount.account_type !== 'asset' || paymentAccount.is_active !== 1) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Expense payment must use an active cash/bank asset account.' } }, 409);
   const expenseAccount = await c.env.DB.prepare("SELECT id FROM accounts WHERE account_type = 'expense' AND is_active = 1 ORDER BY code LIMIT 1").first<{id:string}>();
   if (!expenseAccount) return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'No active expense account is configured.' } }, 409);
   const txnId = crypto.randomUUID();
