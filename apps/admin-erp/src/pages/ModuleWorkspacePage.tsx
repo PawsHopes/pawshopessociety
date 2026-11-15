@@ -91,7 +91,7 @@ const RESOURCES: Record<string, Resource[]> = {
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
     ]},
     { key: 'purchase_orders', label: 'Purchase Orders', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)')
+      text('po_number','PO number',true), text('supplier_id','Supplier ID',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)'), text('expense_id','Related expense ID (optional)')
     ]}
   ],
   volunteers: [
@@ -178,9 +178,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     const categories: Record<string, string> = {
       rescue_cases: 'rescue_evidence', medical_records: 'prescription', vaccinations: 'vaccination_cert',
       adoption_applications: 'applicant_id', foster_applications: 'applicant_id', adoption_agreements: 'adoption_agreement',
-      donations: 'donor_proof', expenses: 'expense_invoice', inventory_items: 'purchase_invoice',
+      donations: 'donor_proof', expenses: 'expense_invoice', inventory_items: 'other',
       purchase_orders: 'purchase_invoice', compliance_registrations: 'compliance_cert',
-      stock_movements: 'purchase_invoice', volunteers: 'other', donors: 'other', veterinarians: 'other'
+      stock_movements: 'other', volunteers: 'other', donors: 'other', veterinarians: 'other'
     };
     const filesToUpload = [...selectedFiles];
     for (const file of filesToUpload) {
