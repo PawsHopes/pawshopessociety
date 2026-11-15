@@ -300,6 +300,13 @@ adminModuleRoutes.post('/:resource', async (c) => {
   const missing = (config.required || []).filter((key) => input[key] === undefined || input[key] === null || input[key] === '');
   if (missing.length) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: `Required fields missing: ${missing.join(', ')}` } }, 400);
 
+  if (resource === 'adoption_agreements') {
+    const application = await c.env.DB.prepare('SELECT animal_id, status FROM adoption_applications WHERE id = ?').bind(String(input.application_id)).first<{animal_id:string;status:string}>();
+    if (!application || application.status !== 'approved' || application.animal_id !== String(input.animal_id)) {
+      return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'An adoption agreement requires an approved application for the same animal.' } }, 409);
+    }
+  }
+
   if (resource === 'medical_records' || resource === 'vaccinations') {
     const animalId = String(input.animal_id || '');
     const animal = await c.env.DB.prepare('SELECT id FROM animals WHERE id = ?').bind(animalId).first<{ id: string }>();
@@ -441,7 +448,7 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   if (resource === 'adoption_applications' || resource === 'foster_applications') {
     if (!actor.permissions.includes('adoption:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
     const table = resource;
-    const row = await c.env.DB.prepare(`SELECT id, status, ${resource === 'adoption_applications' ? 'home_check_status' : 'animal_id'} as gate FROM ${table} WHERE id = ?`).bind(id).first<{id:string;status:string;gate:string|null}>();
+    const row = await c.env.DB.prepare(`SELECT id, status, animal_id, ${resource === 'adoption_applications' ? 'home_check_status' : 'animal_id'} as gate FROM ${table} WHERE id = ?`).bind(id).first<{id:string;status:string;animal_id:string;gate:string|null}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Application not found.' } }, 404);
     if (row.status === 'approved' || row.status === 'rejected' || row.status === 'completed') return c.json({ success: false, error: { code: 'CONFLICT', message: 'This application has already been decided.' } }, 409);
     const allowedStatuses = resource === 'adoption_applications'
@@ -451,6 +458,12 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
       return c.json({ success: false, error: { code: 'CONFLICT', message: 'This application is not in a reviewable status.' } }, 409);
     }
     if (resource === 'adoption_applications' && row.gate !== 'passed') return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'A passed home check is required before adoption approval.' } }, 409);
+    if (resource === 'adoption_applications') {
+      const animal = await c.env.DB.prepare('SELECT is_adoption_eligible, current_status FROM animals WHERE id = ?').bind(row.animal_id).first<{is_adoption_eligible:number;current_status:string}>();
+      if (!animal || animal.is_adoption_eligible !== 1 || animal.current_status !== 'available_for_adoption') {
+        return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'This animal is no longer marked as available and eligible for adoption.' } }, 409);
+      }
+    }
     const body = await c.req.json().catch(() => ({})) as { reason?: unknown };
     const reason = typeof body.reason === 'string' ? body.reason.slice(0, 1000) : null;
     const result = await c.env.DB.prepare(`UPDATE ${table} SET status = 'approved', reviewed_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN (${allowedStatuses})`).bind(actor.id, id).run();
