@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiFetch, type AuthUser } from '../lib/api';
 
@@ -160,6 +160,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachments, setAttachments] = useState<Record<string, unknown>[]>([]);
   const [viewingAttachments, setViewingAttachments] = useState<{ id: string; label: string; items: Record<string, unknown>[] } | null>(null);
+  const loadRequestId = useRef(0);
   const updateFieldsForResource = (key: string): string[] | null => {
     if (key === 'adoption_applications') return ['experience_notes','home_check_status','home_check_notes'];
     if (key === 'foster_applications') return ['foster_start_date','expected_end_date','actual_end_date','notes'];
@@ -172,7 +173,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
 
   const load = async () => {
     if (!resource) return;
+    const requestId = ++loadRequestId.current;
     const result = await apiFetch<{ items: Record<string,unknown>[] }>(`/api/v1/admin/modules/${resource.key}?limit=100&q=${encodeURIComponent(search)}`);
+    if (requestId !== loadRequestId.current) return;
     if (result.success && result.data) setRows(result.data.items);
     else setFeedback(result.error?.message || 'Unable to load records.');
   };
@@ -205,7 +208,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     });
     return () => { active = false; };
   }, [resource?.key, user.permissions]);
-  useEffect(() => { void load(); }, [resourceKey, moduleKey, search]);
+  useEffect(() => { void load(); return () => { loadRequestId.current += 1; }; }, [resourceKey, moduleKey, search]);
 
   const reset = () => { setForm({}); setEditingId(null); setSelectedFiles([]); setAttachments([]); setViewingAttachments(null); };
   const loadAttachments = async (recordId: string) => {
