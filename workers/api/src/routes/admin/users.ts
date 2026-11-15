@@ -46,6 +46,7 @@ adminUsersRoutes.get(
       }, 403);
     }
 
+    const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
     const users = await c.env.DB.prepare(`
       SELECT u.id, u.email, u.full_name as fullName,
         u.phone, u.status, u.last_login_at as lastLoginAt,
@@ -64,7 +65,8 @@ adminUsersRoutes.get(
       success: true,
       data: {
         users: users.results || [],
-        roles: roles.results || []
+        roles: roles.results || [],
+        canManageRoles: Boolean(roleManagerEmail) && actor.email.toLowerCase() === roleManagerEmail
       }
     });
   }
@@ -182,6 +184,13 @@ adminUsersRoutes.patch(
           details: parsed.error.issues
         }
       }, 400);
+    }
+
+    if (parsed.data.roleCode !== undefined) {
+      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated Paw\'s Hopez Society account can change user roles.' } }, 403);
+      }
     }
 
     if (Object.keys(parsed.data).length === 0) {
@@ -305,7 +314,7 @@ adminUsersRoutes.patch(
 
     return c.json({
       success: true,
-      data: { id: targetId, updated: true }
+      data: { id: targetId, updated: true, roleCode: saved.role_code, status: saved.status }
     });
   }
 );
