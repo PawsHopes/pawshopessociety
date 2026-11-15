@@ -1,6 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
 import type { AuthUser } from '../src/types/env';
+import { effectivePermissions } from '../src/middleware/rbac';
 
 import {
   canReadDocumentCategory,
@@ -78,11 +79,29 @@ describe('Document access permissions', () => {
     expect(canUploadDocumentCategory(auditor, 'unknown_category')).toBe(false);
   });
 
-  it('allows Super Admin access', () => {
-    const admin = makeUser('super_admin', []);
+  it('allows primary Super Admin access through explicit document permissions', () => {
+    const admin = makeUser('super_admin', [
+      'documents:private_read',
+      'compliance:read',
+      'compliance:write'
+    ]);
+    admin.email = 'hopezpaws@gmail.com';
 
-    expect(canUploadDocumentCategory(admin, 'other')).toBe(true);
+    expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(true);
     expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(true);
+    expect(canUploadDocumentCategory(admin, 'other')).toBe(false);
+  });
+
+  it('blocks secondary Super Admin private document access without explicit grants', () => {
+    const permissions = effectivePermissions('super_admin', 'yivam24770@jcaton.com', [
+      'documents:private_read',
+      'compliance:read',
+      'compliance:write'
+    ]);
+    const secondary = makeUser('super_admin', permissions);
+
+    expect(canUploadDocumentCategory(secondary, 'compliance_cert')).toBe(false);
+    expect(canReadDocumentCategory(secondary, 'compliance_cert')).toBe(false);
   });
 
 });
