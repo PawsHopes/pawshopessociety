@@ -170,8 +170,9 @@ adminJoinRoutes.get('/applications', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const actor = c.get('authUser');
-  if (actor.roleCode !== 'super_admin') {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can approve applicants.' } }, 403);
+  const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can approve applicants and assign ERP roles.' } }, 403);
   }
 
   const parsed = approveSchema.safeParse(await c.req.json().catch(() => null));
@@ -271,8 +272,9 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
-  if (actor.roleCode !== 'super_admin') {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Super Admin can synchronise Cloudflare Access.' } }, 403);
+  const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+  if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can grant Cloudflare Access to approved users.' } }, 403);
   }
 
   const id = c.req.param('id');
