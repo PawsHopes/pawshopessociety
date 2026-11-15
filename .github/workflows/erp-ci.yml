@@ -78,6 +78,10 @@ jobs:
         working-directory: workers/api
         run: npm test
 
+      - name: Build staging Worker bundle without deploying
+        working-directory: workers/api
+        run: npm run build
+
   database:
     name: Database migration validation
     runs-on: ubuntu-latest
