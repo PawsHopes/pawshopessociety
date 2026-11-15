@@ -39,7 +39,7 @@ export const App: React.FC = () => {
       try {
         let res = await apiFetch<AuthUser>('/api/v1/admin/me');
         if (!res.success && res.error?.code === 'FORBIDDEN' && res.error.message.toLowerCase().includes('not registered')) {
-          const bootstrap = await apiFetch('/api/v1/bootstrap/super-admin', { method: 'POST' });
+          const bootstrap = await apiFetch('/api/v1/admin/bootstrap/super-admin', { method: 'POST' });
           if (bootstrap.success) res = await apiFetch<AuthUser>('/api/v1/admin/me');
         }
         if (!active) return;
