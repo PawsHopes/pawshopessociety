@@ -209,7 +209,72 @@ jobs:
           except sqlite3.IntegrityError:
               pass
 
-          print("Workflow trigger tests passed: approved stock updates quantities, negative stock is blocked, ledger balances update, duplicate source postings and ledger edits are blocked.")
+
+          # Adoption approval reserves the animal; agreement insertion performs the handover atomically.
+          db.execute(
+              """INSERT INTO animals (id, animal_code, name, species, is_adoption_eligible, current_status)
+                 VALUES (?, ?, ?, 'Dog', 1, 'available_for_adoption')""",
+              ("ci-adopt-animal", "CI-ADOPT-001", "CI adoption animal"),
+          )
+          db.execute(
+              """INSERT INTO adoption_applications
+                 (id, application_code, animal_id, applicant_name, applicant_phone, applicant_address, home_check_status)
+                 VALUES (?, ?, ?, ?, ?, ?, 'passed')""",
+              ("ci-adopt-app", "CI-ADOPT-001", "ci-adopt-animal", "CI Applicant", "9000000000", "CI Address"),
+          )
+          db.execute(
+              "UPDATE adoption_applications SET status='approved', reviewed_by='ci-admin' WHERE id='ci-adopt-app'"
+          )
+          assert db.execute("SELECT is_adoption_eligible FROM animals WHERE id='ci-adopt-animal'").fetchone()[0] == 0
+          db.execute(
+              """INSERT INTO adoption_agreements
+                 (id, agreement_number, application_id, animal_id, handover_date, witnessed_by)
+                 VALUES (?, ?, ?, ?, '2026-11-15', ?)""",
+              ("ci-adopt-agreement", "CI-AG-001", "ci-adopt-app", "ci-adopt-animal", "ci-admin"),
+          )
+          assert db.execute("SELECT current_status FROM animals WHERE id='ci-adopt-animal'").fetchone()[0] == "adopted"
+          assert db.execute("SELECT status FROM adoption_applications WHERE id='ci-adopt-app'").fetchone()[0] == "handover"
+          assert db.execute("SELECT COUNT(*) FROM animal_status_history WHERE animal_id='ci-adopt-animal' AND to_status='adopted'").fetchone()[0] == 1
+
+          db.execute(
+              "INSERT INTO animals (id, animal_code, name, species) VALUES (?, ?, ?, 'Dog')",
+              ("ci-adopt-manual", "CI-ADOPT-MANUAL", "CI manual adoption guard"),
+          )
+          try:
+              db.execute("UPDATE animals SET current_status='adopted' WHERE id='ci-adopt-manual'")
+              raise SystemExit("Manual adopted status change unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute(
+                  "INSERT INTO animals (id, animal_code, name, species, current_status) VALUES (?, ?, ?, 'Dog', 'fostered')",
+                  ("ci-foster-manual", "CI-FOSTER-MANUAL", "CI manual foster guard"),
+              )
+              raise SystemExit("Direct fostered animal creation unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+
+          # Foster activation and completion update both the application and animal lifecycle.
+          db.execute(
+              """INSERT INTO animals (id, animal_code, name, species, is_foster_eligible, current_status)
+                 VALUES (?, ?, ?, 'Dog', 1, 'recovering')""",
+              ("ci-foster-animal", "CI-FOSTER-001", "CI foster animal"),
+          )
+          db.execute(
+              """INSERT INTO foster_applications
+                 (id, application_code, animal_id, applicant_name, applicant_phone, applicant_address, status, reviewed_by)
+                 VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)""",
+              ("ci-foster-app", "CI-FOSTER-001", "ci-foster-animal", "CI Foster", "9000000001", "CI Foster Address", "ci-admin"),
+          )
+          db.execute("UPDATE foster_applications SET status='active' WHERE id='ci-foster-app'")
+          assert db.execute("SELECT current_status FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == "fostered"
+          db.execute(
+              "UPDATE foster_applications SET actual_end_date='2026-11-15', status='completed' WHERE id='ci-foster-app'"
+          )
+          assert db.execute("SELECT current_status FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == "recovering"
+          assert db.execute("SELECT is_foster_eligible FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == 1
+
+          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, and foster activation/completion.")
           PY
 
   deploy-staging:
