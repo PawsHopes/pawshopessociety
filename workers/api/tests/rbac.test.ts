@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import { effectivePermissions, requirePermission } from '../src/middleware/rbac';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
+import { canUploadDocumentCategory } from '../src/services/documentAccess';
 
 function makeUser(permissions: string[]): AuthUser {
   return {
@@ -66,6 +67,14 @@ describe('primary administrator privilege boundary', () => {
   });
 
   it('does not elevate non-admin roles even when the email is the primary email', () => {
-    expect(effectivePermissions('auditor', 'hopezpaws@gmail.com', all)).toEqual(all);
+    expect(effectivePermissions('auditor', 'hopezpaws@gmail.com', ['animals:read'])).toEqual(['animals:read']);
+  });
+
+  it('does not let a secondary Super Admin upload private documents via role bypass', () => {
+    const permissions = effectivePermissions('super_admin', 'yivam24770@jcaton.com', [
+      'dashboard:read', 'medical:read', 'medical:write', 'documents:private_read'
+    ]);
+    const secondary = { ...makeUser(permissions), roleCode: 'super_admin' as const };
+    expect(canUploadDocumentCategory(secondary, 'vet_bill')).toBe(false);
   });
 });
