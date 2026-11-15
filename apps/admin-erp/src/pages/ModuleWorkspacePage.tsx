@@ -156,6 +156,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [inventoryAlerts, setInventoryAlerts] = useState<{lowStock: Record<string,unknown>[]; expiring: Record<string,unknown>[]; expired: Record<string,unknown>[]} | null>(null);
   const [medicalAlerts, setMedicalAlerts] = useState<{due: Record<string,unknown>[]; overdue: Record<string,unknown>[]} | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cmsPreviewOpen, setCmsPreviewOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachments, setAttachments] = useState<Record<string, unknown>[]>([]);
   const [viewingAttachments, setViewingAttachments] = useState<{ id: string; label: string; items: Record<string, unknown>[] } | null>(null);
@@ -405,7 +406,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
             <span className="text-slate-500">{String(item.doc_category || item.media_mime_type || item.document_mime_type || '')}</span>
           </li>)}</ul></div>}
         </div>
-        <div className="flex items-end gap-2 md:col-span-2 xl:col-span-3"><button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
+        <div className="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">{resource.key === 'website_content' && <button type="button" onClick={() => setCmsPreviewOpen(true)} className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Preview content</button>}<button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
       </form>
     </section>}
     {viewingAttachments && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -423,6 +424,27 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{columns.map((col) => <th key={col} className="px-4 py-3">{col.replaceAll('_',' ')}</th>)}{(canEdit || canWorkflow || canViewAttachments) && <th className="px-4 py-3 text-right">Action</th>}</tr></thead>
       <tbody className="divide-y divide-slate-100">{rows.length === 0 ? <tr><td colSpan={columns.length + (canEdit || canWorkflow || canViewAttachments ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">No records found.</td></tr> : rows.map((row) => <tr key={String(row.id)}>{columns.map((col) => <td key={col} className="max-w-xs truncate px-4 py-3 text-slate-700">{row[col] === null || row[col] === undefined ? '—' : ['amount_paise','total_amount_paise'].includes(col) ? `₹${(Number(row[col]) / 100).toFixed(2)}` : String(row[col])}</td>)}{(canEdit || canWorkflow || canViewAttachments) && <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2">{canViewAttachments && <button type="button" onClick={() => void showAttachments(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Files</button>}{canEdit && !(resource?.key === 'website_content' && row.status === 'published') && <button type="button" onClick={() => beginEdit(row)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Edit</button>}{actionsForRow(row).map((action) => <button key={action} type="button" onClick={() => void runWorkflow(action,row)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold capitalize text-white hover:bg-slate-700">{action === 'paid' ? 'Mark paid' : action === 'verify' ? 'Verify' : action}</button>)}</div></td>}</tr>)}</tbody></table></div>
     </section>
+    {cmsPreviewOpen && resource?.key === 'website_content' && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="cms-preview-title">
+      <section className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-slate-100 shadow-2xl">
+        <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">
+          <div><h2 id="cms-preview-title" className="font-bold text-slate-900">Website content preview</h2><p className="text-xs text-slate-500">Draft preview · Nothing has been published or changed on the public website</p></div>
+          <button type="button" onClick={() => setCmsPreviewOpen(false)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700">Close preview</button>
+        </header>
+        <div className="overflow-y-auto p-4 sm:p-8">
+          <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between bg-slate-900 px-5 py-4 text-white"><span className="font-bold">Paw&apos;s Hopez Society</span><span className="text-xs text-slate-300">Let Them Know... Someone Cares.</span></div>
+            <div className="border-b border-slate-100 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{String(form.page_slug || 'index.html').replace('.html','').replaceAll('_',' ')} page</div>
+            <div className="min-h-[300px] px-5 py-8 sm:px-10">
+              {form.section_key === 'top_of_page' && <article className="mb-8 rounded-xl border-2 border-dashed border-orange-300 bg-orange-50 p-5"><span className="mb-2 inline-block text-[10px] font-bold uppercase tracking-wider text-orange-700">Your draft · Top of page</span><h1 className="text-2xl font-extrabold text-slate-900">{form.title || 'Your heading will appear here'}</h1><p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{form.body_json || 'Your website text will appear here.'}</p></article>}
+              <div className="rounded-lg bg-slate-50 p-5"><h3 className="text-lg font-bold text-slate-800">Website page content</h3><p className="mt-2 text-sm leading-7 text-slate-600">This area represents the existing content on the selected page. The draft section is highlighted so you can review its wording and placement.</p></div>
+              {form.section_key !== 'top_of_page' && <article className="my-8 rounded-xl border-2 border-dashed border-orange-300 bg-orange-50 p-5"><span className="mb-2 inline-block text-[10px] font-bold uppercase tracking-wider text-orange-700">Your draft · {String(form.section_key || 'after_intro').replaceAll('_',' ')}</span><h2 className="text-xl font-extrabold text-slate-900">{form.title || 'Your heading will appear here'}</h2><p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{form.body_json || 'Your website text will appear here.'}</p></article>}
+            </div>
+            <footer className="bg-slate-900 px-5 py-4 text-xs text-slate-300">Paw&apos;s Hopez Society · Public website preview</footer>
+          </div>
+          <p className="mx-auto mt-4 max-w-4xl text-xs text-slate-500">This is a content-and-placement preview inside the ERP, not a pixel-perfect rendering of the selected live page. Save your draft to keep it; publishing to the public website is a separate feature that is not connected yet.</p>
+        </div>
+      </section>
+    </div>}
     <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
   </div>;
 };
