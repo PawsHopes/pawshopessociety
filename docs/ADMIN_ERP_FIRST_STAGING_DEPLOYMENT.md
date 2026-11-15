@@ -18,7 +18,7 @@ This runbook is staging-only. It must not change the public website, the existin
 - Staging KV: `pawshopes-erp-rate-limit-staging` (`1156cf04f6b9496dabc7d580457f0c53`)
 - All five migrations are applied. The database currently has 15 animal records, 7 compliance records and no ERP users. Review existing seed/migrated records before operational use; do not delete or overwrite records without confirming their origin.
 - A random `SIGNED_URL_SECRET` has been generated and stored as a Pages secret. A new deployment is required before relying on that configuration.
-- R2 is not activated in this Cloudflare account. No R2 buckets or Pages R2 bindings exist yet. File upload endpoints intentionally return 503 until R2 is provisioned.
+- R2 is now activated. Two APAC staging buckets exist: `pawshopes-public-media-staging` (public development URL enabled: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`) and `pawshopes-private-vault-staging` (private; no public domain). Pages production deployment config has `PUBLIC_MEDIA` and `PRIVATE_VAULT` R2 bindings, and `PUBLIC_MEDIA_BASE_URL` is set to the public development URL. A new Pages deployment is required before the running Function receives the bindings.
 - The Pages Function at `apps/admin-erp/functions/api/[[path]].ts` serves the same Hono API on the Admin hostname. The latest Pages build and deployment completed successfully.
 - Interactive browser login and authenticated end-to-end smoke tests are not yet confirmed.
 
@@ -35,7 +35,7 @@ After activation, provision only staging buckets:
 - `pawshopes-public-media-staging` — approved public animal/site media only.
 - `pawshopes-private-vault-staging` — private veterinary, adopter, donor and compliance documents; never enable public access.
 
-Bind them to the Pages Function as `PUBLIC_MEDIA` and `PRIVATE_VAULT`. The public bucket may use its Cloudflare-managed `r2.dev` domain for staging. The private bucket must have no public domain. The Cloudflare account currently has no DNS zone for `pawshopessociety.org`, so `media-staging.pawshopessociety.org` cannot be attached from this account unless the domain zone is made available here. Do not change existing website DNS to solve this.
+Bind them to the Pages Function as `PUBLIC_MEDIA` and `PRIVATE_VAULT`. The public-media bucket uses its Cloudflare-managed `r2.dev` URL for staging only. The private vault has no public domain. The Cloudflare account currently has no DNS zone for `pawshopessociety.org`, so a branded media custom domain cannot be attached from this account. Do not change existing website DNS to solve this.
 
 ## 2. Admin Pages and API
 
@@ -56,7 +56,7 @@ Pages Function variables include:
 - `CF_ACCESS_AUD`: the Admin Pages Access app audience tag.
 - `STAGING_BOOTSTRAP_ADMIN_EMAIL=hopezpaws@gmail.com`
 - `SIGNED_URL_SECRET`: stored as a random secret of at least 32 bytes.
-- `PUBLIC_MEDIA_BASE_URL`: update to the verified public bucket URL after R2 setup; the currently configured `media-staging.pawshopessociety.org` hostname is not verified in this account.
+- `PUBLIC_MEDIA_BASE_URL=https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`.
 
 Never commit or paste secrets into chat or Git.
 
@@ -93,6 +93,14 @@ The D1 database currently has zero ERP users, so the bootstrap has not yet run. 
 
 Do not enter real donor, medical, financial or volunteer records until staging UAT, security checks and backup/restore rehearsal pass.
 
-## 5. Production remains out of scope
+## 5. R2 bucket configuration now in place
+
+- `pawshopes-public-media-staging` — APAC, Standard; managed `r2.dev` URL enabled for staging testing only.
+- `pawshopes-private-vault-staging` — APAC, Standard; remains private with no public endpoint.
+- Pages bindings: `PUBLIC_MEDIA` and `PRIVATE_VAULT` configured on the `phs-phs` production deployment environment (which is the staging environment for this project).
+- Public media base URL: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`.
+- Bucket bindings take effect only after a new Pages deployment. Test actual upload and private signed download after deployment.
+
+## 6. Production remains out of scope
 
 No production D1, KV, R2, production Access app, production secret set or production deployment has been approved. Do not merge the ERP PR, deploy production, change DNS, or point the public website at the staging API without separate explicit approval.
