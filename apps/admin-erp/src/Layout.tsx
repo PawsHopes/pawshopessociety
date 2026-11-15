@@ -46,7 +46,7 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#fdfbf7]">
       <header className="lg:hidden bg-slate-900 text-white px-4 h-16 flex items-center justify-between sticky top-0 z-40 shadow">
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Paw's Hopez" className="h-9 w-9 rounded-full border border-brandOrange" />
+          <img src="/logo.png" alt="Paws Hopes Society" className="h-9 w-9 rounded-full border border-brandOrange" />
           <div>
             <p className="font-bold text-sm leading-tight">Paw&apos;s Hopez ERP</p>
             <p className="text-[11px] text-orange-300">{user?.roleName || 'Connecting...'}</p>
@@ -59,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
 
       <aside className={`${mobileOpen ? 'fixed inset-0 top-16 z-30 block' : 'hidden'} lg:block lg:w-64 lg:shrink-0 bg-slate-900 text-slate-200 flex flex-col border-r border-slate-800`}>
         <div className="hidden lg:flex items-center gap-3 px-5 h-20 border-b border-slate-800">
-          <img src="/logo.png" alt="Paw's Hopez" className="h-11 w-11 rounded-full border-2 border-brandOrange" />
+          <img src="/logo.png" alt="Paws Hopes Society" className="h-11 w-11 rounded-full border-2 border-brandOrange" />
           <div>
             <span className="font-bold text-white block leading-tight">Paw&apos;s Hopez</span>
             <span className="text-xs text-brandOrange font-medium">NGO Admin ERP</span>
