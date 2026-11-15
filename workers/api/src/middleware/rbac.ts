@@ -1,10 +1,15 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
+const FULL_SUPER_ADMIN_EMAILS = new Set([
+  'hopezpaws@gmail.com',
+  'infosecayush@gmail.com',
+  'yivam24770@jcaton.com',
+]);
+
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
-  // A secondary account assigned the Super Admin label is deliberately read-only.
-  // Only the fixed Society primary account receives the full Super Admin permission set.
-  if (roleCode === 'super_admin' && email.toLowerCase() !== 'hopezpaws@gmail.com') {
+  // Full Super Admin privileges are limited to the explicitly designated Society accounts.
+  if (roleCode === 'super_admin' && !FULL_SUPER_ADMIN_EMAILS.has(email.toLowerCase())) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
   return allPermissions;
@@ -101,7 +106,7 @@ export const loadRbacUser = createMiddleware<{
     email: userRow.email,
     fullName: userRow.full_name,
     roleCode: userRow.role_code,
-    roleName: userRow.role_code === 'super_admin' && userRow.email.toLowerCase() !== 'hopezpaws@gmail.com' ? 'Super Admin (Read-Only)' : userRow.role_name,
+    roleName: userRow.role_code === 'super_admin' && !FULL_SUPER_ADMIN_EMAILS.has(userRow.email.toLowerCase()) ? 'Super Admin (Read-Only)' : userRow.role_name,
     permissions,
   };
 
