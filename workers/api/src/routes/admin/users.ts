@@ -10,6 +10,8 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
+const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
@@ -65,7 +67,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: actor.roleCode === 'super_admin'
+        canManageRoles: actor.email.toLowerCase() === PRIMARY_ADMIN_EMAIL
       }
     });
   }
@@ -82,6 +84,10 @@ adminUsersRoutes.post(
         success: false,
         error: { code: 'FORBIDDEN', message: 'Only a Super Admin can create users.' }
       }, 403);
+    }
+
+    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can create users and assign initial roles.' } }, 403);
     }
 
     const body = await c.req.json().catch(() => null);
@@ -170,6 +176,10 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
+    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
+    }
+
     const targetId = c.req.param('id');
     const body = await c.req.json().catch(() => null);
     const parsed = updateUserSchema.safeParse(body);
@@ -212,6 +222,13 @@ adminUsersRoutes.patch(
         success: false,
         error: { code: 'NOT_FOUND', message: 'User not found.' }
       }, 404);
+    }
+
+    if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+      return c.json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected from secondary-user changes.' }
+      }, 403);
     }
 
     if (
