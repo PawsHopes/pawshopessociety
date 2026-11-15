@@ -28,14 +28,14 @@ const NAV_ITEMS = [
   { to: '/users', label: 'Users & RBAC', icon: ShieldCheck, perm: 'users:manage', phase: 'Active' },
   { to: '/join-requests', label: 'Join Requests', icon: UserPlus, perm: 'users:manage', phase: 'Active' },
   { to: '/audit-logs', label: 'Audit Trail', icon: FileSearch, perm: 'audit:read', phase: 'Active' },
-  { to: '/roadmap/animals', label: 'Animals', icon: PawPrint, perm: 'animals:read', phase: 'Phase 4' },
-  { to: '/roadmap/rescue', label: 'Rescue Cases', icon: Siren, perm: 'rescue:read', phase: 'Phase 4' },
-  { to: '/roadmap/medical', label: 'Veterinary', icon: Stethoscope, perm: 'medical:read', phase: 'Phase 4' },
-  { to: '/roadmap/adoptions', label: 'Adoptions', icon: HeartHandshake, perm: 'adoption:read', phase: 'Phase 4' },
-  { to: '/roadmap/finance', label: 'Donations & Ledger', icon: IndianRupee, perm: 'finance:read', phase: 'Phase 5' },
-  { to: '/roadmap/inventory', label: 'Inventory', icon: Package, perm: 'inventory:read', phase: 'Phase 5' },
-  { to: '/roadmap/volunteers', label: 'Volunteers', icon: Users, perm: 'volunteers:read', phase: 'Phase 5' },
-  { to: '/roadmap/cms', label: 'Website CMS', icon: Globe, perm: 'cms:read', phase: 'Phase 6' },
+  { to: '/modules/animals', label: 'Animals', icon: PawPrint, perm: 'animals:read', phase: 'Active' },
+  { to: '/modules/rescue', label: 'Rescue Cases', icon: Siren, perm: 'rescue:read', phase: 'Phase 4' },
+  { to: '/modules/medical', label: 'Veterinary', icon: Stethoscope, perm: 'medical:read', phase: 'Phase 4' },
+  { to: '/modules/adoptions', label: 'Adoptions', icon: HeartHandshake, perm: 'adoption:read', phase: 'Phase 4' },
+  { to: '/modules/finance', label: 'Donations & Ledger', icon: IndianRupee, perm: 'finance:read', phase: 'Active' },
+  { to: '/modules/inventory', label: 'Inventory', icon: Package, perm: 'inventory:read', phase: 'Phase 5' },
+  { to: '/modules/volunteers', label: 'Volunteers', icon: Users, perm: 'volunteers:read', phase: 'Phase 5' },
+  { to: '/modules/cms', label: 'Website CMS', icon: Globe, perm: 'cms:read', phase: 'Active' },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
