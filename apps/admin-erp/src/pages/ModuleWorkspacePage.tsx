@@ -172,7 +172,6 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const canWrite = !!resource?.writePermission && user.permissions.includes(resource.writePermission);
   const canEdit = canWrite && !['medical_records','vaccinations','donations','expenses','financial_transactions','stock_movements'].includes(resource?.key || '');
   const canViewAttachments = !!resource && user.permissions.includes(resource.permission) && (
-    user.roleCode === 'super_admin' ||
     ['animals', 'website_content'].includes(resource.key) ||
     ([
       'rescue_cases', 'medical_records', 'vaccinations', 'adoption_applications',
