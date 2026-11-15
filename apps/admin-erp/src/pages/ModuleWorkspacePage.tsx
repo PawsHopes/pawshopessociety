@@ -360,9 +360,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (resource.key === 'animals' && user.permissions.includes('animals:publish')) return ['publish'];
     if (resource.key === 'website_content' && user.permissions.includes('cms:publish') && ['draft','published'].includes(status)) return ['publish'];
     if (resource.key === 'donations' && status === 'pending' && user.permissions.includes('donations:verify')) return ['verify'];
-    if (resource.key === 'expenses' && status === 'pending' && user.permissions.includes('finance:approve')) return ['approve','reject'];
-    if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && user.permissions.includes('finance:ledger')) return ['paid'];
-    if (resource.key === 'stock_movements' && status === 'pending' && user.permissions.includes('inventory:approve')) return ['approve'];
+    if (resource.key === 'expenses' && status === 'pending' && row.submitted_by !== user.id && user.permissions.includes('finance:approve')) return ['approve','reject'];
+    if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && row.approved_by !== user.id && user.permissions.includes('finance:ledger')) return ['paid'];
+    if (resource.key === 'stock_movements' && status === 'pending' && row.recorded_by !== user.id && user.permissions.includes('inventory:approve')) return ['approve'];
     if (resource.key === 'adoption_applications' && ['application','initial_review','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
     if (resource.key === 'foster_applications' && ['application','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
     if (resource.key === 'foster_applications' && status === 'approved' && user.permissions.includes('adoption:approve')) return ['activate'];
