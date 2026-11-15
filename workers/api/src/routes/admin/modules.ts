@@ -52,13 +52,12 @@ const RESOURCES: Record<string, ResourceConfig> = {
     fields: ['application_code','animal_id','applicant_name','applicant_phone','applicant_email','applicant_address','housing_type','has_other_pets','experience_notes','home_check_status','home_check_notes','status','rejection_reason'],
     required: ['application_code','animal_id','applicant_name','applicant_phone','applicant_address'], search: ['application_code','applicant_name','applicant_phone','applicant_email'], order: 'created_at',
     defaults: { has_other_pets: 0, home_check_status: 'pending', status: 'application' },
-    serverFields: (actorId) => ({ reviewed_by: actorId }),
   },
   foster_applications: {
     table: 'foster_applications', read: 'adoption:read', write: 'adoption:write',
     fields: ['application_code','animal_id','applicant_name','applicant_phone','applicant_email','applicant_address','foster_start_date','expected_end_date','actual_end_date','notes','status'],
     required: ['application_code','animal_id','applicant_name','applicant_phone','applicant_address'], search: ['application_code','applicant_name','applicant_phone','applicant_email'], order: 'created_at',
-    defaults: { status: 'application' }, serverFields: (actorId) => ({ reviewed_by: actorId }),
+    defaults: { status: 'application' },
   },
   adoption_agreements: {
     table: 'adoption_agreements', read: 'adoption:read', write: 'adoption:write',
@@ -235,7 +234,8 @@ function zRecord(value: unknown): { ok: true; value: Record<string, string | num
   const out: Record<string, string | number | boolean | null> = {};
   for (const [key, item] of entries) {
     if (!/^[a-z_]{1,64}$/.test(key)) return { ok: false };
-    if (item === null || typeof item === 'boolean') out[key] = item;
+    if (item === null) out[key] = item;
+    else if (typeof item === 'boolean') out[key] = item ? 1 : 0;
     else if (typeof item === 'string' && item.length <= 10000) out[key] = item;
     else if (typeof item === 'number' && Number.isFinite(item)) out[key] = item;
     else return { ok: false };
