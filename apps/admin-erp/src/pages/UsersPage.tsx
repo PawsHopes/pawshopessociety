@@ -158,7 +158,9 @@ export const UsersPage: React.FC = () => {
         </div>
         <button
           type="submit"
-          className="bg-brandOrange hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors"
+          disabled={!canManageRoles}
+          title={!canManageRoles ? 'Only the designated Society administrator can create users and assign roles.' : undefined}
+          className="bg-brandOrange hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           + Add ERP User
         </button>
