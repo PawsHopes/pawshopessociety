@@ -40,10 +40,6 @@ app.use(
   })
 );
 
-// Access-verified, one-time staging bootstrap (before RBAC user lookup).
-app.use('/api/v1/bootstrap/*', cfAccessAuth);
-app.route('/api/v1/bootstrap', bootstrapRoutes);
-
 // Public endpoints
 app.route('/api/v1/health', healthRoutes);
 app.route('/api/v1/public/animals', publicAnimalsRoutes);
@@ -52,7 +48,13 @@ app.route('/api/v1/public/join', publicJoinRoutes);
 app.route('/api/v1/files', publicFileProxyRoutes);
 
 // Protected Admin ERP endpoints
-app.use('/api/v1/admin/*', cfAccessAuth, loadRbacUser);
+app.use('/api/v1/admin/*', cfAccessAuth);
+app.use('/api/v1/admin/*', async (c, next) => {
+  // Bootstrap is Access-protected but intentionally runs before an ERP user row exists.
+  if (c.req.path === '/api/v1/admin/bootstrap/super-admin') return next();
+  return loadRbacUser(c, next);
+});
+app.route('/api/v1/admin/bootstrap', bootstrapRoutes);
 app.route('/api/v1/admin/me', adminMeRoutes);
 app.route('/api/v1/admin/users', adminUsersRoutes);
 app.route('/api/v1/admin/join', adminJoinRoutes);
