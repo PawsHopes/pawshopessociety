@@ -10,6 +10,8 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
+const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
@@ -99,6 +101,13 @@ adminUsersRoutes.post(
     }
 
     const email = parsed.data.email.toLowerCase().trim();
+
+    if (parsed.data.roleCode === 'super_admin') {
+      const roleManagerEmail = (c.env.ROLE_MANAGEMENT_ADMIN_EMAIL || (c.env.ENVIRONMENT === 'staging' ? c.env.STAGING_BOOTSTRAP_ADMIN_EMAIL : '') || '').trim().toLowerCase();
+      if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+        return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create another Super Admin.' } }, 403);
+      }
+    }
 
     const role = await c.env.DB.prepare(
       'SELECT id, code FROM roles WHERE code = ?'
@@ -221,6 +230,16 @@ adminUsersRoutes.patch(
         success: false,
         error: { code: 'NOT_FOUND', message: 'User not found.' }
       }, 404);
+    }
+
+    if (
+      existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL &&
+      (parsed.data.roleCode !== undefined || parsed.data.status !== undefined)
+    ) {
+      return c.json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected and cannot be demoted or suspended.' }
+      }, 403);
     }
 
     if (
