@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Bindings, AppVariables } from '../../types/env';
 import { appendAuditLog } from '../../services/audit';
+import { canReadDocumentCategory } from '../../services/documentAccess';
 
 type ResourceConfig = {
   table: string;
@@ -171,7 +172,10 @@ adminModuleRoutes.get('/attachments/:resource/:recordId', async (c) => {
     WHERE ra.resource = ? AND ra.record_id = ?
     ORDER BY ra.created_at DESC
   `).bind(resource, recordId).all();
-  return c.json({ success: true, data: { items: result.results || [] } });
+  const items = (result.results || []).filter((item) =>
+    !item.document_id || canReadDocumentCategory(actor, String(item.doc_category || 'other'))
+  );
+  return c.json({ success: true, data: { items } });
 });
 
 adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
