@@ -84,7 +84,13 @@ export const loadRbacUser = createMiddleware<{
     .bind(userRow.role_id)
     .all<{ code: string }>();
 
-  const permissions = (permResult.results || []).map((r) => r.code);
+  const allPermissions = (permResult.results || []).map((r) => r.code);
+  // A secondary account assigned the Super Admin label is deliberately read-only.
+  // Only the fixed Society primary account receives the full Super Admin permission set.
+  const isPrimaryAdmin = userRow.email.toLowerCase() === 'hopezpaws@gmail.com';
+  const permissions = userRow.role_code === 'super_admin' && !isPrimaryAdmin
+    ? allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read')
+    : allPermissions;
 
   const authUser: AuthUser = {
     id: userRow.id,
