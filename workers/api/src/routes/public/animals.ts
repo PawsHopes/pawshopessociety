@@ -3,6 +3,8 @@ import type { Bindings, AppVariables } from '../../types/env';
 
 export const publicAnimalsRoutes = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
+const RESCUE_STORY_STATUSES = ['rescued', 'under_assessment', 'under_treatment', 'recovering'] as const;
+
 publicAnimalsRoutes.get('/', async (c) => {
   const animalsRes = await c.env.DB.prepare(
     `SELECT id, animal_code, legacy_slug, name, species, breed, gender,
@@ -12,7 +14,11 @@ publicAnimalsRoutes.get('/', async (c) => {
      FROM animals
      WHERE is_published_public = 1
        AND deleted_at IS NULL
-       AND (current_status = 'adopted' OR (current_status = 'available_for_adoption' AND is_adoption_eligible = 1))
+       AND (
+         current_status = 'adopted'
+         OR (current_status = 'available_for_adoption' AND is_adoption_eligible = 1)
+         OR current_status IN ('rescued', 'under_assessment', 'under_treatment', 'recovering')
+       )
      ORDER BY created_at ASC`
   ).all<{
     id: string;
@@ -43,8 +49,9 @@ publicAnimalsRoutes.get('/', async (c) => {
     mediaByAnimal.set(row.animal_id, arr);
   }
 
-  const available = [];
-  const adopted = [];
+  const available: Array<Record<string, unknown>> = [];
+  const adopted: Array<Record<string, unknown>> = [];
+  const rescued: Array<Record<string, unknown>> = [];
 
   for (const a of animalsRes.results || []) {
     const formatted = {
@@ -58,21 +65,14 @@ publicAnimalsRoutes.get('/', async (c) => {
       health: a.health || '',
       description: a.description || '',
       adoptedNote: a.adoptedNote || undefined,
+      currentStatus: a.current_status,
       images: mediaByAnimal.get(a.id) || [],
     };
-    if (a.current_status === 'adopted') {
-      adopted.push(formatted);
-    } else {
-      available.push(formatted);
-    }
+    if (a.current_status === 'adopted') adopted.push(formatted);
+    else if (RESCUE_STORY_STATUSES.includes(a.current_status as typeof RESCUE_STORY_STATUSES[number])) rescued.push(formatted);
+    else available.push(formatted);
   }
 
   c.header('Cache-Control', 'public, max-age=60, s-maxage=60');
-  return c.json({
-    success: true,
-    data: {
-      available,
-      adopted,
-    },
-  });
+  return c.json({ success: true, data: { available, adopted, rescued } });
 });
