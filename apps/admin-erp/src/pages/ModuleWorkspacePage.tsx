@@ -256,9 +256,15 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     else setFeedback(result.error?.message || 'Unable to load attachments.');
   };
   const openPrivateAttachment = async (documentId: string) => {
+    const popup = window.open('about:blank', '_blank');
     const result = await apiFetch<{ url: string }>(`/api/v1/admin/documents/${documentId}/signed-url`);
-    if (result.success && result.data?.url) window.open(result.data.url, '_blank', 'noopener,noreferrer');
-    else setFeedback(result.error?.message || 'Unable to open this private file.');
+    if (result.success && result.data?.url && popup) {
+      popup.opener = null;
+      popup.location.href = result.data.url;
+    } else {
+      popup?.close();
+      setFeedback(result.error?.message || 'Unable to open this private file. Allow pop-ups and try again.');
+    }
   };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
