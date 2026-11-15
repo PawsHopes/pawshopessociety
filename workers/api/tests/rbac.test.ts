@@ -64,6 +64,13 @@ describe('equal Super Admin permissions', () => {
     expect(effectivePermissions('super_admin', 'hopezpaws@gmail.com', all)).toEqual(all);
   });
 
+  it('keeps unlisted Super Admin accounts read-only', () => {
+    const permissions = effectivePermissions('super_admin', 'unlisted@example.org', all);
+    expect(permissions).toContain('animals:read');
+    expect(permissions).not.toContain('animals:write');
+    expect(permissions).not.toContain('users:manage');
+  });
+
   it('does not elevate non-admin roles based on email', () => {
     expect(effectivePermissions('auditor', 'hopezpaws@gmail.com', ['animals:read'])).toEqual(['animals:read']);
   });
