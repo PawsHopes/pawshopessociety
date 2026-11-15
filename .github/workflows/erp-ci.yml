@@ -82,6 +82,14 @@ jobs:
         working-directory: workers/api
         run: npm run build
 
+      - name: Upload staging Worker bundle for controlled Cloudflare deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-worker-bundle
+          path: workers/api/dist/**
+          if-no-files-found: error
+          retention-days: 1
+
   database:
     name: Database migration validation
     runs-on: ubuntu-latest
