@@ -45,8 +45,6 @@ export function canReadDocumentCategory(
   user: AuthUser,
   category: string
 ): boolean {
-  if (user.roleCode === 'super_admin') return true;
-
   if (!user.permissions.includes('documents:private_read')) {
     return false;
   }
