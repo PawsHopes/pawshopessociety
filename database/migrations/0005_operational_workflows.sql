@@ -66,3 +66,8 @@ WHEN NEW.debit_account_id = NEW.credit_account_id
 BEGIN
   SELECT RAISE(ABORT, 'A ledger transaction must use two different accounts');
 END;
+
+-- Prevent duplicate postings when two operators process the same source record concurrently.
+CREATE UNIQUE INDEX idx_financial_transactions_source_once
+ON financial_transactions(reference_type, reference_id, entry_type)
+WHERE reference_type IN ('donation', 'expense') AND entry_type IN ('income', 'expense');
