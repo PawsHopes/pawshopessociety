@@ -207,6 +207,9 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
   try {
     const statements = [
+      // The application references the user before the user row is inserted below.
+      // Defer FK checks until the complete D1 batch commits.
+      c.env.DB.prepare('PRAGMA defer_foreign_keys = ON'),
       c.env.DB.prepare(`
         UPDATE join_applications
         SET status = 'approved', reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),
@@ -232,7 +235,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
       `).bind(volunteerId, userId, application.full_name, application.email, application.phone || '', userId, role.id));
     }
     const results = await c.env.DB.batch(statements);
-    if (!results[0]?.meta.changes || !results[1]?.meta.changes || (volunteerId && !results[2]?.meta.changes)) {
+    if (!results[1]?.meta.changes || !results[2]?.meta.changes || (volunteerId && !results[3]?.meta.changes)) {
       return c.json({ success: false, error: { code: 'CONFLICT', message: 'The application has already been reviewed or could not be approved.' } }, 409);
     }
   } catch {
