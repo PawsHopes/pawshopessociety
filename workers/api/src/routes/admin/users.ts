@@ -87,7 +87,7 @@ adminUsersRoutes.post(
       }, 403);
     }
 
-    if (!actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL) {
+    if (actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can create users and assign initial roles.' } }, 403);
     }
 
@@ -177,7 +177,7 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (!actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL) {
+    if (actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
     }
 
