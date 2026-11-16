@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import { adminUsersRoutes } from '../src/routes/admin/users';
 import { adminJoinRoutes } from '../src/routes/admin/join';
+import { adminModuleRoutes } from '../src/routes/admin/modules';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 
 function makeApp() {
@@ -22,6 +23,7 @@ function makeApp() {
   });
   app.route('/users', adminUsersRoutes);
   app.route('/join', adminJoinRoutes);
+  app.route('/modules', adminModuleRoutes);
   return app;
 }
 
@@ -59,6 +61,11 @@ describe('primary administrator-only controls', () => {
     const applications = await app.request('/join/applications?status=all');
     expect(links.status).toBe(403);
     expect(applications.status).toBe(403);
+  });
+
+  it('blocks a secondary Super Admin from issuing donation receipts', async () => {
+    const response = await makeApp().request('/modules/donations/donation-123/receipt', { method: 'POST' });
+    expect(response.status).toBe(403);
   });
 
   it('blocks a secondary Super Admin from applicant approval and Access grants', async () => {
