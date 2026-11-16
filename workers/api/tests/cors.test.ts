@@ -48,7 +48,9 @@ describe('environment-specific ERP CORS origins', () => {
   it('rejects lookalike domains and insecure preview origins', async () => {
     const lookalike = await preflight('https://phs-phs.pages.dev.attacker.example', 'staging');
     const insecure = await preflight('http://123abc.phs-phs.pages.dev', 'staging');
+    const nonstandardPort = await preflight('https://123abc.phs-phs.pages.dev:8443', 'staging');
     expect(lookalike.headers.get('Access-Control-Allow-Origin')).toBeNull();
     expect(insecure.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(nonstandardPort.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 });
