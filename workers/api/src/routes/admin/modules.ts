@@ -293,9 +293,12 @@ adminModuleRoutes.get('/:resource', async (c) => {
   const limit = Math.min(Math.max(Number(c.req.query('limit') || 50) || 50, 1), 200);
   const offset = Math.min(Math.max(Math.floor(Number(c.req.query('offset') || 0) || 0), 0), 1000000);
   const search = (c.req.query('q') || '').trim().slice(0, 100);
-  const whereSql = search && config.search.length
-    ? ' WHERE (' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')'
-    : '';
+  const whereParts: string[] = [];
+  if (resource === 'animals') whereParts.push('deleted_at IS NULL');
+  if (search && config.search.length) {
+    whereParts.push('(' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')');
+  }
+  const whereSql = whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
   const searchParams: unknown[] = [];
   if (whereSql) {
     for (let i = 0; i < config.search.length; i++) searchParams.push(`%${search}%`);
