@@ -8,6 +8,9 @@ on:
       - "apps/admin-erp/**"
       - "database/migrations/**"
       - "database/seeds/**"
+      - "functions/api/**"
+      - "assets/js/**"
+      - "*.html"
       - ".github/workflows/erp-phase-ci.yml"
   push:
     branches: [erp-secure-staging, erp-development]
