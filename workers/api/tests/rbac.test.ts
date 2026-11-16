@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import { effectivePermissions, isTrustedSuperAdmin, requirePermission } from '../src/middleware/rbac';
 import { adminUsersRoutes } from '../src/routes/admin/users';
+import { adminJoinRoutes } from '../src/routes/admin/join';
+import { adminModuleRoutes } from '../src/routes/admin/modules';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 import { canUploadDocumentCategory } from '../src/services/documentAccess';
 
@@ -24,6 +26,8 @@ function makeUsersApp(user: AuthUser) {
     await next();
   });
   app.route('/users', adminUsersRoutes);
+  app.route('/join', adminJoinRoutes);
+  app.route('/modules', adminModuleRoutes);
   return app;
 }
 
@@ -86,9 +90,13 @@ describe('untrusted test-account user-management restrictions', () => {
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'active' }) }),
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'suspended' }) }),
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ roleCode: 'super_admin' }) }),
+      app.request('/join/applications/application-id/approve', { method: 'POST', headers, body: JSON.stringify({ roleCode: 'auditor' }) }),
+      app.request('/join/applications/application-id/access-sync', { method: 'POST' }),
+      app.request('/modules/animals', { method: 'GET' }),
+      app.request('/modules/animals', { method: 'POST', headers, body: JSON.stringify({ animal_code: 'X', name: 'Test', species: 'Dog' }) }),
     ]);
 
-    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403]);
+    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403, 403, 403, 403]);
   });
 });
 
