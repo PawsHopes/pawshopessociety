@@ -181,7 +181,7 @@ export async function revokeEmailFromCloudflareAccess(
   emailInput: string
 ): Promise<AccessSyncResult> {
   const email = emailInput.trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { status: 'failed', message: 'The account email address is invalid.' };
   }
   if (email === 'hopezpaws@gmail.com') {
