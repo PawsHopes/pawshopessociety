@@ -92,19 +92,14 @@ describe('Document access permissions', () => {
     expect(canUploadDocumentCategory(admin, 'other')).toBe(false);
   });
 
-  it('grants both designated Super Admins the same private document access', () => {
-    for (const email of ['infosecayush@gmail.com', 'hopezpaws@gmail.com']) {
-      const permissions = effectivePermissions('super_admin', email, [
-        'documents:private_read',
-        'compliance:read',
-        'compliance:write'
-      ]);
-      const admin = makeUser('super_admin', permissions);
-      admin.email = email;
-
-      expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(true);
-      expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(true);
-    }
+  it('does not grant secondary Super Admin write access to private compliance documents', () => {
+    const permissions = effectivePermissions('super_admin', 'infosecayush@gmail.com', [
+      'documents:private_read', 'compliance:read', 'compliance:write'
+    ]);
+    const admin = makeUser('super_admin', permissions);
+    admin.email = 'infosecayush@gmail.com';
+    expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(true);
+    expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(false);
   });
 
 });
