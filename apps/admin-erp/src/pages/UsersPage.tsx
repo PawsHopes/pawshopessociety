@@ -159,7 +159,7 @@ export const UsersPage: React.FC = () => {
         <button
           type="submit"
           disabled={!canManageRoles}
-          title={!canManageRoles ? 'Only a designated Super Admin can create users and assign roles.' : undefined}
+          title={!canManageRoles ? 'Both designated Society Super Admins can create users and assign roles.' : undefined}
           className="bg-brandOrange hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           + Add ERP User
@@ -190,7 +190,7 @@ export const UsersPage: React.FC = () => {
                 <td className="p-4"><input value={userDrafts[u.id]?.phone ?? u.phone ?? ''} maxLength={25} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), phone: e.target.value } }))} className="w-36 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" /></td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-brandOrange">
-                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} disabled={!canManageRoles || u.email.toLowerCase() === 'hopezpaws@gmail.com'} title={u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected primary administrator account.' : (!canManageRoles ? 'Only a designated Super Admin can change roles.' : undefined)} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:bg-slate-100">{!roles.some((role) => role.code === u.roleCode) && (
+                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} disabled={!canManageRoles || false} title={false ? 'Protected primary administrator account.' : (!canManageRoles ? 'Both designated Society Super Admins can change roles.' : undefined)} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:bg-slate-100">{!roles.some((role) => role.code === u.roleCode) && (
                     <option value={u.roleCode}>{u.roleName}</option>
                   )}
                   {roles.map((role) => <option key={role.code} value={role.code}>{role.name}</option>)}</select> : u.roleName}
@@ -209,14 +209,14 @@ export const UsersPage: React.FC = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                  <button onClick={() => updateUser(u)} disabled={!canManageRoles || u.email.toLowerCase() === "hopezpaws@gmail.com"} title={u.email.toLowerCase() === "hopezpaws@gmail.com" ? "Protected primary administrator account." : (!canManageRoles ? "Only a designated Super Admin can modify user accounts." : undefined)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
+                  <button onClick={() => updateUser(u)} disabled={!canManageRoles || false} title={false ? "Protected primary administrator account." : (!canManageRoles ? "Both designated Society Super Admins can modify user accounts." : undefined)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
                   <button
                     onClick={() => toggleStatus(u)}
-                    disabled={!canManageRoles || u.email.toLowerCase() === 'hopezpaws@gmail.com'}
-                    title={u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected primary administrator account.' : (!canManageRoles ? 'Only a designated Super Admin can suspend or reactivate users.' : undefined)}
+                    disabled={!canManageRoles || false}
+                    title={false ? 'Protected primary administrator account.' : (!canManageRoles ? 'Both designated Society Super Admins can suspend or reactivate users.' : undefined)}
                     className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {u.email.toLowerCase() === 'hopezpaws@gmail.com' ? 'Protected' : (u.status === 'active' ? 'Suspend' : 'Activate')}
+                    {false ? 'Protected' : (u.status === 'active' ? 'Suspend' : 'Activate')}
                   </button>
                   </div>
                 </td>
