@@ -164,7 +164,7 @@ jobs:
               ("ci-stock-in", "ci-food", "ci-admin"),
           )
           assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 0
-          db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-in'")
+          db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-approver' WHERE id='ci-stock-in'")
           assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 10
 
           db.execute(
@@ -174,7 +174,7 @@ jobs:
               ("ci-stock-out", "ci-food", "ci-admin"),
           )
           try:
-              db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-stock-out'")
+              db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-approver' WHERE id='ci-stock-out'")
               raise SystemExit("Negative stock approval unexpectedly succeeded.")
           except sqlite3.IntegrityError:
               pass
