@@ -143,11 +143,11 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   website_content: {
     table: 'website_content', read: 'cms:read', write: 'cms:write',
-    fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','status'],
-    required: ['page_slug','section_key','title','body_json'], search: ['page_slug','section_key','title'], order: 'updated_at',
-    defaults: { status: 'draft', version_number: 1 }, serverFields: (actorId) => ({ updated_by: actorId }),
+    fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','block_type','sort_order','status'],
+    required: ['page_slug','section_key','title','body_json'], search: ['page_slug','section_key','title'], order: 'sort_order',
+    defaults: { status: 'draft', version_number: 1, block_type: 'content', sort_order: 0 }, serverFields: (actorId) => ({ updated_by: actorId }),
     // Publishing status is server-controlled; only a dedicated publishing workflow may change it.
-    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description'],
+    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','block_type','sort_order'],
   },
 };
 
@@ -254,6 +254,58 @@ adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
   return c.json({ success: true, data: { id: attachmentId } }, 201);
 });
 
+// Create a new editable draft from the currently published CMS version.
+adminModuleRoutes.post('/cms/:id/draft', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('cms:write')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'CMS edit permission required.' } }, 403);
+  const sourceId = c.req.param('id');
+  const source = await c.env.DB.prepare("SELECT id, page_slug, section_key, status FROM website_content WHERE id = ?")
+    .bind(sourceId).first<{id:string;page_slug:string;section_key:string;status:string}>();
+  if (!source) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'CMS content not found.' } }, 404);
+  if (source.status !== 'published') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only a published section can be opened as a new draft.' } }, 409);
+  const version = await c.env.DB.prepare(
+    'SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?'
+  ).bind(source.page_slug, source.section_key).first<{next_version:number}>();
+  const id = crypto.randomUUID();
+  const result = await c.env.DB.prepare(`
+    INSERT INTO website_content
+      (id, page_slug, section_key, title, body_json, media_asset_id, seo_title, seo_description,
+       status, version_number, published_at, updated_by, block_type, sort_order)
+    SELECT ?, page_slug, section_key, title, body_json, media_asset_id, seo_title, seo_description,
+           'draft', ?, NULL, ?, block_type, sort_order
+    FROM website_content WHERE id = ? AND status = 'published'
+  `).bind(id, Number(version?.next_version || 1), actor.id, sourceId).run();
+  if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'The published section changed. Refresh and try again.' } }, 409);
+  await appendAuditLog(c, { action: 'CMS_DRAFT_CREATED_FROM_PUBLISHED', entityType: 'website_content', entityId: id, after: { sourceId, pageSlug: source.page_slug, sectionKey: source.section_key, version: version?.next_version || 1 } });
+  return c.json({ success: true, data: { id, version: Number(version?.next_version || 1), status: 'draft' } }, 201);
+});
+
+// Persist the visual order of page blocks. Reordering published blocks is a publishing action.
+adminModuleRoutes.patch('/cms/reorder', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('cms:publish')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'CMS publishing permission required to reorder live sections.' } }, 403);
+  const body = await c.req.json().catch(() => null) as { pageSlug?: unknown; items?: unknown } | null;
+  const pageSlug = typeof body?.pageSlug === 'string' ? body.pageSlug : '';
+  const items = Array.isArray(body?.items) ? body.items as Array<{id?:unknown;sortOrder?:unknown}> : [];
+  if (!pageSlug || !Array.isArray(body?.items) || items.length < 1 || items.length > 200 ||
+      items.some((item) => typeof item.id !== 'string' || !Number.isInteger(item.sortOrder) || Number(item.sortOrder) < 0) ||
+      new Set(items.map((item) => String(item.id))).size !== items.length) {
+    return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide a page slug and 1–200 unique section IDs with non-negative integer sort orders.' } }, 400);
+  }
+  const ids = items.map((item) => String(item.id));
+  const placeholders = ids.map(() => '?').join(',');
+  const found = await c.env.DB.prepare(
+    `SELECT id FROM website_content WHERE page_slug = ? AND id IN (${placeholders})`
+  ).bind(pageSlug, ...ids).all<{id:string}>();
+  if ((found.results || []).length !== ids.length) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'One or more sections do not belong to this page.' } }, 404);
+  const statements = items.map((item) => c.env.DB.prepare(
+    "UPDATE website_content SET sort_order = ?, updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND page_slug = ?"
+  ).bind(Number(item.sortOrder), actor.id, String(item.id), pageSlug));
+  await c.env.DB.batch(statements);
+  await appendAuditLog(c, { action: 'CMS_PAGE_BLOCKS_REORDERED', entityType: 'website_content', entityId: pageSlug, after: { sectionIds: ids, order: items.map((item) => ({ id: String(item.id), sortOrder: Number(item.sortOrder) })) } });
+  return c.json({ success: true, data: { pageSlug, reordered: ids.length } });
+});
+
 adminModuleRoutes.get('/:resource', async (c) => {
   const resource = c.req.param('resource');
   const config = RESOURCES[resource];
@@ -273,7 +325,8 @@ adminModuleRoutes.get('/:resource', async (c) => {
   }
   const totalResult = await c.env.DB.prepare(`SELECT COUNT(*) AS total FROM ${config.table}${whereSql}`)
     .bind(...searchParams).first<{ total: number }>();
-  const sql = `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
+  const orderSql = resource === 'website_content' ? 'sort_order ASC, section_key ASC, updated_at DESC' : `${config.order} DESC`;
+  const sql = `SELECT * FROM ${config.table}${whereSql} ORDER BY ${orderSql} LIMIT ? OFFSET ?`;
   const result = await c.env.DB.prepare(sql).bind(...searchParams, limit, offset).all();
   return c.json({
     success: true,
