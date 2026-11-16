@@ -1,4 +1,5 @@
 -- Complete shelter registry: separate physical shelter presence from lifecycle status
+-- Release gate: verify this migration is applied to the isolated production ERP D1 database.
 -- and capture disability / long-term health / special-care information.
 ALTER TABLE animals ADD COLUMN is_currently_in_shelter INTEGER NOT NULL DEFAULT 1
   CHECK (is_currently_in_shelter IN (0, 1));
