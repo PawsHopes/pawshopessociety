@@ -430,6 +430,12 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
           {attachments.length > 0 && <div className="mt-3 border-t border-slate-200 pt-3"><p className="mb-2 text-xs font-bold text-slate-700">Already attached</p><ul className="space-y-1">{attachments.map((item) => <li key={String(item.id)} className="flex flex-wrap items-center gap-2 text-xs">
             {item.public_url ? <a className="text-blue-700 underline" href={String(item.public_url)} target="_blank" rel="noreferrer">{String(item.media_file_name || item.label || 'Open image')}</a> : <button type="button" className="text-blue-700 underline" onClick={() => void openPrivateAttachment(String(item.document_id))}>{String(item.document_file_name || item.label || 'Open private document')}</button>}
             <span className="text-slate-500">{String(item.doc_category || item.media_mime_type || item.document_mime_type || '')}</span>
+            {resource?.key === 'animals' && canWrite && item.media_asset_id && <button type="button" onClick={async () => {
+              if (!window.confirm('Remove this photo from the animal profile? The stored R2 image will be retained.')) return;
+              const removed = await apiFetch(`/api/v1/admin/modules/attachments/animals/${editingId}/${String(item.id)}`, { method: 'DELETE' });
+              setFeedback(removed.success ? 'Photo removed from this animal profile.' : removed.error?.message || 'Could not remove photo.');
+              if (removed.success && editingId) await loadAttachments(editingId);
+            }} className="rounded border border-red-200 px-2 py-1 text-[11px] font-semibold text-red-700 hover:bg-red-50">Remove photo</button>}
           </li>)}</ul></div>}
         </div>}
         <div className="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">{resource.key === 'website_content' && <button type="button" onClick={() => setCmsPreviewOpen(true)} className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Preview content</button>}<button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
