@@ -160,7 +160,7 @@ jobs:
           db.execute(
               """INSERT INTO stock_movements
                  (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
-                 VALUES (?, ?, 'purchase_in', 10, 'pending', ?)""",
+                 VALUES (?, ?, 'adjustment', 10, 'pending', ?)""",
               ("ci-stock-in", "ci-food", "ci-admin"),
           )
           assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 0
