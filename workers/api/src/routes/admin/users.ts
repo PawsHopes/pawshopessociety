@@ -10,7 +10,8 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const TRUSTED_SUPER_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
+const isTrustedSuperAdmin = (email: string) => TRUSTED_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim());
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
@@ -52,7 +53,7 @@ adminUsersRoutes.get(
         u.phone, u.status, u.last_login_at as lastLoginAt,
         u.created_at as createdAt,
         r.code as roleCode,
-        CASE WHEN r.code = 'super_admin' AND lower(u.email) <> 'hopezpaws@gmail.com' THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
+        CASE WHEN r.code = 'super_admin' AND lower(u.email) NOT IN ('hopezpaws@gmail.com', 'infosecayush@gmail.com') THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
       FROM users u
       JOIN roles r ON r.id = u.role_id
       ORDER BY u.created_at DESC
@@ -67,7 +68,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: actor.email.toLowerCase() === PRIMARY_ADMIN_EMAIL
+        canManageRoles: isTrustedSuperAdmin(actor.email)
       }
     });
   }
@@ -86,8 +87,8 @@ adminUsersRoutes.post(
       }, 403);
     }
 
-    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can create users and assign initial roles.' } }, 403);
+    if (!isTrustedSuperAdmin(actor.email)) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Paw\'s Hopez Society Super Admin can create users.' } }, 403);
     }
 
     const body = await c.req.json().catch(() => null);
@@ -104,6 +105,9 @@ adminUsersRoutes.post(
     }
 
     const email = parsed.data.email.toLowerCase().trim();
+    if (parsed.data.roleCode === 'super_admin' && !isTrustedSuperAdmin(email)) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Super Admin role can only be assigned to the two explicitly trusted Society administrator accounts.' } }, 403);
+    }
     const role = await c.env.DB.prepare(
       'SELECT id, code FROM roles WHERE code = ?'
     ).bind(parsed.data.roleCode).first<{ id: string; code: string }>();
@@ -176,8 +180,8 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
+    if (!isTrustedSuperAdmin(actor.email)) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Paw\'s Hopez Society Super Admin can modify ERP user accounts.' } }, 403);
     }
 
     const targetId = c.req.param('id');
@@ -224,10 +228,17 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+    if (isTrustedSuperAdmin(existing.email)) {
       return c.json({
         success: false,
-        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected from secondary-user changes.' }
+        error: { code: 'FORBIDDEN', message: 'Trusted Super Admin accounts are protected from role, status, and profile changes through user management.' }
+      }, 403);
+    }
+
+    if (parsed.data.roleCode === 'super_admin' && !isTrustedSuperAdmin(existing.email)) {
+      return c.json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Super Admin role can only be assigned to the two explicitly trusted Society administrator accounts.' }
       }, 403);
     }
 
