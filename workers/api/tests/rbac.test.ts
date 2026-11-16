@@ -109,7 +109,6 @@ describe('untrusted test-account user-management restrictions', () => {
       '/modules/stock_movements/movement-id/approve',
       '/modules/donations/donation-id/verify',
       '/modules/attachments/animals/animal-id',
-      '/documents/private-doc-id/signed-url',
     ];
 
     const responses = await Promise.all([
@@ -120,6 +119,7 @@ describe('untrusted test-account user-management restrictions', () => {
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ roleCode: 'super_admin' }) }),
       ...writeResources.map((resource) => app.request('/modules/' + resource, { method: 'POST', headers, body: '{}' })),
       ...protectedActions.map((path) => app.request(path, { method: 'POST', headers, body: '{}' })),
+      app.request('/documents/private-doc-id/signed-url'),
     ]);
 
     expect(responses.every((response) => response.status === 403)).toBe(true);
