@@ -1,0 +1,46 @@
+name: Public Site Checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "functions/api/animals.ts"
+      - "assets/js/rescue-animals.js"
+      - "rescue.html"
+      - "adopt.html"
+      - ".github/workflows/public-site-checks.yml"
+  push:
+    branches: [main]
+    paths:
+      - "functions/api/animals.ts"
+      - "assets/js/rescue-animals.js"
+      - "rescue.html"
+      - "adopt.html"
+      - ".github/workflows/public-site-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  public-animal-feed:
+    name: Validate public adoption and rescue feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check rescue feed JavaScript syntax
+        run: node --check assets/js/rescue-animals.js
+      - name: Type-check the read-only animal feed function
+        run: npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/animals.ts
+      - name: Verify both public animal pages consume the API
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const adopt = fs.readFileSync('adopt.html', 'utf8');
+          const rescue = fs.readFileSync('rescue.html', 'utf8');
+          if (!adopt.includes('/api/animals')) throw new Error('Adoption page is not connected to /api/animals');
+          if (!rescue.includes('assets/js/rescue-animals.js') || !rescue.includes('id="rescue-animals-grid"')) throw new Error('Rescue page is missing the live animal feed');
+          console.log('Adoption and rescue pages are connected to the public animal API.');
+          NODE
