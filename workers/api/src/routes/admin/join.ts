@@ -32,7 +32,7 @@ const rejectSchema = z.object({
   reason: z.string().trim().max(500).optional().default(''),
 });
 
-function isPrimaryAdmin(c: any) {
+function isTrustedAdmin(c: any) {
   const actor = c.get('authUser');
   return Boolean(actor?.email) && isTrustedSuperAdmin(actor.email);
 }
@@ -55,7 +55,7 @@ async function hashToken(token: string): Promise<string> {
 adminJoinRoutes.use('*', requirePermission('users:manage'));
 
 adminJoinRoutes.post('/links', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isTrustedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Society Super Admin can create join links.' } }, 403);
   }
 
@@ -91,7 +91,7 @@ adminJoinRoutes.post('/links', async (c) => {
 });
 
 adminJoinRoutes.get('/links', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isTrustedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Society Super Admin can view join links.' } }, 403);
   }
 
@@ -109,7 +109,7 @@ adminJoinRoutes.get('/links', async (c) => {
 });
 
 adminJoinRoutes.post('/links/:id/revoke', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isTrustedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Society Super Admin can revoke join links.' } }, 403);
   }
 
@@ -134,7 +134,7 @@ adminJoinRoutes.post('/links/:id/revoke', async (c) => {
 });
 
 adminJoinRoutes.get('/applications', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isTrustedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Society Super Admin can review applications.' } }, 403);
   }
 
