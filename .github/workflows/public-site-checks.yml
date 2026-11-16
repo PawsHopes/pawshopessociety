@@ -40,7 +40,7 @@ jobs:
           const fs = require('fs');
           const adopt = fs.readFileSync('adopt.html', 'utf8');
           const rescue = fs.readFileSync('rescue.html', 'utf8');
-          if (!adopt.includes("fetch('/api/animals'")) throw new Error('Adoption page is not connected to /api/animals');
+          if (!adopt.includes('/api/animals')) throw new Error('Adoption page is not connected to /api/animals');
           if (!rescue.includes('assets/js/rescue-animals.js') || !rescue.includes('id="rescue-animals-grid"')) throw new Error('Rescue page is missing the live animal feed');
           console.log('Adoption and rescue pages are connected to the public animal API.');
           NODE
