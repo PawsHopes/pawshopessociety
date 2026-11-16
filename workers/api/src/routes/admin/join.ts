@@ -94,7 +94,7 @@ adminJoinRoutes.post('/links', async (c) => {
 
 adminJoinRoutes.get('/links', async (c) => {
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can view join links.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can view join links.' } }, 403);
   }
 
   const result = await c.env.DB.prepare(`
@@ -112,7 +112,7 @@ adminJoinRoutes.get('/links', async (c) => {
 
 adminJoinRoutes.post('/links/:id/revoke', async (c) => {
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can revoke join links.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can revoke join links.' } }, 403);
   }
 
   const id = c.req.param('id');
@@ -137,7 +137,7 @@ adminJoinRoutes.post('/links/:id/revoke', async (c) => {
 
 adminJoinRoutes.get('/applications', async (c) => {
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can review applications.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can review applications.' } }, 403);
   }
 
   const status = c.req.query('status') || 'pending';
@@ -174,7 +174,7 @@ adminJoinRoutes.get('/applications', async (c) => {
 adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const actor = c.get('authUser');
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can approve applicants and assign ERP roles.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can approve applicants and assign ERP roles.' } }, 403);
   }
 
   const parsed = approveSchema.safeParse(await c.req.json().catch(() => null));
@@ -275,7 +275,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can grant Cloudflare Access to approved users.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can grant Cloudflare Access to approved users.' } }, 403);
   }
 
   const id = c.req.param('id');
@@ -316,7 +316,7 @@ adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
   const actor = c.get('authUser');
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can reject applicants.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can reject applicants.' } }, 403);
   }
 
   const parsed = rejectSchema.safeParse(await c.req.json().catch(() => ({})));
