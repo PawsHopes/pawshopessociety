@@ -281,6 +281,46 @@ jobs:
           assert db.execute("SELECT current_status FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == "recovering"
           assert db.execute("SELECT is_foster_eligible FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == 1
 
+          # Donation receipts require verified donations and remain immutable.
+          db.execute(
+              "INSERT INTO donors (id, donor_code, full_name, donor_type) VALUES (?, ?, ?, 'individual')",
+              ("ci-donor", "CI-DONOR-001", "CI Donor"),
+          )
+          db.execute(
+              """INSERT INTO donations
+                 (id, donor_id, fund_category_id, account_id, donation_date, amount_paise, payment_mode)
+                 VALUES (?, ?, ?, ?, '2026-11-15', 25000, 'cash')""",
+              ("ci-receipt-donation", "ci-donor", fund_id, asset_id),
+          )
+          try:
+              db.execute(
+                  """INSERT INTO donation_receipts
+                     (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                     VALUES (?, ?, ?, '2026-11-15', 0, ?)""",
+                  ("ci-receipt-pending", "CI-REC-PENDING", "ci-receipt-donation", "ci-admin"),
+              )
+              raise SystemExit("Receipt issuance for an unverified donation unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute(
+              "UPDATE donations SET verification_status='verified', verified_by='ci-admin' WHERE id='ci-receipt-donation'"
+          )
+          db.execute(
+              """INSERT INTO donation_receipts
+                 (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                 VALUES (?, ?, ?, '2026-11-15', 0, ?)""",
+              ("ci-receipt", "CI-REC-001", "ci-receipt-donation", "ci-admin"),
+          )
+          for statement in (
+              "UPDATE donation_receipts SET receipt_number='TAMPERED' WHERE id='ci-receipt'",
+              "DELETE FROM donation_receipts WHERE id='ci-receipt'",
+          ):
+              try:
+                  db.execute(statement)
+                  raise SystemExit(f"Immutable donation receipt unexpectedly allowed: {statement}")
+              except sqlite3.IntegrityError:
+                  pass
+
           # The primary administrator cannot be demoted, suspended, renamed to another identity, or deleted.
           db.execute(
               "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
