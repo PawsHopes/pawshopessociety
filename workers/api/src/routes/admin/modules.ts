@@ -701,10 +701,10 @@ adminModuleRoutes.post('/cms/:id/publish', async (c) => {
     return c.json({ success: false, error: { code: 'CONFLICT', message: 'CMS content changed before it could be unpublished.' } }, 409);
   }
   await appendAuditLog(c, {
-    action: 'CMS_CONTENT_UNPUBLISHED',
+    action: previousStatus === 'draft' ? 'CMS_CONTENT_DRAFT_ARCHIVED' : 'CMS_CONTENT_UNPUBLISHED',
     entityType: 'website_content',
     entityId: id,
-    before: { status: 'published' },
+    before: { status: previousStatus },
     after: { status: 'archived', pageSlug: existing.page_slug, sectionKey: existing.section_key, version: existing.version_number }
   });
   return c.json({ success: true, data: { id, status: 'archived' } });
