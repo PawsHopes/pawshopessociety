@@ -80,6 +80,10 @@ const RESOURCES: Record<string, ResourceConfig> = {
     required: ['donor_id','fund_category_id','account_id','donation_date','amount_paise','payment_mode'], search: ['transaction_reference','purpose'], order: 'donation_date',
     defaults: { verification_status: 'pending' }, immutable: true,
   },
+  donation_receipts: {
+    table: 'donation_receipts', read: 'donations:read',
+    fields: [], search: ['receipt_number'], order: 'issued_date', immutable: true,
+  },
   expenses: {
     table: 'expenses', read: 'finance:read', write: 'expenses:submit',
     fields: ['expense_code','expense_date','category','fund_category_id','account_id','description','amount_paise','payment_mode','vendor_payee','animal_id','rescue_case_id','invoice_doc_id'],
@@ -271,7 +275,9 @@ adminModuleRoutes.get('/:resource', async (c) => {
   }
   const totalResult = await c.env.DB.prepare(`SELECT COUNT(*) AS total FROM ${config.table}${whereSql}`)
     .bind(...searchParams).first<{ total: number }>();
-  const sql = `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
+  const sql = resource === 'donations'
+    ? `SELECT d.*, dr.id AS receipt_id, dr.receipt_number FROM donations d LEFT JOIN donation_receipts dr ON dr.donation_id = d.id${whereSql} ORDER BY d.${config.order} DESC LIMIT ? OFFSET ?`
+    : `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
   const result = await c.env.DB.prepare(sql).bind(...searchParams, limit, offset).all();
   return c.json({
     success: true,
@@ -752,6 +758,67 @@ adminModuleRoutes.post('/donations/:id/verify', async (c) => {
     return c.json({ success: false, error: { code: 'CONFLICT', message: 'Donation was already verified or its ledger posting already exists.' } }, 409);
   }
   return c.json({ success: true, data: { id, verification_status: 'verified', transaction_number: txnNo } });
+});
+
+adminModuleRoutes.post('/donations/:id/receipt', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('donations:verify')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Donation verification permission is required to issue receipts.' } }, 403);
+  }
+  const id = c.req.param('id');
+  const donation = await c.env.DB.prepare(`
+    SELECT d.id, d.donation_date, d.amount_paise, d.payment_mode, d.transaction_reference,
+      d.purpose, d.verification_status, d.donor_id,
+      donor.full_name AS donor_name, donor.email AS donor_email,
+      donor.address AS donor_address, donor.pan_number AS donor_pan
+    FROM donations d
+    JOIN donors donor ON donor.id = d.donor_id
+    WHERE d.id = ?
+  `).bind(id).first<{
+    id: string; donation_date: string; amount_paise: number; payment_mode: string;
+    transaction_reference: string | null; purpose: string | null; verification_status: string;
+    donor_id: string; donor_name: string; donor_email: string | null;
+    donor_address: string | null; donor_pan: string | null;
+  }>();
+  if (!donation) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Donation not found.' } }, 404);
+  if (donation.verification_status !== 'verified') {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Only a verified donation can receive an official receipt.' } }, 409);
+  }
+  const existing = await c.env.DB.prepare(
+    'SELECT id, receipt_number, issued_date, is_80g_eligible FROM donation_receipts WHERE donation_id = ?'
+  ).bind(id).first<{id:string;receipt_number:string;issued_date:string;is_80g_eligible:number}>();
+  if (existing) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: `A receipt already exists: ${existing.receipt_number}` }, data: existing }, 409);
+  }
+  const issuedDate = new Date().toISOString().slice(0, 10);
+  const receiptId = crypto.randomUUID();
+  const receiptNumber = `PHS-REC-${issuedDate.replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+  const result = await c.env.DB.prepare(`
+    INSERT INTO donation_receipts (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+    SELECT ?, ?, ?, ?, 0, ?
+    WHERE EXISTS (SELECT 1 FROM donations WHERE id = ? AND verification_status = 'verified')
+      AND NOT EXISTS (SELECT 1 FROM donation_receipts WHERE donation_id = ?)
+  `).bind(receiptId, receiptNumber, id, issuedDate, actor.id, id, id).run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    const duplicate = await c.env.DB.prepare('SELECT receipt_number FROM donation_receipts WHERE donation_id = ?')
+      .bind(id).first<{receipt_number:string}>();
+    return c.json({ success: false, error: { code: 'CONFLICT', message: duplicate ? `A receipt already exists: ${duplicate.receipt_number}` : 'The donation changed before the receipt could be issued.' } }, 409);
+  }
+  await appendAuditLog(c, {
+    action: 'DONATION_RECEIPT_ISSUED',
+    entityType: 'donation_receipts',
+    entityId: receiptId,
+    after: { receiptNumber, donationId: id, amountPaise: donation.amount_paise, is80gEligible: false }
+  });
+  return c.json({ success: true, data: {
+    id: receiptId, receiptNumber, donationId: id, issuedDate,
+    amountPaise: donation.amount_paise, paymentMode: donation.payment_mode,
+    donationDate: donation.donation_date, donorName: donation.donor_name,
+    donorEmail: donation.donor_email, donorAddress: donation.donor_address,
+    donorPan: donation.donor_pan, purpose: donation.purpose,
+    is80gEligible: false, pdfDocId: null,
+    note: 'Receipt issued. 80G eligibility is not claimed; attach an approved receipt PDF when available.'
+  } }, 201);
 });
 
 adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
