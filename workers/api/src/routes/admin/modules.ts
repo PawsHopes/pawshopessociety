@@ -689,16 +689,20 @@ adminModuleRoutes.post('/cms/:id/publish', async (c) => {
     return c.json({ success: true, data: { id, status: 'published' } });
   }
 
-  if (existing.status !== 'published') {
-    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only published CMS content can be unpublished.' } }, 409);
+  if (existing.status === 'archived') {
+    return c.json({ success: true, data: { id, status: 'archived', unchanged: true } });
   }
+  if (!['draft', 'published'].includes(existing.status)) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only active CMS content can be archived.' } }, 409);
+  }
+  const previousStatus = existing.status;
   const result = await c.env.DB.prepare(`
     UPDATE website_content
     SET status = 'archived', updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
-    WHERE id = ? AND status = 'published'
+    WHERE id = ? AND status IN ('draft', 'published')
   `).bind(actor.id, id).run();
   if ((result.meta?.changes ?? 0) !== 1) {
-    return c.json({ success: false, error: { code: 'CONFLICT', message: 'CMS content changed before it could be unpublished.' } }, 409);
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'CMS content changed before it could be archived.' } }, 409);
   }
   await appendAuditLog(c, {
     action: previousStatus === 'draft' ? 'CMS_CONTENT_DRAFT_ARCHIVED' : 'CMS_CONTENT_UNPUBLISHED',
