@@ -291,7 +291,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     const payload: Record<string,string|number|boolean|null> = {};
     const updateFields: Record<string, string[]> = {
       adoption_applications: ['experience_notes','home_check_status','home_check_notes'],
-      foster_applications: ['foster_start_date','expected_end_date','actual_end_date','notes']
+      foster_applications: ['foster_start_date','expected_end_date','actual_end_date','notes'],
+      purchase_orders: ['total_amount_paise','invoice_doc_id','expense_id']
     };
     for (const field of resource.fields) {
       if (editingId && updateFields[resource.key] && !updateFields[resource.key].includes(field.key)) continue;
