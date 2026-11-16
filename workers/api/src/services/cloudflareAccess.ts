@@ -7,12 +7,6 @@ const ACCESS_POLICIES = [
     policyId: '3fe62b03-bb97-47d3-8839-02001fee7ce0',
     label: 'Admin ERP hostname',
   },
-  {
-    accountId: '74a7af3d03b159edc357bcdc8d903556',
-    applicationId: '1dbcd4ff-450d-497c-abb4-d841f3904675',
-    policyId: '2e71687b-0135-44cc-b3b9-d1c7ae1652f3',
-    label: 'Pages deployment and preview hostnames',
-  },
 ] as const;
 
 type AccessPolicy = {
@@ -123,7 +117,7 @@ export async function syncApprovedEmailToCloudflareAccess(
     }
     return {
       status: 'synced',
-      message: 'The approved email is allowed on the Admin ERP hostname and its deployment/preview URLs.',
+      message: 'The approved email is allowed on the protected Admin ERP hostname.',
     };
   } catch {
     return {
