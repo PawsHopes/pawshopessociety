@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import { effectivePermissions, isTrustedSuperAdmin, requirePermission } from '../src/middleware/rbac';
+import { adminUsersRoutes } from '../src/routes/admin/users';
+import { adminJoinRoutes } from '../src/routes/admin/join';
+import { adminModuleRoutes } from '../src/routes/admin/modules';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 import { canUploadDocumentCategory } from '../src/services/documentAccess';
 
@@ -13,6 +16,19 @@ function makeUser(permissions: string[]): AuthUser {
     roleName: 'Volunteer',
     permissions,
   };
+}
+
+
+function makeUsersApp(user: AuthUser) {
+  const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
+  app.use('*', async (c, next) => {
+    c.set('authUser', user);
+    await next();
+  });
+  app.route('/users', adminUsersRoutes);
+  app.route('/join', adminJoinRoutes);
+  app.route('/modules', adminModuleRoutes);
+  return app;
 }
 
 function makeApp(user: AuthUser) {
@@ -48,6 +64,41 @@ describe('API-side RBAC enforcement', () => {
   });
 });
 
+
+describe('untrusted test-account user-management restrictions', () => {
+  it('blocks an untrusted Super Admin from listing, creating, activating, or suspending ERP users', async () => {
+    const email = 'yivam24770@jcaton.com';
+    const permissions = effectivePermissions('super_admin', email, [
+      'dashboard:read',
+      'users:manage',
+      'audit:read'
+    ]);
+    const user: AuthUser = {
+      id: 'test-user-id',
+      email,
+      fullName: 'Untrusted Test User',
+      roleCode: 'super_admin',
+      roleName: 'Super Admin (Read-Only)',
+      permissions,
+    };
+    const app = makeUsersApp(user);
+    const headers = { 'Content-Type': 'application/json' };
+
+    const responses = await Promise.all([
+      app.request('/users'),
+      app.request('/users', { method: 'POST', headers, body: JSON.stringify({ email: 'new@example.org', fullName: 'New User', roleCode: 'auditor' }) }),
+      app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'active' }) }),
+      app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'suspended' }) }),
+      app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ roleCode: 'super_admin' }) }),
+      app.request('/join/applications/application-id/approve', { method: 'POST', headers, body: JSON.stringify({ roleCode: 'auditor' }) }),
+      app.request('/join/applications/application-id/access-sync', { method: 'POST' }),
+      app.request('/modules/animals', { method: 'GET' }),
+      app.request('/modules/animals', { method: 'POST', headers, body: JSON.stringify({ animal_code: 'X', name: 'Test', species: 'Dog' }) }),
+    ]);
+
+    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403, 403, 403, 403]);
+  });
+});
 
 describe('trusted Super Admin permission boundary', () => {
   const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
