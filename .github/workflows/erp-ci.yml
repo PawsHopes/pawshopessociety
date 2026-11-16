@@ -418,7 +418,7 @@ jobs:
 
       - name: Apply verified staging D1 migrations
         working-directory: workers/api
-        run: npx wrangler d1 migrations apply pawshopes-erp-db-staging --remote --env staging --yes
+        run: npx wrangler d1 migrations apply pawshopes-erp-db-development --remote --env staging --yes
 
       - name: Deploy staging Worker
         working-directory: workers/api
