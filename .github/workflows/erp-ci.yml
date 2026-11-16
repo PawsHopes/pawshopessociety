@@ -316,6 +316,42 @@ jobs:
           assert receipt == ("PHS-REC-CI-001", 0)
           try:
               db.execute(
+                  "UPDATE donation_receipts SET is_80g_eligible=1 WHERE id='ci-receipt'"
+              )
+              raise SystemExit("Donation receipt 80G status tampering unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute("DELETE FROM donation_receipts WHERE id='ci-receipt'")
+              raise SystemExit("Donation receipt deletion unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute(
+              """INSERT INTO donations
+                 (id, donor_id, fund_category_id, account_id, donation_date, amount_paise, payment_mode)
+                 VALUES ('ci-donation-unverified', 'ci-donor', ?, ?, '2026-11-16', 10000, 'cash')""",
+              (fund_id, asset_id),
+          )
+          try:
+              db.execute(
+                  """INSERT INTO donation_receipts
+                     (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                     VALUES ('ci-unverified-receipt', 'PHS-REC-CI-003', 'ci-donation-unverified', '2026-11-16', 0, 'ci-admin')"""
+              )
+              raise SystemExit("Receipt for an unverified donation unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute(
+                  """INSERT INTO donation_receipts
+                     (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                     VALUES ('ci-80g-receipt', 'PHS-REC-CI-004', 'ci-donation-receipt', '2026-11-16', 1, 'ci-admin')"""
+              )
+              raise SystemExit("Unapproved 80G receipt unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute(
                   """INSERT INTO donation_receipts
                      (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
                      VALUES ('ci-receipt-duplicate', 'PHS-REC-CI-002', 'ci-donation-receipt', '2026-11-16', 0, 'ci-admin')"""
