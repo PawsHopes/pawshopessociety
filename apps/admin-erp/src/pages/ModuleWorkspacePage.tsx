@@ -179,7 +179,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       'purchase_orders', 'compliance_registrations'
     ].includes(resource.key) && user.permissions.includes('documents:private_read'))
   );
-  const canWorkflow = !!resource && ((resource.key === 'animals' && user.permissions.includes('animals:publish')) || (resource.key === 'website_content' && user.permissions.includes('cms:publish')) || (resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (resource.key === 'purchase_orders' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
+  const canWorkflow = !!resource && ((resource.key === 'animals' && user.permissions.includes('animals:publish')) || (resource.key === 'website_content' && user.permissions.includes('cms:publish')) || (resource.key === 'donations' && (user.permissions.includes('donations:verify') || user.permissions.includes('donations:read'))) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (resource.key === 'purchase_orders' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
     if (!resource) return;
@@ -361,6 +361,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (resource.key === 'animals' && user.permissions.includes('animals:publish')) return ['publish'];
     if (resource.key === 'website_content' && user.permissions.includes('cms:publish') && ['draft','published'].includes(status)) return ['publish'];
     if (resource.key === 'donations' && status === 'pending' && user.permissions.includes('donations:verify')) return ['verify'];
+    if (resource.key === 'donations' && status === 'verified' && user.permissions.includes('donations:read')) return ['receipt'];
     if (resource.key === 'expenses' && status === 'pending' && row.submitted_by !== user.id && user.permissions.includes('finance:approve')) return ['approve','reject'];
     if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && row.approved_by !== user.id && user.permissions.includes('finance:ledger')) return ['paid'];
     if (resource.key === 'stock_movements' && status === 'pending' && row.recorded_by !== user.id && user.permissions.includes('inventory:approve')) return ['approve','reject'];
@@ -381,9 +382,36 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       reason = window.prompt('Enter the reason for rejection:') || '';
       if (!reason.trim()) return;
     } else if (!window.confirm(action === 'order' ? 'Approve this draft purchase order and mark it ordered?' : action === 'receive' ? 'Confirm all linked stock movements are approved and mark this purchase order received?' : action === 'cancel' ? 'Cancel this purchase order? This is blocked once any stock receipt is posted.' : action === 'activate' ? 'Activate this approved foster placement and mark the animal as fostered?' : action === 'complete' ? 'Complete this foster placement and return the animal to shelter care?' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'Unpublish this CMS section?' : 'Publish this CMS draft to the public content feed?') : (row.is_published_public ? 'Remove this animal from the public website?' : 'Publish this animal on the public website?')) : action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
+    if (action === 'receipt') {
+      const receipt = await apiFetch<Record<string, unknown>>('/api/v1/admin/modules/donations/' + id + '/receipt');
+      if (!receipt.success || !receipt.data) {
+        setFeedback(receipt.error?.message || 'Unable to load donation receipt.');
+        return;
+      }
+      const popup = window.open('about:blank', '_blank');
+      if (!popup) {
+        setFeedback('Allow pop-ups to open the donation receipt.');
+        return;
+      }
+      const data = receipt.data;
+      const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char));
+      const amount = (Number(data.amount_paise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+      const taxNote = data.is_80g_eligible === 1 ? 'This receipt is marked 80G eligible in the ERP.' : 'Acknowledgement of donation only. This is NOT an 80G tax-deduction certificate.';
+      popup.document.open();
+      popup.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Donation receipt ${escape(data.receipt_number)}</title><style>body{font-family:Arial,sans-serif;background:#f1f5f9;color:#0f172a;padding:32px}.receipt{max-width:720px;margin:24px auto;background:#fff;border:1px solid #cbd5e1;padding:36px}.brand{text-align:center;border-bottom:2px solid #ea580c;padding-bottom:20px}.brand h1{margin:0;font-size:24px}.muted{color:#64748b}.number{font-size:18px;font-weight:bold;margin:24px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.item{padding:12px;background:#f8fafc;border:1px solid #e2e8f0}.item small{display:block;color:#64748b;text-transform:uppercase;font-size:10px;margin-bottom:6px}.amount{font-size:28px;font-weight:bold;color:#c2410c;margin:24px 0}.note{margin-top:24px;padding:14px;background:#fff7ed;border:1px solid #fed7aa;font-size:13px}.footer{margin-top:36px;border-top:1px solid #e2e8f0;padding-top:16px;font-size:12px;color:#64748b}.actions{text-align:center;margin:16px}.print-button{background:#0f172a;color:white;border:0;border-radius:8px;padding:12px 22px;font-weight:bold;cursor:pointer}@media print{body{background:#fff;padding:0}.receipt{border:0;margin:0;max-width:none}.actions{display:none}}</style></head><body><div class="actions"></div><main class="receipt"><header class="brand"><h1>Paw's Hopez Society</h1><p class="muted">Let them know... Someone cares.</p><p>Donation Acknowledgement Receipt</p></header><p class="number">Receipt No: ${escape(data.receipt_number)}</p><div class="amount">${escape(amount)}</div><section class="grid"><div class="item"><small>Donor</small><strong>${escape(data.donor_name)}</strong><p>${escape(data.donor_address)}</p></div><div class="item"><small>Issued on</small><strong>${escape(data.issued_date)}</strong><p class="muted">Donation date: ${escape(data.donation_date)}</p></div><div class="item"><small>Payment mode</small><strong>${escape(data.payment_mode)}</strong><p>Reference: ${escape(data.transaction_reference || '—')}</p></div><div class="item"><small>Fund</small><strong>${escape(data.fund_name)}</strong><p>Purpose: ${escape(data.purpose || 'General animal welfare')}</p></div></section><div class="note">${escape(taxNote)}</div><footer class="footer">This receipt acknowledges the donation recorded by Paw's Hopez Society. Please retain it for your records. It does not represent an 80G certificate or a promise of tax deduction.</footer></main></body></html>`);
+      popup.document.close();
+      const printButton = popup.document.createElement('button');
+      printButton.className = 'print-button';
+      printButton.textContent = 'Print / Save as PDF';
+      printButton.addEventListener('click', () => popup.print());
+      popup.document.querySelector('.actions')?.appendChild(printButton);
+      popup.focus();
+      return;
+    }
+
     const suffix = action === 'publish' ? (resource.key === 'website_content' ? '/cms/' + id + '/publish' : '/animals/' + id + '/publish') : action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
     const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : action === 'publish' ? JSON.stringify({ published: resource.key === 'website_content' ? row.status !== 'published' : !Boolean(row.is_published_public) }) : undefined });
-    setFeedback(result.success ? (action === 'order' ? 'Purchase order marked ordered.' : action === 'receive' ? 'Purchase order marked received.' : action === 'cancel' ? 'Purchase order cancelled.' : action === 'activate' ? 'Foster placement activated.' : action === 'complete' ? 'Foster placement completed; animal returned to shelter care.' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'CMS section unpublished.' : 'CMS section published to the public content feed.') : (row.is_published_public ? 'Animal removed from the public website.' : 'Animal published on the public website.')) : action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? (resource.key === 'stock_movements' ? 'Stock movement rejected; stock was not changed.' : 'Record rejected.') : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
+    setFeedback(result.success ? (action === 'order' ? 'Purchase order marked ordered.' : action === 'receive' ? 'Purchase order marked received.' : action === 'cancel' ? 'Purchase order cancelled.' : action === 'activate' ? 'Foster placement activated.' : action === 'complete' ? 'Foster placement completed; animal returned to shelter care.' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'CMS section unpublished.' : 'CMS section published to the public content feed.') : (row.is_published_public ? 'Animal removed from the public website.' : 'Animal published on the public website.')) : action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified, ledger posted and receipt issued.' : (action === 'receipt' ? 'Donation receipt opened.' : action === 'reject' ? (resource.key === 'stock_movements' ? 'Stock movement rejected; stock was not changed.' : 'Record rejected.') : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
     await load();
   };
 
@@ -474,10 +502,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
             </div>
             <footer className="bg-slate-900 px-5 py-4 text-xs text-slate-300">Paw&apos;s Hopez Society · Public website preview</footer>
           </div>
-          <p className="mx-auto mt-4 max-w-4xl text-xs text-slate-500">This is a content-and-placement preview inside the ERP, not a pixel-perfect rendering of the selected live page. Save your draft to keep it; publishing to the public website is a separate feature that is not connected yet.</p>
+          <p className="mx-auto mt-4 max-w-4xl text-xs text-slate-500">This is a content-and-placement preview inside the ERP, not a pixel-perfect rendering of the selected live page. Save your draft to keep it; publishing to the public website is a separate action available to users with CMS publish permission.</p>
         </div>
       </section>
     </div>}
-    <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
+    <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only. Verified donations receive an acknowledgement receipt; 80G eligibility remains disabled until the Society has the required approval. Financial approval, payment, stock receipt and CMS publishing use dedicated controlled workflows.</p>
   </div>;
 };
