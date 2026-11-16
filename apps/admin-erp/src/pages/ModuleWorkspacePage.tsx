@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch, type AuthUser } from '../lib/api';
 import { AnimalVisualManager } from './AnimalVisualManager';
+import { VisualSiteEditor } from './VisualSiteEditor';
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email' | 'textarea' | 'select' | 'checkbox'; required?: boolean; options?: string[]; optionLabels?: Record<string, string>; relationResource?: string };
 type Resource = { key: string; label: string; permission: string; writePermission?: string; fields: Field[] };
@@ -415,6 +416,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <div><p className="text-sm font-bold text-slate-900">Public adoption listings</p><p className="mt-1 text-sm text-slate-600">Open the visual animal page to add dogs, update profiles and photos, archive records, and control public publishing.</p></div>
       <button type="button" onClick={() => navigate('/modules/animals')} className="shrink-0 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700">Manage adoption listings</button>
     </section>}
+    {resource?.key === 'website_content' && <VisualSiteEditor canEdit={canEdit} canPublish={user.permissions.includes('cms:publish')} onEditDraft={beginEdit} onRefresh={load} />}
     {feedback && <div role="status" className="rounded-xl bg-slate-900 px-4 py-3 text-sm text-white">{feedback}</div>}
     {moduleKey === 'inventory' && inventoryAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Inventory alerts</strong><p className="mt-1">Low stock: {inventoryAlerts.lowStock.length} · Expired batches: {inventoryAlerts.expired.length} · Expiring in 30 days: {inventoryAlerts.expiring.length}</p></section>}
     {moduleKey === 'medical' && medicalAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Vaccination reminders</strong><p className="mt-1">Overdue: {medicalAlerts.overdue.length} · Due within 30 days: {medicalAlerts.due.length}</p></section>}
@@ -505,6 +507,6 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         </div>
       </section>
     </div>}
-    <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment, statutory receipt issuance and live CMS publishing require their dedicated controlled workflows before production use.</p>
+    <p className="text-xs text-slate-500">Financial ledger entries and medical/vaccination records are append-only in this workspace. Financial approval, payment and statutory receipt issuance require their dedicated controlled workflows before production use.</p>
   </div>;
 };
