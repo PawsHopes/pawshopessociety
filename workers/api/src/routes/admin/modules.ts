@@ -20,7 +20,7 @@ type ResourceConfig = {
 const RESOURCES: Record<string, ResourceConfig> = {
   animals: {
     table: 'animals', read: 'animals:read', write: 'animals:write',
-    fields: ['animal_code','legacy_slug','name','species','breed','gender','estimated_age_text','estimated_dob','identification_marks','microchip_or_tag','rescue_date','rescue_location','rescue_source','rescue_case_id','health_summary','vaccination_status','sterilization_status','sterilization_date','kennel_zone','caretaker_user_id','is_adoption_eligible','is_foster_eligible','public_description','adopted_note','internal_notes','current_status'],
+    fields: ['animal_code','legacy_slug','name','species','breed','gender','estimated_age_text','estimated_dob','identification_marks','microchip_or_tag','rescue_date','rescue_location','rescue_source','rescue_case_id','health_summary','health_conditions','mobility_status','special_care_notes','is_currently_in_shelter','vaccination_status','sterilization_status','sterilization_date','kennel_zone','caretaker_user_id','is_adoption_eligible','is_foster_eligible','public_description','adopted_note','internal_notes','current_status'],
     required: ['animal_code','name','species'], search: ['animal_code','name','breed','microchip_or_tag'], order: 'created_at',
     defaults: { gender: 'Unknown', vaccination_status: 'pending', sterilization_status: 'not_sterilized', is_adoption_eligible: 0, is_foster_eligible: 0, is_published_public: 0, current_status: 'rescued' },
   },
