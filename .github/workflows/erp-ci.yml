@@ -52,6 +52,37 @@ jobs:
         working-directory: apps/admin-erp
         run: npm run build
 
+  public-site:
+    name: Public adoption, rescue and CMS integration checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify public pages and live feed integration
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const pages = ['index.html','about.html','rescue.html','gallery.html','adopt.html','volunteer.html','contact.html','donate.html'];
+          for (const page of pages) {
+            const html = fs.readFileSync(page, 'utf8');
+            if (!html.includes('assets/js/cms.js')) throw new Error(page + ' is missing the public CMS loader');
+          }
+          const adopt = fs.readFileSync('adopt.html', 'utf8');
+          const rescue = fs.readFileSync('rescue.html', 'utf8');
+          const rescueJs = fs.readFileSync('assets/js/rescue-animals.js', 'utf8');
+          const cmsJs = fs.readFileSync('assets/js/cms.js', 'utf8');
+          const animalFeed = fs.readFileSync('functions/api/animals.ts', 'utf8');
+          const contentFeed = fs.readFileSync('functions/api/content.ts', 'utf8');
+          if (!adopt.includes("fetch('/api/animals'")) throw new Error('Adoption page is not connected to the public animal feed');
+          if (!rescue.includes('assets/js/rescue-animals.js') || !rescue.includes('id="rescue-animals-grid"')) throw new Error('Rescue page is missing its live animal feed');
+          if (!rescueJs.includes("fetch('/api/animals'")) throw new Error('Rescue cards do not use the public animal feed');
+          if (!animalFeed.includes('is_published_public = 1') || !animalFeed.includes('deleted_at IS NULL')) throw new Error('Public animal feed must exclude drafts and archived animals');
+          if (!contentFeed.includes("WHERE wc.status = 'published'") || !contentFeed.includes('wc.sort_order')) throw new Error('Public CMS feed must expose published, ordered sections only');
+          if (!cmsJs.includes('data-cms-section') || !cmsJs.includes('existing[existing.length - 1].after(section)')) throw new Error('CMS section insertion does not preserve editor order');
+          console.log('Public pages, published-only animal feeds and ordered CMS integration checks passed.');
+          NODE
+
   worker:
     name: Worker API checks
     runs-on: ubuntu-latest
@@ -363,6 +394,7 @@ jobs:
       - frontend
       - worker
       - database
+      - public-site
     # Never deploy pull requests or branches other than erp-development.
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/erp-development' && inputs.confirm_staging_deploy == true
     environment:
