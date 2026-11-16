@@ -162,6 +162,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const [feedback, setFeedback] = useState('');
   const [inventoryAlerts, setInventoryAlerts] = useState<{lowStock: Record<string,unknown>[]; expiring: Record<string,unknown>[]; expired: Record<string,unknown>[]} | null>(null);
   const [medicalAlerts, setMedicalAlerts] = useState<{due: Record<string,unknown>[]; overdue: Record<string,unknown>[]} | null>(null);
+  const [animalSummary, setAnimalSummary] = useState<{total:number;currentlyInShelter:number;adoptionReady:number;publishedForAdoption:number;byStatus:{status:string;count:number}[]} | null>(null);
   const [busy, setBusy] = useState(false);
   const [cmsPreviewOpen, setCmsPreviewOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -198,6 +199,9 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
 
   useEffect(() => { setResourceKey(''); setForm({}); setEditingId(null); setSearch(''); setPage(0); setTotal(0); setFeedback(''); }, [moduleKey]);
   useEffect(() => {
+    if (moduleKey === 'animals' && user.permissions.includes('animals:read')) {
+      apiFetch<typeof animalSummary>('/api/v1/admin/modules/animals/summary').then((res) => { if (res.success && res.data) setAnimalSummary(res.data); });
+    } else setAnimalSummary(null);
     setInventoryAlerts(null);
     setMedicalAlerts(null);
     if (moduleKey === 'inventory' && user.permissions.includes('inventory:read')) {
@@ -415,6 +419,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     {moduleKey === 'adoptions' && user.permissions.includes('animals:read') && <section className="flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div><p className="text-sm font-bold text-slate-900">Public adoption listings</p><p className="mt-1 text-sm text-slate-600">Open the visual animal page to add dogs, update profiles and photos, archive records, and control public publishing.</p></div>
       <button type="button" onClick={() => navigate('/modules/animals')} className="shrink-0 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700">Manage adoption listings</button>
+    </section>}
+    {resource?.key === 'animals' && animalSummary && <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {[['All registered',animalSummary.total],['Currently in shelter',animalSummary.currentlyInShelter],['Adoption eligible',animalSummary.adoptionReady],['Published on website',animalSummary.publishedForAdoption]].map(([label,value]) => <div key={String(label)} className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-semibold text-slate-500">{label}</p><p className="mt-1 text-2xl font-extrabold text-slate-900">{value}</p></div>)}
+      <div className="col-span-2 rounded-xl border border-slate-200 bg-white p-4 md:col-span-4"><p className="mb-2 text-xs font-bold uppercase text-slate-500">Status-wise animal count</p><div className="flex flex-wrap gap-2">{animalSummary.byStatus.map((item) => <span key={item.status} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{item.status.replaceAll('_',' ')}: {item.count}</span>)}</div><p className="mt-2 text-xs text-slate-500">All animals remain in the registry. Only adoption-eligible animals in available_for_adoption status are eligible for public adoption listings.</p></div>
     </section>}
     {resource?.key === 'website_content' && <VisualSiteEditor canEdit={canEdit} canPublish={user.permissions.includes('cms:publish')} onEditDraft={beginEdit} onRefresh={load} />}
     {feedback && <div role="status" className="rounded-xl bg-slate-900 px-4 py-3 text-sm text-white">{feedback}</div>}
