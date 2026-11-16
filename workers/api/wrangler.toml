@@ -14,8 +14,8 @@ PUBLIC_MEDIA_BASE_URL = "https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "pawshopes-erp-db-staging"
-database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
+database_name = "pawshopes-erp-db-development"
+database_id = "93b67f22-db38-4fdc-95ab-16a41e5492f7"
 migrations_dir = "../../database/migrations"
 migrations_table = "d1_migrations"
 
@@ -40,8 +40,8 @@ vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "pawshopes-erp-db-staging"
-database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
+database_name = "pawshopes-erp-db-development"
+database_id = "93b67f22-db38-4fdc-95ab-16a41e5492f7"
 migrations_dir = "../../database/migrations"
 migrations_table = "d1_migrations"
 
