@@ -35,18 +35,6 @@ BEGIN
   SELECT RAISE(ABORT, 'Opening stock must be created as an approved opening balance by its recording user.');
 END;
 
-CREATE TRIGGER trg_stock_movement_prevent_negative_approved_insert
-BEFORE INSERT ON stock_movements
-WHEN NEW.approval_status = 'approved'
-  AND (
-    SELECT current_stock + NEW.quantity_delta
-    FROM inventory_items
-    WHERE id = NEW.item_id
-  ) < 0
-BEGIN
-  SELECT RAISE(ABORT, 'Stock movement would make on-hand quantity negative');
-END;
-
 CREATE TRIGGER trg_stock_movement_requires_independent_approver
 BEFORE UPDATE OF approval_status, approved_by ON stock_movements
 WHEN OLD.approval_status = 'pending'
