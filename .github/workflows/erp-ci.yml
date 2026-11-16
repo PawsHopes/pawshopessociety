@@ -155,7 +155,7 @@ jobs:
           db.execute(
               """INSERT INTO stock_movements
                  (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
-                 VALUES (?, ?, 'purchase_in', 10, 'pending', ?)""",
+                 VALUES (?, ?, 'adjustment', 10, 'pending', ?)""",
               ("ci-stock-in", "ci-food", "ci-admin"),
           )
           assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 0
@@ -187,6 +187,80 @@ jobs:
               ("ci-opening-movement", "ci-opening", "ci-admin", "ci-admin"),
           )
           assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-opening'").fetchone()[0] == 7
+
+          db.execute(
+              "INSERT INTO suppliers (id, name) VALUES (?, ?)",
+              ("ci-supplier", "CI Supplier"),
+          )
+          db.execute(
+              """INSERT INTO purchase_orders (id, po_number, supplier_id, order_date, created_by)
+                 VALUES (?, ?, ?, '2026-11-16', ?)""",
+              ("ci-po", "CI-PO-001", "ci-supplier", "ci-admin"),
+          )
+          try:
+              db.execute(
+                  """INSERT INTO purchase_orders (id, po_number, supplier_id, order_date, status, created_by)
+                     VALUES (?, ?, ?, '2026-11-16', 'ordered', ?)""",
+                  ("ci-po-bypass", "CI-PO-BYPASS", "ci-supplier", "ci-admin"),
+              )
+              raise SystemExit("Purchase order direct ordered insert unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          try:
+              db.execute("UPDATE purchase_orders SET status='received' WHERE id='ci-po'")
+              raise SystemExit("Draft purchase order direct receive unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute("UPDATE purchase_orders SET status='ordered' WHERE id='ci-po'")
+          try:
+              db.execute(
+                  """INSERT INTO stock_movements
+                     (id, item_id, movement_type, quantity_delta, approval_status, recorded_by)
+                     VALUES ('ci-po-no-link', 'ci-food', 'purchase_in', 5, 'pending', 'ci-admin')"""
+              )
+              raise SystemExit("Purchase-in without a purchase order unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, purchase_order_id, recorded_by)
+                 VALUES ('ci-po-receipt', 'ci-food', 'purchase_in', 5, 'pending', 'ci-po', 'ci-admin')"""
+          )
+          try:
+              db.execute("UPDATE purchase_orders SET status='received' WHERE id='ci-po'")
+              raise SystemExit("Purchase order received with a pending stock movement.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute("UPDATE stock_movements SET approval_status='approved', approved_by='ci-admin' WHERE id='ci-po-receipt'")
+          db.execute("UPDATE purchase_orders SET status='received' WHERE id='ci-po'")
+          assert db.execute("SELECT current_stock FROM inventory_items WHERE id='ci-food'").fetchone()[0] == 15
+          try:
+              db.execute(
+                  """INSERT INTO stock_movements
+                     (id, item_id, movement_type, quantity_delta, approval_status, purchase_order_id, recorded_by)
+                     VALUES ('ci-po-late', 'ci-food', 'purchase_in', 1, 'pending', 'ci-po', 'ci-admin')"""
+              )
+              raise SystemExit("Stock receipt against a received purchase order unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+
+          db.execute(
+              """INSERT INTO purchase_orders (id, po_number, supplier_id, order_date, created_by)
+                 VALUES ('ci-po-cancel', 'CI-PO-CANCEL', 'ci-supplier', '2026-11-16', 'ci-admin')"""
+          )
+          db.execute("UPDATE purchase_orders SET status='ordered' WHERE id='ci-po-cancel'")
+          db.execute(
+              """INSERT INTO stock_movements
+                 (id, item_id, movement_type, quantity_delta, approval_status, purchase_order_id, recorded_by)
+                 VALUES ('ci-po-cancel-receipt', 'ci-food', 'purchase_in', 2, 'pending', 'ci-po-cancel', 'ci-admin')"""
+          )
+          try:
+              db.execute("UPDATE purchase_orders SET status='cancelled' WHERE id='ci-po-cancel'")
+              raise SystemExit("Purchase order with a pending stock receipt unexpectedly cancelled.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute("UPDATE stock_movements SET approval_status='rejected', approved_by='ci-admin', review_notes='CI rejection' WHERE id='ci-po-cancel-receipt'")
+          db.execute("UPDATE purchase_orders SET status='cancelled' WHERE id='ci-po-cancel'")
 
           asset_id = db.execute("SELECT id FROM accounts WHERE account_type='asset' AND is_active=1 LIMIT 1").fetchone()[0]
           income_id = db.execute("SELECT id FROM accounts WHERE account_type='income' AND is_active=1 LIMIT 1").fetchone()[0]
