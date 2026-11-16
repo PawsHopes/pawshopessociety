@@ -525,6 +525,53 @@ adminModuleRoutes.post('/foster_applications/:id/complete', async (c) => {
   return c.json({ success: true, data: { id, status: 'completed', animalId: application.animal_id } });
 });
 
+adminModuleRoutes.delete('/animals/:id', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:write')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal write permission is required to archive an animal.' } }, 403);
+  }
+
+  const id = c.req.param('id');
+  const animal = await c.env.DB.prepare(
+    'SELECT id, animal_code, name, current_status, is_published_public, deleted_at FROM animals WHERE id = ?'
+  ).bind(id).first<{
+    id: string; animal_code: string; name: string; current_status: string;
+    is_published_public: number; deleted_at: string | null;
+  }>();
+
+  if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
+  if (animal.deleted_at) return c.json({ success: false, error: { code: 'CONFLICT', message: 'This animal is already archived.' } }, 409);
+  if (['adopted', 'fostered', 'deceased'].includes(animal.current_status)) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Completed adoption, foster and deceased records cannot be archived. Their lifecycle history must remain available.' } }, 409);
+  }
+
+  const [activeAdoption, activeFoster, agreement] = await Promise.all([
+    c.env.DB.prepare("SELECT id FROM adoption_applications WHERE animal_id = ? AND status IN ('application','initial_review','verification','approved') LIMIT 1").bind(id).first<{id:string}>(),
+    c.env.DB.prepare("SELECT id FROM foster_applications WHERE animal_id = ? AND status IN ('application','verification','approved','active') LIMIT 1").bind(id).first<{id:string}>(),
+    c.env.DB.prepare('SELECT id FROM adoption_agreements WHERE animal_id = ? LIMIT 1').bind(id).first<{id:string}>(),
+  ]);
+  if (activeAdoption || activeFoster || agreement) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'This animal has an active or completed adoption/foster workflow. Resolve or retain that workflow before archiving the animal.' } }, 409);
+  }
+
+  const result = await c.env.DB.prepare(
+    "UPDATE animals SET deleted_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), is_published_public = 0, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND deleted_at IS NULL"
+  ).bind(id).run();
+  if ((result.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Animal record changed before it could be archived. Refresh and retry.' } }, 409);
+  }
+
+  await appendAuditLog(c, {
+    action: 'ANIMAL_ARCHIVED',
+    entityType: 'animals',
+    entityId: id,
+    before: { deleted_at: null, is_published_public: Boolean(animal.is_published_public), current_status: animal.current_status },
+    after: { deleted_at: 'now', is_published_public: false, archived: true }
+  });
+
+  return c.json({ success: true, data: { id, archived: true, retained: true } });
+});
+
 adminModuleRoutes.post('/animals/:id/publish', async (c) => {
   const actor = c.get('authUser');
   if (!actor.permissions.includes('animals:publish')) {
