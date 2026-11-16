@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
-export const TRUSTED_SUPER_ADMIN_EMAILS = new Set([
+const TRUSTED_SUPER_ADMIN_EMAILS = new Set([
   'hopezpaws@gmail.com',
   'infosecayush@gmail.com',
 ]);
