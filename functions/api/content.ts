@@ -35,7 +35,7 @@ export const onRequestGet = async (context: PagesContext): Promise<Response> => 
       FROM website_content wc
       LEFT JOIN media_assets ma ON ma.id = wc.media_asset_id
       WHERE wc.status = 'published'
-      ORDER BY wc.page_slug ASC, wc.section_key ASC
+      ORDER BY wc.page_slug ASC, wc.section_key ASC, wc.sort_order ASC
     `).all();
 
     return Response.json(
