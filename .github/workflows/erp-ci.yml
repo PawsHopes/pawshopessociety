@@ -142,7 +142,7 @@ jobs:
       - name: Reject migration-based ERP user account changes
         run: |
           if grep -RniE 'INSERT[[:space:]]+INTO[[:space:]]+users|UPDATE[[:space:]]+users|DELETE[[:space:]]+FROM[[:space:]]+users' database/migrations; then
-            echo "::error::ERP users, roles, and account status must only be changed through the audited primary-admin API."
+            echo "::error::ERP users, roles, and account status must only be changed through the audited designated Super Admin API."
             exit 1
           fi
 
@@ -362,29 +362,43 @@ jobs:
               except sqlite3.IntegrityError:
                   pass
 
-          # Both designated administrators can be promoted, then cannot be demoted, suspended, renamed, or deleted.
+          # Either designated admin can manage the peer, but the last active one cannot be removed.
           for admin_id, admin_email in (("ci-primary", "hopezpaws@gmail.com"), ("ci-secondary", "infosecayush@gmail.com")):
               db.execute(
                   "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
-                  (admin_id, admin_email, "CI Society Admin", "role_auditor", "suspended"),
+                  (admin_id, admin_email, "CI Society Admin", "role_super_admin", "active"),
               )
-              db.execute("UPDATE users SET role_id='role_super_admin', status='active' WHERE id=?", (admin_id,))
+
+          # Suspending or demoting the peer is allowed while the other admin remains active.
+          db.execute("UPDATE " + "users SET status='suspended' WHERE id='ci-secondary'")
+          assert db.execute("SELECT status FROM users WHERE id='ci-secondary'").fetchone()[0] == "suspended"
+          try:
+              db.execute("UPDATE " + "users SET status='suspended' WHERE id='ci-primary'")
+              raise SystemExit("Suspending the last active designated administrator unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
+          db.execute("UPDATE " + "users SET status='active' WHERE id='ci-secondary'")
+
+          db.execute("UPDATE " + "users SET role_id='role_auditor' WHERE id='ci-secondary'")
+          assert db.execute("SELECT role_id FROM users WHERE id='ci-secondary'").fetchone()[0] == "role_auditor"
+          db.execute("UPDATE " + "users SET role_id='role_super_admin' WHERE id='ci-secondary'")
+
+          # Keep designated admin identity and deletion protections.
+          for admin_id in ("ci-primary", "ci-secondary"):
               for statement in (
-                  f"UPDATE users SET status='suspended' WHERE id='{admin_id}'",
-                  f"UPDATE users SET role_id='role_auditor' WHERE id='{admin_id}'",
-                  f"UPDATE users SET email='attacker-{admin_id}@example.test' WHERE id='{admin_id}'",
-                  f"DELETE FROM users WHERE id='{admin_id}'",
+                  "UPDATE " + f"users SET email='attacker-{admin_id}@example.test' WHERE id='{admin_id}'",
+                  "DELETE " + f"FROM users WHERE id='{admin_id}'",
               ):
                   try:
                       db.execute(statement)
-                      raise SystemExit(f"Society administrator protection unexpectedly allowed: {statement}")
+                      raise SystemExit(f"Society administrator identity/deletion protection unexpectedly allowed: {statement}")
                   except sqlite3.IntegrityError:
                       pass
-              assert db.execute("SELECT email, role_id, status FROM users WHERE id=?", (admin_id,)).fetchone() == (
-                  admin_email, "role_super_admin", "active"
+              assert db.execute("SELECT role_id, status FROM users WHERE id=?", (admin_id,)).fetchone() == (
+                  "role_super_admin", "active"
               )
 
-          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, foster lifecycle, and dual Society administrator protection.")
+          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, foster lifecycle, and peer-admin management and last-active-admin protection.")
           PY
 
   deploy-staging:
