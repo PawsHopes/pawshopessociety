@@ -58,12 +58,24 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run build
 
+  public-site:
+    name: Public website CMS script validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check assets/js/cms.js
+      - run: node --check assets/js/rescue-animals.js
+
   deploy-staging:
     name: Deploy Worker to Cloudflare staging
     runs-on: ubuntu-latest
     needs:
       - worker-api
       - admin-erp
+      - public-site
     if: (github.event_name == 'push' && github.ref == 'refs/heads/erp-secure-staging') || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'erp-secure-staging') || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'erp-secure-staging' && github.event.pull_request.head.ref == 'erp-phase1-5-worker-deploy')
     defaults:
       run:
