@@ -8,7 +8,7 @@ const stagingPolicies = [
 ];
 const productionPolicies = [
   { appId: '6c1ef6fc-418f-4f17-a38f-75d90fa2cce1', policyId: '9c1d9354-5887-46dd-bf35-97eb66279da4' },
-  { appId: 'd71574dd-f676-4f90-825b-aa3000f9717f', policyId: 'add98604-0c3c-45db-bf35-97eb66279da4' },
+  { appId: 'd71574dd-f676-4f90-825b-aa3000f9717f', policyId: 'add98604-0c3c-45db-8684-bb4569605ae6' },
 ];
 
 const env = (token?: string, environment = 'staging') => ({
