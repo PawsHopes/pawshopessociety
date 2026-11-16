@@ -177,7 +177,7 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (!FULL_ADMIN_EMAILS.has(actor.email.toLowerCase())) {
+    if (!FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim())) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
     }
 
