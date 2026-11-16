@@ -168,7 +168,7 @@ describe('private document upload and download routes', () => {
     const payload = await response.json() as { success: boolean; data: { url: string; expiresAt: string } };
     expect(payload.success).toBe(true);
     const token = payload.data.url.split('/api/v1/files/private/')[1];
-    expect(token).toBeTruthy();
+    if (!token) throw new Error('Signed URL did not include a private file token.');
     await expect(verifySignedDocumentToken(token, secret)).resolves.toEqual({
       documentId: 'doc_123',
       userId: admin.id,
