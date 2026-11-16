@@ -331,12 +331,13 @@ jobs:
               except sqlite3.IntegrityError:
                   pass
 
-          # Both designated Society administrators are protected from demotion, suspension, identity changes, and deletion.
+          # Both designated administrators can be promoted, then cannot be demoted, suspended, renamed, or deleted.
           for admin_id, admin_email in (("ci-primary", "hopezpaws@gmail.com"), ("ci-secondary", "infosecayush@gmail.com")):
               db.execute(
                   "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
-                  (admin_id, admin_email, "CI Society Admin", "role_super_admin", "active"),
+                  (admin_id, admin_email, "CI Society Admin", "role_auditor", "suspended"),
               )
+              db.execute("UPDATE users SET role_id='role_super_admin', status='active' WHERE id=?", (admin_id,))
               for statement in (
                   f"UPDATE users SET status='suspended' WHERE id='{admin_id}'",
                   f"UPDATE users SET role_id='role_auditor' WHERE id='{admin_id}'",
