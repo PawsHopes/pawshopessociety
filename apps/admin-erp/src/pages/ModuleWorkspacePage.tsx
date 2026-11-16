@@ -503,7 +503,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
             </div>
             <footer className="bg-slate-900 px-5 py-4 text-xs text-slate-300">Paw&apos;s Hopez Society · Public website preview</footer>
           </div>
-          <p className="mx-auto mt-4 max-w-4xl text-xs text-slate-500">This is a content-and-placement preview inside the ERP, not a pixel-perfect rendering of the selected live page. Save your draft to keep it; publishing to the public website is a separate feature that is not connected yet.</p>
+          <p className="mx-auto mt-4 max-w-4xl text-xs text-slate-500">This is a content-and-placement preview inside the ERP, not a pixel-perfect rendering of the selected live page. Use the Visual Website Editor above to preview the current public page, arrange CMS sections, save versioned drafts and publish them after review.</p>
         </div>
       </section>
     </div>}
