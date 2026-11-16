@@ -2,20 +2,6 @@
 -- 0011: PURCHASE ORDER LIFECYCLE AND LINKED STOCK RECEIPTS
 -- ============================================================================
 
-CREATE TABLE purchase_orders (
-  id TEXT PRIMARY KEY,
-  po_number TEXT NOT NULL UNIQUE,
-  supplier_id TEXT NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
-  order_date TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'ordered', 'received', 'cancelled')),
-  total_amount_paise INTEGER NOT NULL DEFAULT 0 CHECK (total_amount_paise >= 0),
-  invoice_doc_id TEXT REFERENCES documents(id) ON DELETE SET NULL,
-  expense_id TEXT REFERENCES expenses(id) ON DELETE SET NULL,
-  created_by TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
-
 CREATE TRIGGER trg_purchase_orders_insert_draft_only
 BEFORE INSERT ON purchase_orders
 WHEN NEW.status <> 'draft'
