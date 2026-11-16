@@ -10,7 +10,7 @@ export const adminJoinRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
 
 const ROLE_CODES = [
   'finance_manager',
@@ -36,8 +36,7 @@ const rejectSchema = z.object({
 
 function isPrimaryAdmin(c: any) {
   const actor = c.get('authUser');
-  const configuredEmail = PRIMARY_ADMIN_EMAIL;
-  return Boolean(configuredEmail) && actor?.email?.toLowerCase() === configuredEmail;
+  return Boolean(actor?.email) && FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim());
 }
 
 function createRawToken(): string {
@@ -59,7 +58,7 @@ adminJoinRoutes.use('*', requirePermission('users:manage'));
 
 adminJoinRoutes.post('/links', async (c) => {
   if (!isPrimaryAdmin(c)) {
-    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can create join links.' } }, 403);
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can create join links.' } }, 403);
   }
 
   const parsed = createLinkSchema.safeParse(await c.req.json().catch(() => null));
@@ -174,8 +173,7 @@ adminJoinRoutes.get('/applications', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const actor = c.get('authUser');
-  const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-  if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+  if (!isPrimaryAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can approve applicants and assign ERP roles.' } }, 403);
   }
 
@@ -276,8 +274,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
-  const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-  if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+  if (!isPrimaryAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can grant Cloudflare Access to approved users.' } }, 403);
   }
 
@@ -318,7 +315,7 @@ adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
   const actor = c.get('authUser');
-  if (actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
+  if (!isPrimaryAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can reject applicants.' } }, 403);
   }
 
