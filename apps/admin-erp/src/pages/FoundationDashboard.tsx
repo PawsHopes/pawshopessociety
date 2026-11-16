@@ -49,7 +49,7 @@ export const FoundationDashboard: React.FC<Props> = ({ user }) => {
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-brandOrange">
-            ERP Foundation — Development
+            ERP — Staging Validation
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
             Paw&apos;s Hopez Society — ERP Control Centre
@@ -121,7 +121,7 @@ export const FoundationDashboard: React.FC<Props> = ({ user }) => {
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <h2 className="font-bold text-slate-900">Release status</h2>
         <p className="mt-2 text-sm text-slate-600">
-          CI verifies the implemented foundation only. Planned modules shown in the navigation are not operational ERP features yet. Do not enter real donor, medical, financial, identity, or volunteer records until the full production release gate is completed.
+          Core NGO workspaces are implemented in staging and are being validated end to end. Automated Worker type-checks, unit tests, frontend builds, and the staging animal handover database checks are running as release gates. Real-session permission bypass tests, private-file upload/download acceptance, full finance reconciliation, and backup/restore verification remain before production. Keep using test data until those gates are complete.
         </p>
         {health?.timestamp && <p className="mt-3 text-xs text-slate-400">Last health check: {new Date(health.timestamp).toLocaleString()}</p>}
       </div>
