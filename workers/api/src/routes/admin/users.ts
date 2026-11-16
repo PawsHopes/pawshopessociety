@@ -179,7 +179,7 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
+    if (!isSocietySuperAdmin(actor.email)) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Paw\'s Hopez Society Super Admin can modify ERP user accounts.' } }, 403);
     }
 
