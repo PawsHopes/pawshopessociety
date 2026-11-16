@@ -45,7 +45,7 @@ async function getCloudflarePublicKeys(teamDomain: string): Promise<JwkKey[]> {
 export async function verifyCloudflareAccessJwt(
   token: string,
   teamDomain: string,
-  expectedAud: string
+  expectedAud: string | string[]
 ): Promise<{ email: string }> {
   if (token.length > 8192) throw new Error('JWT exceeds maximum permitted size');
   const parts = token.split('.');
@@ -87,7 +87,8 @@ export async function verifyCloudflareAccessJwt(
   }
 
   const audiences = Array.isArray(payload.aud) ? payload.aud : payload.aud ? [payload.aud] : [];
-  if (!audiences.includes(expectedAud)) {
+  const expectedAudiences = Array.isArray(expectedAud) ? expectedAud : [expectedAud];
+  if (!expectedAudiences.some((audience) => audiences.includes(audience))) {
     throw new Error('Invalid token audience');
   }
 
@@ -153,7 +154,7 @@ export const cfAccessAuth = createMiddleware<{
     const { email } = await verifyCloudflareAccessJwt(
       jwt,
       c.env.CF_ACCESS_TEAM_DOMAIN,
-      c.env.CF_ACCESS_AUD
+      c.env.CF_ACCESS_AUD.split(',').map((audience) => audience.trim()).filter(Boolean)
     );
     c.set('authEmail', email);
     return next();

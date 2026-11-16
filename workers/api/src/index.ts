@@ -20,6 +20,23 @@ import { adminNotificationsRoutes } from './routes/admin/notifications';
 import { runDailyNotifications } from './services/notifications';
 import { bootstrapRoutes } from './routes/bootstrap';
 
+function isAllowedAdminOrigin(origin: string, env: Bindings): boolean {
+  if (origin === env.PUBLIC_SITE_ORIGIN || origin === env.ADMIN_ERP_ORIGIN) return true;
+  try {
+    const parsed = new URL(origin);
+    if (parsed.protocol !== 'https:' || parsed.origin !== origin || parsed.port) return false;
+    if (env.ENVIRONMENT === 'staging') {
+      return parsed.hostname.endsWith('.phs-phs.pages.dev');
+    }
+    if (env.ENVIRONMENT === 'production') {
+      return parsed.hostname.endsWith('.pha-phs.pages.dev');
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
 app.use('*', securityHeaders);
@@ -30,11 +47,12 @@ app.use(
   cors({
     origin: (origin, c) => {
       if (!origin) return c.env.PUBLIC_SITE_ORIGIN;
-      const allowed = [c.env.PUBLIC_SITE_ORIGIN, c.env.ADMIN_ERP_ORIGIN];
-      if (c.env.ENVIRONMENT === 'development') {
-        allowed.push('http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8788');
+      if (isAllowedAdminOrigin(origin, c.env)) return origin;
+      if (c.env.ENVIRONMENT === 'development' &&
+        ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8788'].includes(origin)) {
+        return origin;
       }
-      return allowed.includes(origin) ? origin : '';
+      return '';
     },
     allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'Cf-Access-Jwt-Assertion', 'X-Dev-User-Email'],
