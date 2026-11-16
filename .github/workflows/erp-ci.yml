@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - erp-development
+    types: [opened, synchronize, reopened, ready_for_review, closed]
   workflow_dispatch:
     inputs:
       confirm_staging_deploy:
@@ -415,7 +416,7 @@ jobs:
       - database
       - public-site
     # Never deploy pull requests or branches other than erp-development.
-    if: github.ref == 'refs/heads/erp-development' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.confirm_staging_deploy == true))
+    if: (github.ref == 'refs/heads/erp-development' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.confirm_staging_deploy == true))) || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'erp-development')
     environment:
       name: staging
     steps:
