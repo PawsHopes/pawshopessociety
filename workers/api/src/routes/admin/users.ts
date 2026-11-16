@@ -11,7 +11,8 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
+const isSocietySuperAdmin = (email: string) => FULL_ADMIN_EMAILS.has(email.toLowerCase().trim());
 
 const ROLE_CODES = [
   'super_admin',
@@ -42,10 +43,10 @@ adminUsersRoutes.get(
   async (c) => {
     const actor = c.get('authUser');
 
-    if (actor.roleCode !== 'super_admin' || actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
+    if (actor.roleCode !== 'super_admin' || !isSocietySuperAdmin(actor.email)) {
       return c.json({
         success: false,
-        error: { code: 'FORBIDDEN', message: 'Only the primary Society administrator can view and manage ERP user accounts.' }
+        error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can view and manage ERP user accounts.' }
       }, 403);
     }
 
@@ -54,7 +55,7 @@ adminUsersRoutes.get(
         u.phone, u.status, u.last_login_at as lastLoginAt,
         u.created_at as createdAt,
         r.code as roleCode,
-        CASE WHEN r.code = 'super_admin' AND lower(trim(u.email)) <> 'hopezpaws@gmail.com' THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
+        CASE WHEN r.code = 'super_admin' AND lower(trim(u.email)) NOT IN ('hopezpaws@gmail.com', 'infosecayush@gmail.com') THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
       FROM users u
       JOIN roles r ON r.id = u.role_id
       ORDER BY u.created_at DESC
@@ -69,7 +70,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL
+        canManageRoles: isSocietySuperAdmin(actor.email)
       }
     });
   }
@@ -224,6 +225,10 @@ adminUsersRoutes.patch(
         success: false,
         error: { code: 'NOT_FOUND', message: 'User not found.' }
       }, 404);
+    }
+
+    if (isSocietySuperAdmin(existing.email) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'The two designated Society Super Admin accounts cannot be demoted or suspended.' } }, 403);
     }
 
     if (
