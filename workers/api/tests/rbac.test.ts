@@ -49,15 +49,16 @@ describe('API-side RBAC enforcement', () => {
 });
 
 
-describe('primary administrator permission boundary', () => {
+describe('trusted Super Admin permission boundary', () => {
   const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
 
-  it('grants the complete permission set only to the Society primary administrator', () => {
+  it('grants the same complete permission set to both explicitly trusted administrators', () => {
     expect(effectivePermissions('super_admin', 'hopezpaws@gmail.com', all)).toEqual(all);
+    expect(effectivePermissions('super_admin', 'infosecayush@gmail.com', all)).toEqual(all);
   });
 
-  it('keeps every secondary Super Admin read-only, including known tester accounts', () => {
-    for (const email of ['infosecayush@gmail.com', 'yivam24770@jcaton.com', 'unlisted@example.org']) {
+  it('keeps any other Super Admin identity read-only, including known and future test accounts', () => {
+    for (const email of ['yivam24770@jcaton.com', 'unlisted@example.org', 'attacker@example.net']) {
       const permissions = effectivePermissions('super_admin', email, all);
       expect(permissions.every((code) => code.endsWith(':read') || code === 'dashboard:read')).toBe(true);
       expect(permissions).not.toContain('animals:write');
@@ -77,5 +78,6 @@ describe('primary administrator permission boundary', () => {
 
   it('does not elevate non-admin roles based on email', () => {
     expect(effectivePermissions('auditor', 'hopezpaws@gmail.com', ['animals:read'])).toEqual(['animals:read']);
+    expect(effectivePermissions('auditor', 'infosecayush@gmail.com', ['animals:read'])).toEqual(['animals:read']);
   });
 });
