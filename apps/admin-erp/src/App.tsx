@@ -95,7 +95,7 @@ export const App: React.FC = () => {
       <Layout user={user}>
         <Routes>
           <Route path="/" element={<PermissionGate user={user} permission="dashboard:read"><FoundationDashboard user={user} /></PermissionGate>} />
-          <Route path="/users" element={<PermissionGate user={user} permission="users:manage"><UsersPage /></PermissionGate>} />
+          <Route path="/users" element={<PermissionGate user={user} permission="users:manage"><UsersPage currentUserId={user.id} /></PermissionGate>} />
           <Route path="/join-requests" element={<PermissionGate user={user} permission="users:manage"><JoinManagementPage /></PermissionGate>} />
           <Route path="/audit-logs" element={<PermissionGate user={user} permission="audit:read"><AuditLogsPage /></PermissionGate>} />
           <Route path="/modules/:moduleKey" element={<ModuleWorkspacePage user={user} />} />
