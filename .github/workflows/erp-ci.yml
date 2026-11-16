@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - erp-development
+      - erp-secure-staging
   pull_request:
     branches:
       - main
@@ -292,7 +293,7 @@ jobs:
       - worker
       - database
     # Never deploy pull requests or branches other than erp-development.
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/erp-development'
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/erp-development' || github.ref == 'refs/heads/erp-secure-staging')
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
