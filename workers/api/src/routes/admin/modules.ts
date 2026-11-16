@@ -715,18 +715,6 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
     return c.json({ success: true, data: { id, approved: true } });
   }
 
-  if (resource === 'stock_movements') {
-    if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
-    const row = await c.env.DB.prepare('SELECT id, recorded_by, approval_status FROM stock_movements WHERE id = ?').bind(id).first<{ id: string; recorded_by: string; approval_status: string }>();
-    if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
-    if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot reject your own stock movement.' } }, 403);
-    if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending stock movements can be rejected.' } }, 409);
-    const result = await c.env.DB.prepare("UPDATE stock_movements SET approval_status = 'rejected', approved_by = ?, review_notes = ? WHERE id = ? AND approval_status = 'pending'").bind(actor.id, reason, id).run();
-    if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Stock movement was already reviewed.' } }, 409);
-    await appendAuditLog(c, { action: 'STOCK_MOVEMENT_REJECTED', entityType: 'stock_movements', entityId: id, after: { approval_status: 'rejected', reason } });
-    return c.json({ success: true, data: { id, status: 'rejected' } });
-  }
-
   if (resource === 'expenses') {
     if (!actor.permissions.includes('finance:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Finance approval permission required.' } }, 403);
     const row = await c.env.DB.prepare('SELECT id, submitted_by, approval_status FROM expenses WHERE id = ?').bind(id).first<{id:string;submitted_by:string;approval_status:string}>();
@@ -780,6 +768,18 @@ adminModuleRoutes.post('/:resource/:id/reject', async (c) => {
   const body = await c.req.json().catch(() => ({})) as { reason?: unknown };
   const reason = typeof body.reason === 'string' ? body.reason.slice(0, 1000) : '';
   if (!reason.trim()) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'A rejection reason is required.' } }, 400);
+
+  if (resource === 'stock_movements') {
+    if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+    const row = await c.env.DB.prepare('SELECT id, recorded_by, approval_status FROM stock_movements WHERE id = ?').bind(id).first<{ id: string; recorded_by: string; approval_status: string }>();
+    if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
+    if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot reject your own stock movement.' } }, 403);
+    if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending stock movements can be rejected.' } }, 409);
+    const result = await c.env.DB.prepare("UPDATE stock_movements SET approval_status = 'rejected', approved_by = ?, review_notes = ? WHERE id = ? AND approval_status = 'pending'").bind(actor.id, reason, id).run();
+    if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Stock movement was already reviewed.' } }, 409);
+    await appendAuditLog(c, { action: 'STOCK_MOVEMENT_REJECTED', entityType: 'stock_movements', entityId: id, after: { approval_status: 'rejected', reason } });
+    return c.json({ success: true, data: { id, status: 'rejected' } });
+  }
 
   if (resource === 'expenses') {
     if (!actor.permissions.includes('finance:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Finance approval permission required.' } }, 403);
