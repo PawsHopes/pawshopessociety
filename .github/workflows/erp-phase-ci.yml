@@ -1,0 +1,56 @@
+name: ERP CI
+on:
+  pull_request:
+    branches: [erp-secure-staging, erp-development]
+    paths:
+      - "workers/api/**"
+      - "apps/admin-erp/**"
+      - "database/migrations/**"
+      - "database/seeds/**"
+      - ".github/workflows/erp-phase-ci.yml"
+  push:
+    branches: [erp-secure-staging, erp-development]
+    paths:
+      - "workers/api/**"
+      - "apps/admin-erp/**"
+      - "database/migrations/**"
+      - "database/seeds/**"
+      - ".github/workflows/erp-phase-ci.yml"
+permissions:
+  contents: read
+concurrency:
+  group: erp-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  worker-api:
+    name: Worker API typecheck, tests and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: workers/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: workers/api/package.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+  admin-erp:
+    name: Admin ERP typecheck and production build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin-erp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin-erp/package.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
