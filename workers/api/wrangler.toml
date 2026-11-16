@@ -59,3 +59,30 @@ id = "1156cf04f6b9496dabc7d580457f0c53"
 
 [env.staging.triggers]
 crons = ["30 2 * * *"]
+
+
+[env.production]
+name = "pawshopes-erp-api"
+vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://pha-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", PUBLIC_MEDIA_BASE_URL = "https://pha-phs.pages.dev/api/v1/files" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "pawshopes-erp-db-production"
+database_id = "0289e903-7811-449f-b3a3-be156bc5f49b"
+migrations_dir = "../../database/migrations"
+migrations_table = "d1_migrations"
+
+[[env.production.r2_buckets]]
+binding = "PUBLIC_MEDIA"
+bucket_name = "pawshopes-public-media-production"
+
+[[env.production.r2_buckets]]
+binding = "PRIVATE_VAULT"
+bucket_name = "pawshopes-private-vault-production"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "f070ac206422491fb3cdd58f7ff720fa"
+
+[env.production.triggers]
+crons = ["30 2 * * *"]
