@@ -5,9 +5,10 @@ on:
     branches: [main]
     paths:
       - "functions/api/animals.ts"
+      - "functions/api/content.ts"
       - "assets/js/rescue-animals.js"
-      - "rescue.html"
-      - "adopt.html"
+      - "assets/js/cms.js"
+      - "*.html"
       - ".github/workflows/public-site-checks.yml"
   push:
     branches: [main]
@@ -30,10 +31,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check rescue feed JavaScript syntax
-        run: node --check assets/js/rescue-animals.js
+      - name: Check public website JavaScript syntax
+        run: |
+          node --check assets/js/rescue-animals.js
+          node --check assets/js/cms.js
       - name: Type-check the read-only animal feed function
-        run: npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/animals.ts
+        run: npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/animals.ts functions/api/content.ts
       - name: Verify both public animal pages consume the API
         run: |
           node <<'NODE'
@@ -42,5 +45,8 @@ jobs:
           const rescue = fs.readFileSync('rescue.html', 'utf8');
           if (!adopt.includes('/api/animals')) throw new Error('Adoption page is not connected to /api/animals');
           if (!rescue.includes('assets/js/rescue-animals.js') || !rescue.includes('id="rescue-animals-grid"')) throw new Error('Rescue page is missing the live animal feed');
-          console.log('Adoption and rescue pages are connected to the public animal API.');
+          for (const page of ['index.html', 'about.html', 'adopt.html', 'contact.html', 'donate.html', 'gallery.html', 'rescue.html', 'volunteer.html']) {
+            if (!fs.readFileSync(page, 'utf8').includes('assets/js/cms.js')) throw new Error(page + ' is missing the public CMS renderer');
+          }
+          console.log('Public animal feeds and CMS renderer are connected on all public pages.');
           NODE
