@@ -412,7 +412,7 @@
       document.getElementById('modal-gender').textContent = currentModalAnimal.gender;
       document.getElementById('modal-breed').textContent = currentModalAnimal.breed || currentModalAnimal.species;
       document.getElementById('modal-age').textContent = currentModalAnimal.age;
-      document.getElementById('modal-health').textContent = currentModalAnimal.health || "Vaccinated & cared for";
+      document.getElementById('modal-health').textContent = [currentModalAnimal.health, currentModalAnimal.healthConditions, currentModalAnimal.mobilityStatus && currentModalAnimal.mobilityStatus !== 'unknown' ? `Mobility: ${currentModalAnimal.mobilityStatus.replaceAll('_', ' ')}` : '', currentModalAnimal.specialCareNotes].filter(Boolean).join(' · ') || "Health details available on request.";
       document.getElementById('modal-story').textContent = currentModalAnimal.description;
       
       const adoptBtn = document.getElementById('adopt-btn');
