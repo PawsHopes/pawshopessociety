@@ -85,4 +85,4 @@ binding = "RATE_LIMIT_KV"
 id = "f070ac206422491fb3cdd58f7ff720fa"
 
 [env.production.triggers]
-crons = ["30 2 * * *"]
+crons = ["*/15 * * * *"]
