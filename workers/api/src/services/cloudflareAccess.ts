@@ -132,3 +132,71 @@ export async function syncApprovedEmailToCloudflareAccess(
     };
   }
 }
+
+async function removeEmailFromPolicy(
+  token: string,
+  target: (typeof ACCESS_POLICIES)[number],
+  email: string
+): Promise<string | null> {
+  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${target.accountId}/access/apps/${target.applicationId}/policies/${target.policyId}`;
+  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+  const response = await fetch(endpoint, { method: 'GET', headers, signal: AbortSignal.timeout(8000) });
+  const policyResponse = await response.json() as AccessApiResponse<AccessPolicy>;
+  if (!response.ok || !policyResponse.success || !policyResponse.result) {
+    return `Could not read the ${target.label} Access policy; the account remains blocked by ERP status.`;
+  }
+  const policy = policyResponse.result;
+  if ((policy.id && policy.id !== target.policyId) || policy.decision !== 'allow' || !Array.isArray(policy.include)) {
+    return `The ${target.label} Access policy did not match the expected Allow policy. No changes were made.`;
+  }
+  if (hasBroadAllowRule(policy.include)) {
+    return `The ${target.label} Access policy contains a broad Allow rule. Review it manually; ERP status still blocks this account.`;
+  }
+  const include = policy.include.filter((rule) => {
+    const emailRule = rule.email as { email?: string } | undefined;
+    return emailRule?.email?.toLowerCase() !== email;
+  });
+  if (include.length === policy.include.length) return null;
+  if (include.length === 0) return `Refusing to remove the final Access allow rule from ${target.label}.`;
+  const updatedPolicy = {
+    name: policy.name,
+    decision: policy.decision,
+    include,
+    exclude: policy.exclude || [],
+    require: policy.require || [],
+    ...(typeof policy.precedence === 'number' ? { precedence: policy.precedence } : {}),
+  };
+  const putResponse = await fetch(endpoint, {
+    method: 'PUT', headers, body: JSON.stringify(updatedPolicy), signal: AbortSignal.timeout(8000),
+  });
+  const updateResult = await putResponse.json() as AccessApiResponse<AccessPolicy>;
+  if (!putResponse.ok || !updateResult.success) {
+    return `Cloudflare rejected removal from the ${target.label} Access policy; ERP status still blocks this account.`;
+  }
+  return null;
+}
+
+export async function revokeEmailFromCloudflareAccess(
+  env: Bindings,
+  emailInput: string
+): Promise<AccessSyncResult> {
+  const email = emailInput.trim().toLowerCase();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    return { status: 'failed', message: 'The account email address is invalid.' };
+  }
+  if (email === 'hopezpaws@gmail.com') {
+    return { status: 'failed', message: 'The primary administrator Access rule is protected.' };
+  }
+  if (!env.CF_ACCESS_API_TOKEN) {
+    return { status: 'pending', message: 'Access revocation is not configured; ERP account status still blocks sign-in.' };
+  }
+  try {
+    for (const target of ACCESS_POLICIES) {
+      const error = await removeEmailFromPolicy(env.CF_ACCESS_API_TOKEN, target, email);
+      if (error) return { status: 'failed', message: error };
+    }
+    return { status: 'synced', message: 'The exact email was removed from ERP and preview Access allowlists.' };
+  } catch {
+    return { status: 'failed', message: 'Cloudflare Access revocation failed; ERP account status still blocks sign-in.' };
+  }
+}
