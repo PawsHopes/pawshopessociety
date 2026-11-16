@@ -123,9 +123,10 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   purchase_orders: {
     table: 'purchase_orders', read: 'inventory:read', write: 'inventory:write',
-    fields: ['po_number','supplier_id','order_date','status','total_amount_paise','invoice_doc_id','expense_id'],
+    fields: ['po_number','supplier_id','order_date','total_amount_paise','invoice_doc_id','expense_id'],
     required: ['po_number','supplier_id','order_date'], search: ['po_number'], order: 'order_date',
     defaults: { status: 'draft' }, serverFields: (actorId) => ({ created_by: actorId }),
+    updateFields: ['total_amount_paise','invoice_doc_id','expense_id'],
   },
   volunteers: {
     table: 'volunteers', read: 'volunteers:read', write: 'volunteers:write',
@@ -304,6 +305,23 @@ adminModuleRoutes.post('/:resource', async (c) => {
   if (resource === 'animals' && (input.is_adoption_eligible !== undefined || input.is_foster_eligible !== undefined) && !actor.permissions.includes('adoption:approve')) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption permission is required to change animal adoption or foster eligibility.' } }, 403);
   }
+  if (resource === 'stock_movements') {
+    const movementType = String(input.movement_type || '');
+    const purchaseOrderId = typeof input.purchase_order_id === 'string' ? input.purchase_order_id : '';
+    if (movementType === 'purchase_in' && !purchaseOrderId) {
+      return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Purchase-in stock movements must be linked to an ordered purchase order.' } }, 400);
+    }
+    if (purchaseOrderId) {
+      if (movementType !== 'purchase_in') {
+        return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Only purchase-in movements can be linked to a purchase order.' } }, 400);
+      }
+      const purchaseOrder = await c.env.DB.prepare('SELECT status FROM purchase_orders WHERE id = ?').bind(purchaseOrderId).first<{ status: string }>();
+      if (!purchaseOrder || purchaseOrder.status !== 'ordered') {
+        return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Stock can only be received against an ordered purchase order.' } }, 409);
+      }
+    }
+  }
+
   if (resource === 'animals') {
     const nextStatus = String(input.current_status || 'rescued');
     if (['adopted', 'fostered'].includes(nextStatus)) {
@@ -623,6 +641,51 @@ adminModuleRoutes.post('/cms/:id/publish', async (c) => {
     after: { status: 'archived', pageSlug: existing.page_slug, sectionKey: existing.section_key, version: existing.version_number }
   });
   return c.json({ success: true, data: { id, status: 'archived' } });
+});
+
+adminModuleRoutes.post('/purchase_orders/:id/order', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+  const id = c.req.param('id');
+  const order = await c.env.DB.prepare('SELECT id, po_number, status FROM purchase_orders WHERE id = ?').bind(id).first<{ id: string; po_number: string; status: string }>();
+  if (!order) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Purchase order not found.' } }, 404);
+  if (order.status !== 'draft') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only draft purchase orders can be ordered.' } }, 409);
+  const result = await c.env.DB.prepare("UPDATE purchase_orders SET status = 'ordered', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'draft'").bind(id).run();
+  if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Purchase order changed before it could be ordered.' } }, 409);
+  await appendAuditLog(c, { action: 'PURCHASE_ORDER_ORDERED', entityType: 'purchase_orders', entityId: id, after: { po_number: order.po_number, status: 'ordered' } });
+  return c.json({ success: true, data: { id, status: 'ordered' } });
+});
+
+adminModuleRoutes.post('/purchase_orders/:id/cancel', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+  const id = c.req.param('id');
+  const order = await c.env.DB.prepare('SELECT id, po_number, status FROM purchase_orders WHERE id = ?').bind(id).first<{ id: string; po_number: string; status: string }>();
+  if (!order) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Purchase order not found.' } }, 404);
+  if (!['draft', 'ordered'].includes(order.status)) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only draft or ordered purchase orders can be cancelled.' } }, 409);
+  const posted = await c.env.DB.prepare("SELECT COUNT(*) AS count FROM stock_movements WHERE purchase_order_id = ? AND approval_status = 'approved'").bind(id).first<{ count: number }>();
+  if ((posted?.count ?? 0) > 0) return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'A purchase order with posted stock receipts cannot be cancelled.' } }, 409);
+  const result = await c.env.DB.prepare("UPDATE purchase_orders SET status = 'cancelled', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN ('draft','ordered')").bind(id).run();
+  if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Purchase order changed before cancellation.' } }, 409);
+  await appendAuditLog(c, { action: 'PURCHASE_ORDER_CANCELLED', entityType: 'purchase_orders', entityId: id, after: { po_number: order.po_number, status: 'cancelled' } });
+  return c.json({ success: true, data: { id, status: 'cancelled' } });
+});
+
+adminModuleRoutes.post('/purchase_orders/:id/receive', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+  const id = c.req.param('id');
+  const order = await c.env.DB.prepare('SELECT id, po_number, status FROM purchase_orders WHERE id = ?').bind(id).first<{ id: string; po_number: string; status: string }>();
+  if (!order) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Purchase order not found.' } }, 404);
+  if (order.status !== 'ordered') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only ordered purchase orders can be received.' } }, 409);
+  const movements = await c.env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved FROM stock_movements WHERE purchase_order_id = ?").bind(id).first<{ total: number; approved: number | null }>();
+  if (!movements || movements.total < 1 || movements.approved !== movements.total) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Record and approve every stock receipt linked to this purchase order before marking it received.' } }, 409);
+  }
+  const result = await c.env.DB.prepare("UPDATE purchase_orders SET status = 'received', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'ordered'").bind(id).run();
+  if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Purchase order changed before receipt confirmation.' } }, 409);
+  await appendAuditLog(c, { action: 'PURCHASE_ORDER_RECEIVED', entityType: 'purchase_orders', entityId: id, after: { po_number: order.po_number, status: 'received', approvedStockMovements: movements.approved } });
+  return c.json({ success: true, data: { id, status: 'received' } });
 });
 
 adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
