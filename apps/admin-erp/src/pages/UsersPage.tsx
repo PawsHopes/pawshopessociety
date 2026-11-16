@@ -82,11 +82,14 @@ export const UsersPage: React.FC = () => {
 
   const toggleStatus = async (u: UserRow) => {
     const nextStatus = u.status === 'active' ? 'suspended' : 'active';
-    const res = await apiFetch(`/api/v1/admin/users/${u.id}`, {
+    const res = await apiFetch<{ accessSyncStatus?: string | null; accessSyncMessage?: string | null }>(`/api/v1/admin/users/${u.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: nextStatus }),
     });
     if (res.success) {
+      setFeedback(res.data?.accessSyncStatus === 'synced'
+        ? `Account ${nextStatus}. Cloudflare Access was also updated.`
+        : res.data?.accessSyncMessage || `Account ${nextStatus}. ERP access is controlled by the saved account status.`);
       load();
     } else {
       setFeedback(`Error: ${res.error?.message || 'Action blocked'}`);
