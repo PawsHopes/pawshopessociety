@@ -281,7 +281,27 @@ jobs:
           assert db.execute("SELECT current_status FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == "recovering"
           assert db.execute("SELECT is_foster_eligible FROM animals WHERE id='ci-foster-animal'").fetchone()[0] == 1
 
-          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, and foster activation/completion.")
+          # The primary administrator cannot be demoted, suspended, renamed to another identity, or deleted.
+          db.execute(
+              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+              ("ci-primary", "hopezpaws@gmail.com", "CI Primary", "role_super_admin", "active"),
+          )
+          for statement in (
+              "UPDATE users SET status='suspended' WHERE id='ci-primary'",
+              "UPDATE users SET role_id='role_auditor' WHERE id='ci-primary'",
+              "UPDATE users SET email='attacker@example.test' WHERE id='ci-primary'",
+              "DELETE FROM users WHERE id='ci-primary'",
+          ):
+              try:
+                  db.execute(statement)
+                  raise SystemExit(f"Primary administrator protection unexpectedly allowed: {statement}")
+              except sqlite3.IntegrityError:
+                  pass
+          assert db.execute("SELECT email, role_id, status FROM users WHERE id='ci-primary'").fetchone() == (
+              "hopezpaws@gmail.com", "role_super_admin", "active"
+          )
+
+          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, foster lifecycle, and primary administrator protection.")
           PY
 
   deploy-staging:
