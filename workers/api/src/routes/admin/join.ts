@@ -318,7 +318,7 @@ adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
   const actor = c.get('authUser');
-  if (actor.roleCode !== 'super_admin') {
+  if (actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the designated primary administrator can reject applicants.' } }, 403);
   }
 
