@@ -50,3 +50,32 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run build
+
+  deploy-staging:
+    name: Deploy Worker to Cloudflare staging
+    runs-on: ubuntu-latest
+    needs:
+      - worker-api
+      - admin-erp
+    if: github.event_name == 'push' && github.ref == 'refs/heads/erp-secure-staging'
+    defaults:
+      run:
+        working-directory: workers/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Verify required private-document signing secret exists
+        run: |
+          npx wrangler secret list --env staging > /tmp/worker-secrets.json
+          node -e "const fs=require('fs'); const secrets=JSON.parse(fs.readFileSync('/tmp/worker-secrets.json','utf8')); if (!secrets.some((item) => item.name === 'SIGNED_URL_SECRET')) { console.error('Missing SIGNED_URL_SECRET. Add it as a Worker secret in the staging environment before deployment.'); process.exit(1); }"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy staging Worker
+        run: npm run deploy:staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
