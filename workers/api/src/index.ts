@@ -24,7 +24,7 @@ function isAllowedAdminOrigin(origin: string, env: Bindings): boolean {
   if (origin === env.PUBLIC_SITE_ORIGIN || origin === env.ADMIN_ERP_ORIGIN) return true;
   try {
     const parsed = new URL(origin);
-    if (parsed.protocol !== 'https:' || parsed.origin !== origin) return false;
+    if (parsed.protocol !== 'https:' || parsed.origin !== origin || parsed.port) return false;
     if (env.ENVIRONMENT === 'staging') {
       return parsed.hostname.endsWith('.phs-phs.pages.dev');
     }
