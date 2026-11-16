@@ -143,11 +143,12 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   website_content: {
     table: 'website_content', read: 'cms:read', write: 'cms:write',
-    fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','block_type','sort_order','status'],
+    fields: ['page_slug','section_key','title','body_json','seo_title','seo_description','block_type','sort_order'],
     required: ['page_slug','section_key','title','body_json'], search: ['page_slug','section_key','title'], order: 'sort_order',
-    defaults: { status: 'draft', version_number: 1, block_type: 'content', sort_order: 0 }, serverFields: (actorId) => ({ updated_by: actorId }),
-    // Publishing status is server-controlled; only a dedicated publishing workflow may change it.
-    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','block_type','sort_order'],
+    defaults: { status: 'draft', version_number: 1, block_type: 'content', sort_order: 0 },
+    serverFields: (actorId) => ({ updated_by: actorId, block_id: crypto.randomUUID() }),
+    // Status, version and block identity are server-controlled.
+    updateFields: ['page_slug','section_key','title','body_json','seo_title','seo_description','block_type','sort_order'],
   },
 };
 
@@ -259,19 +260,19 @@ adminModuleRoutes.post('/cms/:id/draft', async (c) => {
   const actor = c.get('authUser');
   if (!actor.permissions.includes('cms:write')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'CMS edit permission required.' } }, 403);
   const sourceId = c.req.param('id');
-  const source = await c.env.DB.prepare("SELECT id, page_slug, section_key, status FROM website_content WHERE id = ?")
-    .bind(sourceId).first<{id:string;page_slug:string;section_key:string;status:string}>();
+  const source = await c.env.DB.prepare("SELECT id, page_slug, section_key, block_id, status FROM website_content WHERE id = ?")
+    .bind(sourceId).first<{id:string;page_slug:string;section_key:string;block_id:string;status:string}>();
   if (!source) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'CMS content not found.' } }, 404);
   if (source.status !== 'published') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only a published section can be opened as a new draft.' } }, 409);
   const version = await c.env.DB.prepare(
-    'SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?'
-  ).bind(source.page_slug, source.section_key).first<{next_version:number}>();
+    'SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND block_id = ?'
+  ).bind(source.page_slug, source.block_id).first<{next_version:number}>();
   const id = crypto.randomUUID();
   const result = await c.env.DB.prepare(`
     INSERT INTO website_content
-      (id, page_slug, section_key, title, body_json, media_asset_id, seo_title, seo_description,
+      (id, page_slug, section_key, block_id, title, body_json, media_asset_id, seo_title, seo_description,
        status, version_number, published_at, updated_by, block_type, sort_order)
-    SELECT ?, page_slug, section_key, title, body_json, media_asset_id, seo_title, seo_description,
+    SELECT ?, page_slug, section_key, block_id, title, body_json, media_asset_id, seo_title, seo_description,
            'draft', ?, NULL, ?, block_type, sort_order
     FROM website_content WHERE id = ? AND status = 'published'
   `).bind(id, Number(version?.next_version || 1), actor.id, sourceId).run();
@@ -440,7 +441,7 @@ adminModuleRoutes.post('/:resource', async (c) => {
   if (resource === 'expenses') values.approval_status = 'pending';
   if (resource === 'website_content') {
     values.status = 'draft';
-    const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?').bind(String(values.page_slug), String(values.section_key)).first<{ next_version: number }>();
+    const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND block_id = ?').bind(String(values.page_slug), String(values.block_id)).first<{ next_version: number }>();
     values.version_number = version?.next_version ?? 1;
   }
   if (resource === 'inventory_items') values.current_stock = 0;
@@ -637,8 +638,8 @@ adminModuleRoutes.post('/cms/:id/publish', async (c) => {
   }
   const id = c.req.param('id');
   const existing = await c.env.DB.prepare(
-    'SELECT id, page_slug, section_key, status, version_number FROM website_content WHERE id = ?'
-  ).bind(id).first<{ id: string; page_slug: string; section_key: string; status: string; version_number: number }>();
+    'SELECT id, page_slug, section_key, block_id, status, version_number FROM website_content WHERE id = ?'
+  ).bind(id).first<{ id: string; page_slug: string; section_key: string; block_id: string; status: string; version_number: number }>();
   if (!existing) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'CMS content version not found.' } }, 404);
 
   if (body.published) {
@@ -653,15 +654,15 @@ adminModuleRoutes.post('/cms/:id/publish', async (c) => {
         WHERE id = ? AND status = 'draft'
           AND version_number = (
             SELECT MAX(version_number) FROM website_content
-            WHERE page_slug = ? AND section_key = ?
+            WHERE page_slug = ? AND block_id = ?
           )
-      `).bind(actor.id, id, existing.page_slug, existing.section_key),
+      `).bind(actor.id, id, existing.page_slug, existing.block_id),
       c.env.DB.prepare(`
         UPDATE website_content
         SET status = 'archived', updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
-        WHERE page_slug = ? AND section_key = ? AND status = 'published' AND id <> ?
+        WHERE page_slug = ? AND block_id = ? AND status = 'published' AND id <> ?
           AND EXISTS (SELECT 1 FROM website_content WHERE id = ? AND status = 'published')
-      `).bind(actor.id, existing.page_slug, existing.section_key, id, id)
+      `).bind(actor.id, existing.page_slug, existing.block_id, id, id)
     ]);
     if ((result[0]?.meta?.changes ?? 0) !== 1) {
       return c.json({ success: false, error: { code: 'CONFLICT', message: 'A newer CMS version exists or this draft was already processed. Refresh and try again.' } }, 409);
