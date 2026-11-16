@@ -14,7 +14,6 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     const upstream = await fetch(ERP_PUBLIC_ANIMALS_URL, {
       method: 'GET',
       headers: { Accept: 'application/json' },
-      cf: { cacheTtl: 0, cacheEverything: false },
     });
     const headers = new Headers(upstream.headers);
     headers.set('Cache-Control', 'public, max-age=60, s-maxage=60');
