@@ -429,3 +429,66 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-production:
+    name: Deploy live Admin ERP API and database
+    runs-on: ubuntu-latest
+    needs:
+      - frontend
+      - worker
+      - database
+      - public-site
+    # Production is isolated from the public website and runs only after every validation job passes.
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'push'
+    environment:
+      name: production
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker dependencies
+        working-directory: workers/api
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install audited Worker dependencies
+        working-directory: workers/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply verified production D1 migrations
+        working-directory: workers/api
+        run: npx wrangler d1 migrations apply pawshopes-erp-db-production --remote --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Seed production chart of accounts and compliance reference data
+        working-directory: workers/api
+        run: |
+          npx wrangler d1 execute pawshopes-erp-db-production --remote --env production --file=../../database/seeds/0001_roles_permissions.sql
+          npx wrangler d1 execute pawshopes-erp-db-production --remote --env production --file=../../database/seeds/0002_chart_of_accounts_and_compliance.sql
+          npx wrangler d1 execute pawshopes-erp-db-production --remote --env production --file=../../database/seeds/0003_migrated_animals.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy production ERP Worker
+        working-directory: workers/api
+        run: npm run deploy:production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Ensure production signed-URL secret exists
+        working-directory: workers/api
+        run: |
+          if ! npx wrangler secret list --env production | grep -q 'SIGNED_URL_SECRET'; then
+            openssl rand -hex 32 | npx wrangler secret put SIGNED_URL_SECRET --env production
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
