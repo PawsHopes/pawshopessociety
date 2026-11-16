@@ -351,7 +351,7 @@ adminModuleRoutes.get('/:resource', async (c) => {
   }
   const whereSql = whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
   const searchParams: unknown[] = [];
-  if (whereSql) {
+  if (search && config.search.length) {
     for (let i = 0; i < config.search.length; i++) searchParams.push(`%${search}%`);
   }
   const totalResult = await c.env.DB.prepare(`SELECT COUNT(*) AS total FROM ${config.table}${whereSql}`)
