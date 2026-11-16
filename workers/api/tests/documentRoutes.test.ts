@@ -87,7 +87,7 @@ function pdfFile(name = 'medical-report.pdf') {
 
 describe('private document upload and download routes', () => {
   it('stores a validated private PDF in the private R2 bucket and records metadata', async () => {
-    const put = vi.fn(async () => undefined);
+    const put = vi.fn(async (..._args: unknown[]) => undefined);
     const db = makeDb();
     const app = adminApp();
     const form = new FormData();
