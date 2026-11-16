@@ -291,6 +291,38 @@ jobs:
           except sqlite3.IntegrityError:
               pass
 
+          db.execute(
+              "INSERT INTO donors (id, donor_code, full_name, address) VALUES (?, ?, ?, ?)",
+              ("ci-donor", "CI-DONOR-001", "CI Donor", "CI Test Address"),
+          )
+          db.execute(
+              """INSERT INTO donations
+                 (id, donor_id, fund_category_id, account_id, donation_date, amount_paise, payment_mode)
+                 VALUES (?, ?, ?, ?, '2026-11-16', 600000, 'bank_transfer')""",
+              ("ci-donation-receipt", "ci-donor", fund_id, asset_id),
+          )
+          db.execute(
+              "UPDATE donations SET verification_status='verified', verified_by='ci-admin' WHERE id='ci-donation-receipt'"
+          )
+          db.execute(
+              """INSERT INTO donation_receipts
+                 (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                 VALUES (?, ?, ?, '2026-11-16', 0, ?)""",
+              ("ci-receipt", "PHS-REC-CI-001", "ci-donation-receipt", "ci-admin"),
+          )
+          receipt = db.execute(
+              "SELECT receipt_number, is_80g_eligible FROM donation_receipts WHERE donation_id='ci-donation-receipt'"
+          ).fetchone()
+          assert receipt == ("PHS-REC-CI-001", 0)
+          try:
+              db.execute(
+                  """INSERT INTO donation_receipts
+                     (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by)
+                     VALUES ('ci-receipt-duplicate', 'PHS-REC-CI-002', 'ci-donation-receipt', '2026-11-16', 0, 'ci-admin')"""
+              )
+              raise SystemExit("Duplicate donation receipt unexpectedly succeeded.")
+          except sqlite3.IntegrityError:
+              pass
 
           # Adoption approval reserves the animal; agreement insertion performs the handover atomically.
           db.execute(
