@@ -47,6 +47,13 @@ BEGIN
   SELECT RAISE(ABORT, 'Purchase-in stock movements require an ordered purchase order');
 END;
 
+CREATE TRIGGER IF NOT EXISTS trg_stock_movement_purchase_in_starts_pending
+BEFORE INSERT ON stock_movements
+WHEN NEW.movement_type = 'purchase_in' AND NEW.approval_status <> 'pending'
+BEGIN
+  SELECT RAISE(ABORT, 'Purchase-in stock movements must start pending approval');
+END;
+
 CREATE TRIGGER IF NOT EXISTS trg_stock_movement_po_requires_purchase_in
 BEFORE INSERT ON stock_movements
 WHEN NEW.purchase_order_id IS NOT NULL AND NEW.movement_type <> 'purchase_in'
