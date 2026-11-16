@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../lib/api';
 
-const TRUSTED_SUPER_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
-const isProtectedSuperAdmin = (email: string) => TRUSTED_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim());
 
 interface UserRow {
   id: string;
@@ -193,7 +191,7 @@ export const UsersPage: React.FC = () => {
                 <td className="p-4"><input value={userDrafts[u.id]?.phone ?? u.phone ?? ''} maxLength={25} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), phone: e.target.value } }))} className="w-36 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" /></td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-brandOrange">
-                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} disabled={!canManageRoles || isProtectedSuperAdmin(u.email)} title={isProtectedSuperAdmin(u.email) ? 'Trusted Super Admin accounts are protected.' : (!canManageRoles ? 'Only trusted Society Super Admins can change roles.' : undefined)} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:bg-slate-100">{!roles.some((role) => role.code === u.roleCode) && (
+                    {roles.length ? <select value={userDrafts[u.id]?.roleCode ?? u.roleCode} onChange={(e) => setUserDrafts((old) => ({ ...old, [u.id]: { ...(old[u.id] || { fullName: u.fullName, phone: u.phone || '', roleCode: u.roleCode }), roleCode: e.target.value } }))} disabled={!canManageRoles} title={!canManageRoles ? 'Only trusted Society Super Admins can change roles.' : undefined} className="max-w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs disabled:cursor-not-allowed disabled:bg-slate-100">{!roles.some((role) => role.code === u.roleCode) && (
                     <option value={u.roleCode}>{u.roleName}</option>
                   )}
                   {roles.map((role) => <option key={role.code} value={role.code}>{role.name}</option>)}</select> : u.roleName}
@@ -212,14 +210,14 @@ export const UsersPage: React.FC = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                  <button onClick={() => updateUser(u)} disabled={!canManageRoles || isProtectedSuperAdmin(u.email)} title={isProtectedSuperAdmin(u.email) ? 'Trusted Super Admin accounts are protected.' : (!canManageRoles ? 'Only trusted Society Super Admins can modify user accounts.' : undefined)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
+                  <button onClick={() => updateUser(u)} disabled={!canManageRoles} title={!canManageRoles ? 'Only trusted Society Super Admins can modify user accounts.' : undefined} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white disabled:cursor-not-allowed disabled:opacity-50">Save</button>
                   <button
                     onClick={() => toggleStatus(u)}
-                    disabled={!canManageRoles || isProtectedSuperAdmin(u.email)}
-                    title={isProtectedSuperAdmin(u.email) ? 'Trusted Super Admin accounts are protected.' : (!canManageRoles ? 'Only trusted Society Super Admins can suspend or reactivate users.' : undefined)}
+                    disabled={!canManageRoles}
+                    title={!canManageRoles ? 'Only trusted Society Super Admins can suspend or reactivate users.' : undefined}
                     className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isProtectedSuperAdmin(u.email) ? 'Protected' : (u.status === 'active' ? 'Suspend' : 'Activate')}
+                    {u.status === 'active' ? 'Suspend' : 'Activate'}
                   </button>
                   </div>
                 </td>

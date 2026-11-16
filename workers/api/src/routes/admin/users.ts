@@ -226,13 +226,6 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    if (isTrustedSuperAdmin(existing.email)) {
-      return c.json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: 'Trusted Super Admin accounts are protected from role, status, and profile changes through user management.' }
-      }, 403);
-    }
-
     if (parsed.data.roleCode === 'super_admin' && !isTrustedSuperAdmin(existing.email)) {
       return c.json({
         success: false,
