@@ -129,9 +129,9 @@ describe('untrusted test-account user-management restrictions', () => {
     ]);
 
     const failures: Array<{ label: string; status: number; body: string }> = [];
-    for (let i = 0; i < responses.length; i += 1) {
-      if (responses[i].status !== 403) {
-        failures.push({ label: labels[i], status: responses[i].status, body: await responses[i].clone().text() });
+    for (const [index, response] of responses.entries()) {
+      if (response.status !== 403) {
+        failures.push({ label: labels[index] ?? `request:${index}`, status: response.status, body: await response.clone().text() });
       }
     }
     expect(failures).toEqual([]);
