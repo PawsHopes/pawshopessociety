@@ -36,7 +36,7 @@ const rejectSchema = z.object({
 
 function isPrimaryAdmin(c: any) {
   const actor = c.get('authUser');
-  return Boolean(actor?.email) && FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim());
+  return actor?.roleCode === 'super_admin' && Boolean(actor?.email) && FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim());
 }
 
 function createRawToken(): string {
