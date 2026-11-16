@@ -1,19 +1,23 @@
 import type { Bindings } from '../types/env';
 
-const ACCESS_POLICIES = [
-  {
-    accountId: '74a7af3d03b159edc357bcdc8d903556',
-    applicationId: 'b63d3bd9-4aea-4618-8221-f13d26f9519e',
-    policyId: '3fe62b03-bb97-47d3-8839-02001fee7ce0',
-    label: 'Admin ERP hostname',
-  },
-  {
-    accountId: '74a7af3d03b159edc357bcdc8d903556',
-    applicationId: '1dbcd4ff-450d-497c-abb4-d841f3904675',
-    policyId: '2e71687b-0135-44cc-b3b9-d1c7ae1652f3',
-    label: 'Pages deployment and preview hostnames',
-  },
-] as const;
+const ACCESS_POLICIES_BY_ENV = {
+  staging: [
+    { accountId: '74a7af3d03b159edc357bcdc8d903556', applicationId: 'b63d3bd9-4aea-4618-8221-f13d26f9519e', policyId: '3fe62b03-bb97-47d3-8839-02001fee7ce0', label: 'Staging Admin ERP hostname' },
+    { accountId: '74a7af3d03b159edc357bcdc8d903556', applicationId: '1dbcd4ff-450d-497c-abb4-d841f3904675', policyId: '2e71687b-0135-44cc-b3b9-d1c7ae1652f3', label: 'Staging Pages deployment and preview hostnames' },
+  ],
+  production: [
+    { accountId: '74a7af3d03b159edc357bcdc8d903556', applicationId: '6c1ef6fc-418f-4f17-a38f-75d90fa2cce1', policyId: '9c1d9354-5887-46dd-bf35-97eb66279da4', label: 'Live Admin ERP hostname' },
+    { accountId: '74a7af3d03b159edc357bcdc8d903556', applicationId: 'd71574dd-f676-4f90-825b-aa3000f9717f', policyId: 'add98604-0c3c-45db-8684-bb4569605ae6', label: 'Live Admin ERP preview hostnames' },
+  ],
+} as const;
+
+type AccessPolicyTarget = (typeof ACCESS_POLICIES_BY_ENV)[keyof typeof ACCESS_POLICIES_BY_ENV][number];
+
+function getAccessPolicies(environment: string): readonly AccessPolicyTarget[] {
+  if (environment === 'production') return ACCESS_POLICIES_BY_ENV.production;
+  if (environment === 'staging') return ACCESS_POLICIES_BY_ENV.staging;
+  return [];
+}
 
 type AccessPolicy = {
   id?: string;
@@ -45,7 +49,7 @@ function hasBroadAllowRule(rules: Array<Record<string, unknown>>): boolean {
 
 async function syncEmailToPolicy(
   token: string,
-  target: (typeof ACCESS_POLICIES)[number],
+  target: AccessPolicyTarget,
   email: string
 ): Promise<string | null> {
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${target.accountId}/access/apps/${target.applicationId}/policies/${target.policyId}`;
@@ -109,15 +113,17 @@ export async function syncApprovedEmailToCloudflareAccess(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { status: 'failed', message: 'The applicant email address is invalid.' };
   }
+  const targets = getAccessPolicies(env.ENVIRONMENT);
+  if (targets.length === 0) return { status: 'pending', message: 'Cloudflare Access sync is disabled for this environment.' };
   if (!env.CF_ACCESS_API_TOKEN) {
     return {
       status: 'pending',
-      message: 'Cloudflare Access sync is not configured yet. Add the CF_ACCESS_API_TOKEN secret to the staging Pages Function.',
+      message: 'Cloudflare Access sync is not configured yet. Add the CF_ACCESS_API_TOKEN secret to the ERP Worker for this environment.',
     };
   }
 
   try {
-    for (const target of ACCESS_POLICIES) {
+    for (const target of targets) {
       const error = await syncEmailToPolicy(env.CF_ACCESS_API_TOKEN, target, email);
       if (error) return { status: 'failed', message: error };
     }
@@ -135,7 +141,7 @@ export async function syncApprovedEmailToCloudflareAccess(
 
 async function removeEmailFromPolicy(
   token: string,
-  target: (typeof ACCESS_POLICIES)[number],
+  target: AccessPolicyTarget,
   email: string
 ): Promise<string | null> {
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${target.accountId}/access/apps/${target.applicationId}/policies/${target.policyId}`;
@@ -184,14 +190,13 @@ export async function revokeEmailFromCloudflareAccess(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { status: 'failed', message: 'The account email address is invalid.' };
   }
-  if (email === 'hopezpaws@gmail.com') {
-    return { status: 'failed', message: 'The primary administrator Access rule is protected.' };
-  }
+  const targets = getAccessPolicies(env.ENVIRONMENT);
+  if (targets.length === 0) return { status: 'pending', message: 'Cloudflare Access sync is disabled for this environment; ERP account status still blocks sign-in.' };
   if (!env.CF_ACCESS_API_TOKEN) {
     return { status: 'pending', message: 'Access revocation is not configured; ERP account status still blocks sign-in.' };
   }
   try {
-    for (const target of ACCESS_POLICIES) {
+    for (const target of targets) {
       const error = await removeEmailFromPolicy(env.CF_ACCESS_API_TOKEN, target, email);
       if (error) return { status: 'failed', message: error };
     }

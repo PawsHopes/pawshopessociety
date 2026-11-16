@@ -1,13 +1,34 @@
+interface PagesEnv {
+  ERP_API_ORIGIN?: string;
+}
+
 interface PagesContext {
   request: Request;
   params: { path?: string };
+  env: PagesEnv;
 }
 
-const STAGING_API_ORIGIN = 'https://pawshopes-erp-api-staging.hopezpaws.workers.dev';
+export const onRequest = async ({ request, env }: PagesContext): Promise<Response> => {
+  const configuredOrigin = env.ERP_API_ORIGIN?.trim();
+  if (!configuredOrigin) {
+    return Response.json(
+      { success: false, error: { code: 'ERP_API_NOT_CONFIGURED', message: 'The Society ERP API endpoint is not configured for this environment.' } },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
 
-export const onRequest = async ({ request }: PagesContext): Promise<Response> => {
+  let upstreamUrl: URL;
+  try {
+    upstreamUrl = new URL(configuredOrigin);
+    if (upstreamUrl.protocol !== 'https:') throw new Error('HTTPS required');
+  } catch {
+    return Response.json(
+      { success: false, error: { code: 'ERP_API_CONFIGURATION_INVALID', message: 'The Society ERP API endpoint configuration is invalid.' } },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
   const incomingUrl = new URL(request.url);
-  const upstreamUrl = new URL(STAGING_API_ORIGIN);
   upstreamUrl.pathname = incomingUrl.pathname;
   upstreamUrl.search = incomingUrl.search;
 

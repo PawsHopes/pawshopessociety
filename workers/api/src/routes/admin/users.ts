@@ -258,10 +258,6 @@ adminUsersRoutes.patch(
 
     const nextStatus = parsed.data.status ?? existing.status;
 
-    if (FULL_ADMIN_EMAILS.has(existing.email.toLowerCase().trim()) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'The two designated Society Super Admin accounts cannot be demoted or suspended.' } }, 403);
-    }
-
     const removingLastAdmin =
       existing.role_code === 'super_admin' &&
       existing.status === 'active' &&
@@ -273,6 +269,7 @@ adminUsersRoutes.patch(
         FROM users u
         JOIN roles r ON r.id = u.role_id
         WHERE r.code = 'super_admin' AND u.status = 'active'
+          AND lower(trim(u.email)) IN ('hopezpaws@gmail.com', 'infosecayush@gmail.com')
       `).first<{ count: number }>();
 
       if ((count?.count ?? 0) <= 1) {
