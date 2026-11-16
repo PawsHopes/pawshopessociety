@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../lib/api';
 
-const TRUSTED_SUPER_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
 
 interface UserRow {
   id: string;
