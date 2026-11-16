@@ -9,6 +9,12 @@ on:
       - main
       - erp-development
   workflow_dispatch:
+    inputs:
+      confirm_staging_deploy:
+        description: 'Explicitly approve applying staging D1 migrations and deploying the staging Worker'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -352,7 +358,9 @@ jobs:
       - worker
       - database
     # Never deploy pull requests or branches other than erp-development.
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/erp-development'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/erp-development' && inputs.confirm_staging_deploy == true
+    environment:
+      name: staging
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
