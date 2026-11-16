@@ -358,7 +358,12 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const actionsForRow = (row: Record<string,unknown>) => {
     if (!resource) return [] as string[];
     const status = String(row.status || row.approval_status || row.verification_status || '');
-    if (resource.key === 'animals' && user.permissions.includes('animals:publish')) return ['publish'];
+    if (resource.key === 'animals' && user.permissions.includes('animals:publish')) {
+      const alreadyPublished = Boolean(row.is_published_public);
+      const adoptionReady = row.current_status === 'adopted' || (row.current_status === 'available_for_adoption' && Number(row.is_adoption_eligible) === 1);
+      const rescueReady = ['rescued','under_assessment','under_treatment','recovering'].includes(String(row.current_status || '')) && Boolean(String(row.public_description || '').trim());
+      if (alreadyPublished || adoptionReady || rescueReady) return ['publish'];
+    }
     if (resource.key === 'website_content' && user.permissions.includes('cms:publish') && ['draft','published'].includes(status)) return ['publish'];
     if (resource.key === 'donations' && status === 'pending' && user.permissions.includes('donations:verify')) return ['verify'];
     if (resource.key === 'donations' && status === 'verified' && user.permissions.includes('donations:read')) return ['receipt'];
