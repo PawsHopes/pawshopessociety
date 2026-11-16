@@ -11,7 +11,7 @@ export const adminUsersRoutes = new Hono<{
 }>();
 
 const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
-const FULL_ADMIN_EMAILS = new Set([PRIMARY_ADMIN_EMAIL, 'infosecayush@gmail.com']);
+
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
@@ -68,7 +68,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim())
+        canManageRoles: actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL
       }
     });
   }
