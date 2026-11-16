@@ -807,6 +807,25 @@ adminModuleRoutes.post('/:resource/:id/reject', async (c) => {
   return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'No rejection workflow exists for this resource.' } }, 404);
 });
 
+adminModuleRoutes.get('/donations/:id/receipt', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('donations:read')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Donation read permission required.' } }, 403);
+  const id = c.req.param('id');
+  const receipt = await c.env.DB.prepare(`
+    SELECT dr.receipt_number, dr.issued_date, dr.is_80g_eligible,
+           d.amount_paise, d.donation_date, d.payment_mode, d.transaction_reference, d.purpose,
+           dn.full_name AS donor_name, dn.address AS donor_address,
+           fc.name AS fund_name
+    FROM donation_receipts dr
+    JOIN donations d ON d.id = dr.donation_id
+    JOIN donors dn ON dn.id = d.donor_id
+    JOIN fund_categories fc ON fc.id = d.fund_category_id
+    WHERE d.id = ? AND d.verification_status = 'verified'
+  `).bind(id).first<Record<string, unknown>>();
+  if (!receipt) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Verified donation receipt not found.' } }, 404);
+  return c.json({ success: true, data: receipt });
+});
+
 adminModuleRoutes.post('/donations/:id/verify', async (c) => {
   const actor = c.get('authUser');
   if (!actor.permissions.includes('donations:verify')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Donation verification permission required.' } }, 403);
@@ -820,17 +839,20 @@ adminModuleRoutes.post('/donations/:id/verify', async (c) => {
   if (!income) return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'No active income account is configured.' } }, 409);
   const txnId = crypto.randomUUID();
   const txnNo = `PHS-TXN-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
+  const receiptId = crypto.randomUUID();
+  const receiptNo = `PHS-REC-${new Date().getUTCFullYear()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`;
   const ip = c.req.header('CF-Connecting-IP') || null;
   const ua = c.req.header('User-Agent') || null;
   const results = await c.env.DB.batch([
     c.env.DB.prepare("UPDATE donations SET verification_status = 'verified', verified_by = ?, verified_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND verification_status = 'pending'").bind(actor.id, id),
     c.env.DB.prepare("INSERT INTO financial_transactions (id, txn_number, txn_date, entry_type, debit_account_id, credit_account_id, fund_category_id, amount_paise, reference_type, reference_id, narration, created_by) SELECT ?, ?, ?, 'income', ?, ?, ?, ?, 'donation', ?, ?, ? WHERE EXISTS (SELECT 1 FROM donations WHERE id = ? AND verification_status = 'verified' AND verified_by = ?) AND NOT EXISTS (SELECT 1 FROM financial_transactions WHERE reference_type = 'donation' AND reference_id = ? AND entry_type = 'income')").bind(txnId, txnNo, String(donation.donation_date), String(donation.account_id), income.id, String(donation.fund_category_id), Number(donation.amount_paise), id, `Donation verified: ${id}`, actor.id, id, actor.id, id),
-    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) SELECT ?, ?, ?, 'DONATION_VERIFIED', 'donations', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM financial_transactions WHERE id = ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ verification_status: 'verified', txn_number: txnNo }), ip, ua, txnId)
+    c.env.DB.prepare("INSERT INTO donation_receipts (id, receipt_number, donation_id, issued_date, is_80g_eligible, issued_by) SELECT ?, ?, ?, date('now','+5 hours','+30 minutes'), 0, ? WHERE EXISTS (SELECT 1 FROM donations WHERE id = ? AND verification_status = 'verified' AND verified_by = ?) AND NOT EXISTS (SELECT 1 FROM donation_receipts WHERE donation_id = ?)").bind(receiptId, receiptNo, id, actor.id, id, actor.id, id),
+    c.env.DB.prepare("INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) SELECT ?, ?, ?, 'DONATION_VERIFIED', 'donations', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM financial_transactions WHERE id = ?) AND EXISTS (SELECT 1 FROM donation_receipts WHERE id = ?)").bind(crypto.randomUUID(), actor.id, actor.email, id, JSON.stringify({ verification_status: 'verified', txn_number: txnNo, receipt_number: receiptNo, is_80g_eligible: false }), ip, ua, txnId, receiptId)
   ]);
-  if ((results[0]?.meta?.changes ?? 0) !== 1 || (results[1]?.meta?.changes ?? 0) !== 1 || (results[2]?.meta?.changes ?? 0) !== 1) {
-    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Donation was already verified or its ledger posting already exists.' } }, 409);
+  if ((results[0]?.meta?.changes ?? 0) !== 1 || (results[1]?.meta?.changes ?? 0) !== 1 || (results[2]?.meta?.changes ?? 0) !== 1 || (results[3]?.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Donation was already verified, or its ledger/receipt posting already exists.' } }, 409);
   }
-  return c.json({ success: true, data: { id, verification_status: 'verified', transaction_number: txnNo } });
+  return c.json({ success: true, data: { id, verification_status: 'verified', transaction_number: txnNo, receipt_number: receiptNo, is_80g_eligible: false } });
 });
 
 adminModuleRoutes.post('/expenses/:id/mark-paid', async (c) => {
