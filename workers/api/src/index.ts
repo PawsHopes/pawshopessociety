@@ -16,6 +16,8 @@ import { adminJoinRoutes } from './routes/admin/join';
 import { adminDocumentRoutes, publicFileProxyRoutes } from './routes/admin/documents';
 import { adminAuditLogRoutes } from './routes/admin/auditLogs';
 import { adminModuleRoutes } from './routes/admin/modules';
+import { adminNotificationsRoutes } from './routes/admin/notifications';
+import { runDailyNotifications } from './services/notifications';
 import { bootstrapRoutes } from './routes/bootstrap';
 
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
@@ -63,6 +65,7 @@ app.route('/api/v1/admin/join', adminJoinRoutes);
 app.route('/api/v1/admin', adminDocumentRoutes);
 app.route('/api/v1/admin/audit-logs', adminAuditLogRoutes);
 app.route('/api/v1/admin/modules', adminModuleRoutes);
+app.route('/api/v1/admin/notifications', adminNotificationsRoutes);
 
 app.notFound((c) =>
   c.json(
@@ -87,7 +90,11 @@ app.onError((err, c) => {
 
 export default {
   fetch: app.fetch,
-  async scheduled(_event: ScheduledEvent, env: Bindings, _ctx: ExecutionContext) {
-    console.log('Running daily NGO ERP alert check in environment:', env.ENVIRONMENT);
+  async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+    ctx.waitUntil(runDailyNotifications(env).then((result) => {
+      console.log('Daily NGO ERP notifications generated:', result.createdCandidates, 'candidates in', env.ENVIRONMENT);
+    }).catch((error) => {
+      console.error('Daily NGO ERP notification generation failed:', error);
+    }));
   },
 };
