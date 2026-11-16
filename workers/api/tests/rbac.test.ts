@@ -49,24 +49,21 @@ describe('API-side RBAC enforcement', () => {
 });
 
 
-describe('single primary Super Admin permissions', () => {
+describe('designated Society Super Admin permissions', () => {
   const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
 
-  it('grants full permissions only to the primary administrator', () => {
+  it('grants identical full permissions to both designated administrators', () => {
     const secondary = effectivePermissions('super_admin', 'infosecayush@gmail.com', all);
     const primary = effectivePermissions('super_admin', 'hopezpaws@gmail.com', all);
     expect(primary).toEqual(all);
-    expect(secondary).toContain('animals:read');
-    expect(secondary).not.toContain('animals:write');
-    expect(secondary).not.toContain('users:manage');
-    expect(secondary).not.toContain('finance:approve');
+    expect(secondary).toEqual(all);
   });
 
-  it('keeps full permissions for the existing Society primary Super Admin', () => {
+  it('keeps full permissions for the first designated Society Super Admin', () => {
     expect(effectivePermissions('super_admin', 'hopezpaws@gmail.com', all)).toEqual(all);
   });
 
-  it('keeps every other Super Admin account read-only', () => {
+  it('keeps every non-designated Super Admin account read-only', () => {
     const permissions = effectivePermissions('super_admin', 'yivam24770@jcaton.com', all);
     expect(permissions).toContain('animals:read');
     expect(permissions).not.toContain('animals:write');
