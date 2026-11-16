@@ -182,6 +182,33 @@ adminModuleRoutes.get('/attachments/:resource/:recordId', async (c) => {
   return c.json({ success: true, data: { items } });
 });
 
+adminModuleRoutes.delete('/attachments/animals/:recordId/:attachmentId', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:write')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal write permission is required to remove animal photos.' } }, 403);
+  }
+  const recordId = c.req.param('recordId');
+  const attachmentId = c.req.param('attachmentId');
+  const attachment = await c.env.DB.prepare(
+    "SELECT id, media_asset_id FROM record_attachments WHERE id = ? AND resource = 'animals' AND record_id = ?"
+  ).bind(attachmentId, recordId).first<{id:string;media_asset_id:string|null}>();
+  if (!attachment) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal photo attachment not found.' } }, 404);
+  if (!attachment.media_asset_id) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'This attachment is not a public animal photo.' } }, 400);
+
+  await c.env.DB.batch([
+    c.env.DB.prepare("DELETE FROM record_attachments WHERE id = ? AND resource = 'animals' AND record_id = ?").bind(attachmentId, recordId),
+    c.env.DB.prepare('DELETE FROM animal_media WHERE animal_id = ? AND media_asset_id = ?').bind(recordId, attachment.media_asset_id),
+    c.env.DB.prepare("UPDATE animal_media SET is_primary = 1 WHERE animal_id = ? AND id = (SELECT id FROM animal_media WHERE animal_id = ? ORDER BY sort_order ASC LIMIT 1) AND NOT EXISTS (SELECT 1 FROM animal_media WHERE animal_id = ? AND is_primary = 1)").bind(recordId, recordId, recordId)
+  ]);
+  await appendAuditLog(c, {
+    action: 'ANIMAL_PHOTO_UNLINKED',
+    entityType: 'animals',
+    entityId: recordId,
+    after: { attachmentId, mediaAssetId: attachment.media_asset_id, retainedInStorage: true }
+  });
+  return c.json({ success: true, data: { attachmentId, removed: true, storageObjectRetained: true } });
+});
+
 adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
   const resource = c.req.param('resource');
   const recordId = c.req.param('recordId');
@@ -317,9 +344,12 @@ adminModuleRoutes.get('/:resource', async (c) => {
   const limit = Math.min(Math.max(Number(c.req.query('limit') || 50) || 50, 1), 200);
   const offset = Math.min(Math.max(Math.floor(Number(c.req.query('offset') || 0) || 0), 0), 1000000);
   const search = (c.req.query('q') || '').trim().slice(0, 100);
-  const whereSql = search && config.search.length
-    ? ' WHERE (' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')'
-    : '';
+  const whereParts: string[] = [];
+  if (resource === 'animals') whereParts.push('deleted_at IS NULL');
+  if (search && config.search.length) {
+    whereParts.push('(' + config.search.map((col) => `${col} LIKE ?`).join(' OR ') + ')');
+  }
+  const whereSql = whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
   const searchParams: unknown[] = [];
   if (whereSql) {
     for (let i = 0; i < config.search.length; i++) searchParams.push(`%${search}%`);
@@ -590,6 +620,53 @@ adminModuleRoutes.post('/foster_applications/:id/complete', async (c) => {
     after: { status: 'completed', actualEndDate: application.actual_end_date, animalId: application.animal_id }
   });
   return c.json({ success: true, data: { id, status: 'completed', animalId: application.animal_id } });
+});
+
+adminModuleRoutes.delete('/animals/:id', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:write')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal write permission is required to archive an animal.' } }, 403);
+  }
+
+  const id = c.req.param('id');
+  const animal = await c.env.DB.prepare(
+    'SELECT id, animal_code, name, current_status, is_published_public, deleted_at FROM animals WHERE id = ?'
+  ).bind(id).first<{
+    id: string; animal_code: string; name: string; current_status: string;
+    is_published_public: number; deleted_at: string | null;
+  }>();
+
+  if (!animal) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal record not found.' } }, 404);
+  if (animal.deleted_at) return c.json({ success: false, error: { code: 'CONFLICT', message: 'This animal is already archived.' } }, 409);
+  if (['adopted', 'fostered', 'deceased'].includes(animal.current_status)) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Completed adoption, foster and deceased records cannot be archived. Their lifecycle history must remain available.' } }, 409);
+  }
+
+  const [activeAdoption, activeFoster, agreement] = await Promise.all([
+    c.env.DB.prepare("SELECT id FROM adoption_applications WHERE animal_id = ? AND status IN ('application','initial_review','verification','approved') LIMIT 1").bind(id).first<{id:string}>(),
+    c.env.DB.prepare("SELECT id FROM foster_applications WHERE animal_id = ? AND status IN ('application','verification','approved','active') LIMIT 1").bind(id).first<{id:string}>(),
+    c.env.DB.prepare('SELECT id FROM adoption_agreements WHERE animal_id = ? LIMIT 1').bind(id).first<{id:string}>(),
+  ]);
+  if (activeAdoption || activeFoster || agreement) {
+    return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'This animal has an active or completed adoption/foster workflow. Resolve or retain that workflow before archiving the animal.' } }, 409);
+  }
+
+  const result = await c.env.DB.prepare(
+    "UPDATE animals SET deleted_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), is_published_public = 0, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND deleted_at IS NULL"
+  ).bind(id).run();
+  if ((result.meta?.changes ?? 0) !== 1) {
+    return c.json({ success: false, error: { code: 'CONFLICT', message: 'Animal record changed before it could be archived. Refresh and retry.' } }, 409);
+  }
+
+  await appendAuditLog(c, {
+    action: 'ANIMAL_ARCHIVED',
+    entityType: 'animals',
+    entityId: id,
+    before: { deleted_at: null, is_published_public: Boolean(animal.is_published_public), current_status: animal.current_status },
+    after: { deleted_at: 'now', is_published_public: false, archived: true }
+  });
+
+  return c.json({ success: true, data: { id, archived: true, retained: true } });
 });
 
 adminModuleRoutes.post('/animals/:id/publish', async (c) => {
