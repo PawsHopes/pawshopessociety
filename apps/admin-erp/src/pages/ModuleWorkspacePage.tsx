@@ -92,7 +92,7 @@ const RESOURCES: Record<string, Resource[]> = {
       text('name','Supplier name',true), text('contact_person','Contact person'), text('phone','Phone'), text('email','Email'), text('gstin','GSTIN'), area('address','Address'), text('category','Category')
     ]},
     { key: 'purchase_orders', label: 'Purchase Orders', permission: 'inventory:read', writePermission: 'inventory:write', fields: [
-      text('po_number','PO number',true), relation('supplier_id','Supplier','suppliers',true), date('order_date','Order date',true), choice('status','Status',['draft','ordered','received','cancelled']), num('total_amount_paise','Total amount (₹)'), relation('expense_id','Related expense','expenses')
+      text('po_number','PO number',true), relation('supplier_id','Supplier','suppliers',true), date('order_date','Order date',true), num('total_amount_paise','Total amount (₹)'), relation('expense_id','Related expense','expenses')
     ]}
   ],
   volunteers: [
@@ -179,7 +179,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       'purchase_orders', 'compliance_registrations'
     ].includes(resource.key) && user.permissions.includes('documents:private_read'))
   );
-  const canWorkflow = !!resource && ((resource.key === 'animals' && user.permissions.includes('animals:publish')) || (resource.key === 'website_content' && user.permissions.includes('cms:publish')) || (resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
+  const canWorkflow = !!resource && ((resource.key === 'animals' && user.permissions.includes('animals:publish')) || (resource.key === 'website_content' && user.permissions.includes('cms:publish')) || (resource.key === 'donations' && user.permissions.includes('donations:verify')) || (resource.key === 'expenses' && (user.permissions.includes('finance:approve') || user.permissions.includes('finance:ledger'))) || (resource.key === 'stock_movements' && user.permissions.includes('inventory:approve')) || (resource.key === 'purchase_orders' && user.permissions.includes('inventory:approve')) || (['adoption_applications','foster_applications'].includes(resource.key) && user.permissions.includes('adoption:approve')));
 
   const load = async () => {
     if (!resource) return;
@@ -363,6 +363,8 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (resource.key === 'expenses' && status === 'pending' && row.submitted_by !== user.id && user.permissions.includes('finance:approve')) return ['approve','reject'];
     if (resource.key === 'expenses' && status === 'approved' && row.payment_status === 'unpaid' && row.approved_by !== user.id && user.permissions.includes('finance:ledger')) return ['paid'];
     if (resource.key === 'stock_movements' && status === 'pending' && row.recorded_by !== user.id && user.permissions.includes('inventory:approve')) return ['approve'];
+    if (resource.key === 'purchase_orders' && status === 'draft' && user.permissions.includes('inventory:approve')) return ['order','cancel'];
+    if (resource.key === 'purchase_orders' && status === 'ordered' && user.permissions.includes('inventory:approve')) return ['receive','cancel'];
     if (resource.key === 'adoption_applications' && ['application','initial_review','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
     if (resource.key === 'foster_applications' && ['application','verification'].includes(status) && user.permissions.includes('adoption:approve')) return ['approve','reject'];
     if (resource.key === 'foster_applications' && status === 'approved' && user.permissions.includes('adoption:approve')) return ['activate'];
@@ -377,10 +379,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
     if (action === 'reject') {
       reason = window.prompt('Enter the reason for rejection:') || '';
       if (!reason.trim()) return;
-    } else if (!window.confirm(action === 'activate' ? 'Activate this approved foster placement and mark the animal as fostered?' : action === 'complete' ? 'Complete this foster placement and return the animal to shelter care?' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'Unpublish this CMS section?' : 'Publish this CMS draft to the public content feed?') : (row.is_published_public ? 'Remove this animal from the public website?' : 'Publish this animal on the public website?')) : action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
+    } else if (!window.confirm(action === 'order' ? 'Approve this draft purchase order and mark it ordered?' : action === 'receive' ? 'Confirm all linked stock movements are approved and mark this purchase order received?' : action === 'cancel' ? 'Cancel this purchase order? This is blocked once any stock receipt is posted.' : action === 'activate' ? 'Activate this approved foster placement and mark the animal as fostered?' : action === 'complete' ? 'Complete this foster placement and return the animal to shelter care?' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'Unpublish this CMS section?' : 'Publish this CMS draft to the public content feed?') : (row.is_published_public ? 'Remove this animal from the public website?' : 'Publish this animal on the public website?')) : action === 'paid' ? 'Confirm this approved expense has actually been paid and post it to the ledger?' : action === 'verify' ? 'Verify this donation and post the income ledger entry?' : 'Approve this record?')) return;
     const suffix = action === 'publish' ? (resource.key === 'website_content' ? '/cms/' + id + '/publish' : '/animals/' + id + '/publish') : action === 'verify' ? '/donations/' + id + '/verify' : action === 'paid' ? '/expenses/' + id + '/mark-paid' : '/' + resource.key + '/' + id + '/' + action;
     const result = await apiFetch('/api/v1/admin/modules' + suffix, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : action === 'publish' ? JSON.stringify({ published: resource.key === 'website_content' ? row.status !== 'published' : !Boolean(row.is_published_public) }) : undefined });
-    setFeedback(result.success ? (action === 'activate' ? 'Foster placement activated.' : action === 'complete' ? 'Foster placement completed; animal returned to shelter care.' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'CMS section unpublished.' : 'CMS section published to the public content feed.') : (row.is_published_public ? 'Animal removed from the public website.' : 'Animal published on the public website.')) : action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? 'Record rejected.' : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
+    setFeedback(result.success ? (action === 'order' ? 'Purchase order marked ordered.' : action === 'receive' ? 'Purchase order marked received.' : action === 'cancel' ? 'Purchase order cancelled.' : action === 'activate' ? 'Foster placement activated.' : action === 'complete' ? 'Foster placement completed; animal returned to shelter care.' : action === 'publish' ? (resource.key === 'website_content' ? (row.status === 'published' ? 'CMS section unpublished.' : 'CMS section published to the public content feed.') : (row.is_published_public ? 'Animal removed from the public website.' : 'Animal published on the public website.')) : action === 'paid' ? 'Expense marked paid and posted to the ledger.' : action === 'verify' ? 'Donation verified and posted to the ledger.' : (action === 'reject' ? 'Record rejected.' : 'Record approved.')) : result.error?.message || 'Workflow action failed.');
     await load();
   };
 
@@ -396,6 +398,7 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   if (resource?.key === 'donations') columns.push('verification_status');
   if (resource?.key === 'expenses') columns.push('approval_status','payment_status');
   if (resource?.key === 'stock_movements') columns.push('approval_status');
+  if (resource?.key === 'purchase_orders') columns.push('status');
   if (resource?.key === 'inventory_items') columns.push('current_stock');
   if (resource?.key === 'adoption_applications' || resource?.key === 'foster_applications') columns.push('status');
 
