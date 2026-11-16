@@ -70,7 +70,7 @@ adminUsersRoutes.get(
       data: {
         users: users.results || [],
         roles: roles.results || [],
-        canManageRoles: isSocietySuperAdmin(actor.email)
+        canManageRoles: isSocietySuperAdmin(actor.email, actor.roleCode)
       }
     });
   }
@@ -89,7 +89,7 @@ adminUsersRoutes.post(
       }, 403);
     }
 
-    if (!isSocietySuperAdmin(actor.email)) {
+    if (!isSocietySuperAdmin(actor.email, actor.roleCode)) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Paw\'s Hopez Society Super Admin can create users and assign initial roles.' } }, 403);
     }
 
@@ -179,7 +179,7 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (!isSocietySuperAdmin(actor.email)) {
+    if (!isSocietySuperAdmin(actor.email, actor.roleCode)) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Paw\'s Hopez Society Super Admin can modify ERP user accounts.' } }, 403);
     }
 
