@@ -209,19 +209,38 @@
     </div>
   </section>
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       const teaserGrid = document.getElementById('homepage-adopt-grid');
-      if(teaserGrid && window.AVAILABLE_FOR_ADOPTION) {
-        const topPets = window.AVAILABLE_FOR_ADOPTION.slice(0, 4);
-        teaserGrid.innerHTML = topPets.map(pet => {
-          const firstImg = pet.images && pet.images.length > 0 ? pet.images[0] : (pet.photo || '');
-          return `
-            <a href="adopt.html" class="rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group" data-aos="fade-up">
-              <img src="${firstImg}" alt="${pet.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-              <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3">${pet.name}</span>
-            </a>
-          `;
-        }).join('');
+      if (!teaserGrid) return;
+      try {
+        const response = await fetch('/api/animals', { headers: { Accept: 'application/json' }, credentials: 'omit' });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const animals = payload?.success && Array.isArray(payload?.data?.available) ? payload.data.available.slice(0, 4) : [];
+        const cards = animals.map((pet) => {
+          const link = document.createElement('a');
+          link.href = 'adopt.html';
+          link.className = 'rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all h-56 relative group';
+          link.setAttribute('aria-label', 'Meet ' + String(pet.name || 'an adoptable animal'));
+          const image = document.createElement('img');
+          const candidate = Array.isArray(pet.images) ? pet.images[0] : '';
+          try {
+            const url = new URL(String(candidate || ''), window.location.origin);
+            if (url.protocol === 'https:' || url.origin === window.location.origin) image.src = url.href;
+          } catch {}
+          image.alt = String(pet.name || 'Adoptable animal');
+          image.loading = 'lazy';
+          image.className = 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-300';
+          const label = document.createElement('span');
+          label.className = 'absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-bold p-3';
+          label.textContent = String(pet.name || 'Rescued animal');
+          link.append(image, label);
+          return link;
+        });
+        teaserGrid.replaceChildren(...cards);
+        if (typeof window.AOS !== 'undefined') window.AOS.refreshHard();
+      } catch {
+        // Keep the rest of the homepage usable if the public animal feed is unavailable.
       }
     });
   </script>
