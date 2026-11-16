@@ -98,6 +98,8 @@ describe('untrusted test-account user-management restrictions', () => {
       '/join/applications/application-id/access-sync',
       '/modules/foster_applications/application-id/activate',
       '/modules/foster_applications/application-id/complete',
+      '/modules/adoption_applications/application-id/approve',
+      '/modules/foster_applications/application-id/approve',
       '/modules/animals/animal-id/publish',
       '/modules/cms/content-id/publish',
       '/modules/purchase_orders/po-id/order',
