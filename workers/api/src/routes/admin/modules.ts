@@ -717,7 +717,6 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   }
 
   if (resource === 'expenses') {
-    if (!actor.permissions.includes('finance:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Finance approval permission required.' } }, 403);
     const row = await c.env.DB.prepare('SELECT id, submitted_by, approval_status FROM expenses WHERE id = ?').bind(id).first<{id:string;submitted_by:string;approval_status:string}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
     if (row.submitted_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot approve your own expense claim.' } }, 403);
@@ -729,7 +728,6 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   }
 
   if (resource === 'adoption_applications' || resource === 'foster_applications') {
-    if (!actor.permissions.includes('adoption:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
     const table = resource;
     const row = await c.env.DB.prepare(`SELECT id, status, animal_id, ${resource === 'adoption_applications' ? 'home_check_status' : 'animal_id'} as gate FROM ${table} WHERE id = ?`).bind(id).first<{id:string;status:string;animal_id:string;gate:string|null}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Application not found.' } }, 404);
@@ -766,12 +764,27 @@ adminModuleRoutes.post('/:resource/:id/reject', async (c) => {
   const resource = c.req.param('resource');
   const id = c.req.param('id');
   const actor = c.get('authUser');
+
+  // Authorize before validating the body or looking up a record, so an untrusted
+  // caller cannot probe workflow behavior through validation differences.
+  if (resource === 'stock_movements' && !actor.permissions.includes('inventory:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+  }
+  if (resource === 'expenses' && !actor.permissions.includes('finance:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Finance approval permission required.' } }, 403);
+  }
+  if ((resource === 'adoption_applications' || resource === 'foster_applications') && !actor.permissions.includes('adoption:approve')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
+  }
+  if (!['stock_movements', 'expenses', 'adoption_applications', 'foster_applications'].includes(resource)) {
+    return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'No rejection workflow exists for this resource.' } }, 404);
+  }
+
   const body = await c.req.json().catch(() => ({})) as { reason?: unknown };
   const reason = typeof body.reason === 'string' ? body.reason.slice(0, 1000) : '';
   if (!reason.trim()) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'A rejection reason is required.' } }, 400);
 
   if (resource === 'stock_movements') {
-    if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
     const row = await c.env.DB.prepare('SELECT id, recorded_by, approval_status FROM stock_movements WHERE id = ?').bind(id).first<{ id: string; recorded_by: string; approval_status: string }>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
     if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot reject your own stock movement.' } }, 403);
