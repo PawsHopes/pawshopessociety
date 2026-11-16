@@ -1,13 +1,15 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
-const TRUSTED_SUPER_ADMIN_EMAILS = new Set([
+export const TRUSTED_SUPER_ADMIN_EMAILS = [
   'hopezpaws@gmail.com',
   'infosecayush@gmail.com',
-]);
+] as const;
+
+const trustedSuperAdminEmails = new Set<string>(TRUSTED_SUPER_ADMIN_EMAILS);
 
 export function isTrustedSuperAdmin(email: string): boolean {
-  return TRUSTED_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim());
+  return trustedSuperAdminEmails.has(email.toLowerCase().trim());
 }
 
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
