@@ -52,7 +52,7 @@ function makeApp() {
       },
     },
     DB: {
-      prepare: () => ({ first: async () => document }),
+      prepare: () => ({ bind() { return this; }, first: async () => document }),
     },
   } as unknown as Bindings;
   return { app, env, getReads: () => reads };
