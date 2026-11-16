@@ -89,13 +89,14 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [selectedImagePreview, setSelectedImagePreview] = useState('');
   const [dragId, setDragId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [previewMode, setPreviewMode] = useState(false);
 
   const pageRows = useMemo(
-    () => rows.filter((row) => row.page_slug === pageSlug).sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)),
+    () => rows.filter((row) => row.page_slug === pageSlug && row.status !== 'archived').sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)),
     [rows, pageSlug],
   );
 
@@ -110,11 +111,19 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
 
   useEffect(() => { void load(); }, []);
 
+  useEffect(() => {
+    if (!selectedImage) { setSelectedImagePreview(existingImageUrl); return; }
+    const objectUrl = URL.createObjectURL(selectedImage);
+    setSelectedImagePreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedImage, existingImageUrl]);
+
   const resetEditor = () => {
     setEditingId(null);
     setForm(emptyForm(pageSlug));
     setSelectedImage(null);
     setExistingImageUrl('');
+    setSelectedImagePreview('');
     setPreviewMode(false);
   };
 
@@ -146,7 +155,8 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
       seoTitle: target.seo_title || '',
       seoDescription: target.seo_description || '',
     });
-    setExistingImageUrl(target.mediaUrl || '');
+    const media = await apiFetch<{ items: Array<{ public_url?: string | null }> }>(`/api/v1/admin/modules/attachments/website_content/${target.id}`);
+    setExistingImageUrl(media.success && media.data ? String(media.data.items.find((item) => item.public_url)?.public_url || '') : '');
     setSelectedImage(null);
     setPreviewMode(false);
     setBusy(false);
@@ -256,7 +266,7 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const previewImage = selectedImage ? URL.createObjectURL(selectedImage) : existingImageUrl;
+  const previewImage = selectedImagePreview;
 
   if (!user.permissions.includes('cms:read')) {
     return <section role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6"><h1 className="font-semibold">Access denied</h1><p className="mt-2 text-sm">CMS read permission is required.</p></section>;
@@ -278,7 +288,7 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
       <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <label className="min-w-[220px] flex-1">
           <span className="mb-1 block text-xs font-bold text-slate-600">Website page</span>
-          <select value={pageSlug} onChange={(event) => { setPageSlug(event.target.value); resetEditor(); }} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
+          <select value={pageSlug} onChange={(event) => { const nextPage = event.target.value; setPageSlug(nextPage); setEditingId(null); setSelectedImage(null); setExistingImageUrl(''); setForm(emptyForm(nextPage)); setPreviewMode(false); }} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
             {PAGES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
