@@ -446,12 +446,20 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
         <div className="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">{resource.key === 'website_content' && <button type="button" onClick={() => setCmsPreviewOpen(true)} className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Preview content</button>}<button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
       </form>
     </section>}
-    {resource?.key === 'animals' && <AnimalVisualManager rows={rows} canEdit={canEdit} canDelete={canWrite} onEdit={beginEdit} onDelete={async (row) => {
+    {resource?.key === 'animals' && <AnimalVisualManager rows={rows} canEdit={canEdit} canDelete={canWrite} canPublish={user.permissions.includes('animals:publish')} onEdit={beginEdit} onDelete={async (row) => {
       const id = String(row.id || '');
       const label = String(row.name || row.animal_code || 'this animal');
       if (!id || !window.confirm(`Archive ${label}? It will be removed from the public website, but its medical and audit history will be retained.`)) return;
       const result = await apiFetch(`/api/v1/admin/modules/animals/${id}`, { method: 'DELETE' });
       setFeedback(result.success ? 'Animal archived safely. Its history and media have been retained.' : result.error?.message || 'Unable to archive this animal.');
+      if (result.success) await load();
+    }} onPublish={async (row) => {
+      const id = String(row.id || '');
+      const published = !Boolean(Number(row.is_published_public || 0));
+      const animalName = String(row.name || row.animal_code || 'this animal');
+      if (!id || !window.confirm(`${published ? 'Publish' : 'Unpublish'} ${animalName} ${published ? 'on' : 'from'} the public adoption/rescue website?`)) return;
+      const result = await apiFetch(`/api/v1/admin/modules/animals/${id}/publish`, { method: 'POST', body: JSON.stringify({ published }) });
+      setFeedback(result.success ? (published ? 'Animal published to the public website.' : 'Animal unpublished from the public website.') : result.error?.message || 'Publishing failed. Check the animal status, eligibility and public description.');
       if (result.success) await load();
     }} />}
     {viewingAttachments && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
