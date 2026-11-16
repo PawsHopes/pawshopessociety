@@ -1,11 +1,11 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
 
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
-  // Only the Society's primary administrator receives full Super Admin permissions.
-  if (roleCode === 'super_admin' && email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
+  // Both designated Society Super Admins receive identical full permissions.
+  if (roleCode === 'super_admin' && !FULL_ADMIN_EMAILS.has(email.toLowerCase().trim())) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
   return allPermissions;
@@ -102,7 +102,7 @@ export const loadRbacUser = createMiddleware<{
     email: userRow.email,
     fullName: userRow.full_name,
     roleCode: userRow.role_code,
-    roleName: userRow.role_code === 'super_admin' && userRow.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL ? 'Super Admin (Read-Only)' : userRow.role_name,
+    roleName: userRow.role_code === 'super_admin' && !FULL_ADMIN_EMAILS.has(userRow.email.toLowerCase().trim()) ? 'Super Admin (Read-Only)' : userRow.role_name,
     permissions,
   };
 
