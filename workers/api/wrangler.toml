@@ -14,8 +14,8 @@ PUBLIC_MEDIA_BASE_URL = "https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "pawshopes-erp-db-staging"
-database_id = "a6fd7136-b618-4072-af6a-5373f4e727d1"
+database_name = "pawshopes-erp-db-staging-isolated"
+database_id = "1392b845-8635-45b4-82a8-09b53e7403f1"
 migrations_dir = "../../database/migrations"
 migrations_table = "d1_migrations"
 
