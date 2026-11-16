@@ -145,11 +145,11 @@ const RESOURCES: Record<string, ResourceConfig> = {
   },
   website_content: {
     table: 'website_content', read: 'cms:read', write: 'cms:write',
-    fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','status'],
+    fields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','status','sort_order'],
     required: ['page_slug','section_key','title','body_json'], search: ['page_slug','section_key','title'], order: 'updated_at',
-    defaults: { status: 'draft', version_number: 1 }, serverFields: (actorId) => ({ updated_by: actorId }),
+    defaults: { status: 'draft', version_number: 1, sort_order: 0 }, serverFields: (actorId) => ({ updated_by: actorId }),
     // Publishing status is server-controlled; only a dedicated publishing workflow may change it.
-    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description'],
+    updateFields: ['page_slug','section_key','title','body_json','media_asset_id','seo_title','seo_description','sort_order'],
   },
 };
 
@@ -307,7 +307,9 @@ adminModuleRoutes.get('/:resource', async (c) => {
     .bind(...searchParams).first<{ total: number }>();
   const sql = resource === 'donations'
     ? `SELECT d.*, dr.id AS receipt_id, dr.receipt_number FROM donations d LEFT JOIN donation_receipts dr ON dr.donation_id = d.id${whereSql} ORDER BY d.${config.order} DESC LIMIT ? OFFSET ?`
-    : `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
+    : resource === 'website_content'
+      ? `SELECT * FROM website_content${whereSql} ORDER BY page_slug ASC, section_key ASC, sort_order ASC, version_number DESC LIMIT ? OFFSET ?`
+      : `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
   const result = await c.env.DB.prepare(sql).bind(...searchParams, limit, offset).all();
   return c.json({
     success: true,
