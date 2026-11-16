@@ -272,8 +272,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
-  const roleManagerEmail = PRIMARY_ADMIN_EMAIL;
-  if (!roleManagerEmail || actor.email.toLowerCase() !== roleManagerEmail) {
+  if (!isTrustedSuperAdmin(actor.email)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a trusted Society Super Admin can grant Cloudflare Access to approved users.' } }, 403);
   }
 
