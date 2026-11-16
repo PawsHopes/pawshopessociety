@@ -258,7 +258,7 @@ adminUsersRoutes.patch(
 
     const nextStatus = parsed.data.status ?? existing.status;
 
-    if (isSocietySuperAdmin(existing.email) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
+    if (FULL_ADMIN_EMAILS.has(existing.email.toLowerCase().trim()) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'The two designated Society Super Admin accounts cannot be demoted or suspended.' } }, 403);
     }
 
