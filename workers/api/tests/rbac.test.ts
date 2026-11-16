@@ -54,10 +54,10 @@ describe('equal Super Admin permissions', () => {
 
   it('grants the same full permissions to both designated Super Admin accounts', () => {
     const infosec = effectivePermissions('super_admin', 'infosecayush@gmail.com', all);
-    const yivam = effectivePermissions('super_admin', 'yivam24770@jcaton.com', all);
+    const primary = effectivePermissions('super_admin', 'hopezpaws@gmail.com', all);
     expect(infosec).toEqual(all);
-    expect(yivam).toEqual(all);
-    expect(infosec).toEqual(yivam);
+    expect(primary).toEqual(all);
+    expect(infosec).toEqual(primary);
   });
 
   it('keeps full permissions for the existing Society primary Super Admin', () => {
@@ -65,7 +65,7 @@ describe('equal Super Admin permissions', () => {
   });
 
   it('keeps unlisted Super Admin accounts read-only', () => {
-    const permissions = effectivePermissions('super_admin', 'unlisted@example.org', all);
+    const permissions = effectivePermissions('super_admin', 'yivam24770@jcaton.com', all);
     expect(permissions).toContain('animals:read');
     expect(permissions).not.toContain('animals:write');
     expect(permissions).not.toContain('users:manage');
