@@ -2,7 +2,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
-import { requirePermission } from '../../middleware/rbac';
+import { requirePermission, isTrustedSuperAdmin } from '../../middleware/rbac';
 import { appendAuditLog } from '../../services/audit';
 
 export const adminUsersRoutes = new Hono<{
@@ -10,8 +10,6 @@ export const adminUsersRoutes = new Hono<{
   Variables: AppVariables;
 }>();
 
-const TRUSTED_SUPER_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
-const isTrustedSuperAdmin = (email: string) => TRUSTED_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim());
 const ROLE_CODES = [
   'super_admin',
   'finance_manager',
