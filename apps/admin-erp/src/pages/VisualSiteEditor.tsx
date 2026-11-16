@@ -40,6 +40,7 @@ export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditD
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [previewKey, setPreviewKey] = useState(0);
+  const [pendingArchiveIds, setPendingArchiveIds] = useState<string[]>([]);
 
   const publicPageUrl = useMemo(() => 'https://pawshopessociety.pages.dev/' + pageSlug, [pageSlug]);
 
@@ -86,6 +87,7 @@ export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditD
     setSaving(true);
     setFeedback('');
     const created: CmsItem[] = [];
+    setPendingArchiveIds((current) => [...new Set([...current, ...items.map((item) => item.id)])]);
     for (let index = 0; index < items.length; index += 1) {
       const item = items[index];
       const sectionKey = SLOT_KEYS[index];
@@ -140,7 +142,21 @@ export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditD
         return;
       }
     }
-    setFeedback('All draft CMS sections published. Refresh the public page to verify the result.');
+    for (const oldId of pendingArchiveIds) {
+      const archived = await apiFetch('/api/v1/admin/modules/cms/' + encodeURIComponent(oldId) + '/publish', {
+        method: 'POST',
+        body: JSON.stringify({ published: false }),
+      });
+      if (!archived.success) {
+        setFeedback('New layout sections are published, but an old section could not be archived: ' + (archived.error?.message || 'Refresh and retry unpublishing the old version.'));
+        setSaving(false);
+        await load();
+        await onRefresh();
+        return;
+      }
+    }
+    setPendingArchiveIds([]);
+    setFeedback('All draft CMS sections published and replaced versions archived. Refresh the public page to verify the result.');
     setSaving(false);
     await load();
     await onRefresh();
