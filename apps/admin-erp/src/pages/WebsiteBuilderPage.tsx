@@ -323,6 +323,10 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
         <button type="button" onClick={() => void load()} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Refresh</button>
       </div>
 
+      {pageSlug === 'adopt.html' && user.permissions.includes('animals:read') && <section className="flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div><p className="text-sm font-bold text-slate-900">Adoption animal profiles</p><p className="mt-1 text-sm text-slate-600">Dog and animal cards are linked to the central Animal Registry. Manage profiles, photos, adoption eligibility and publishing without creating duplicate CMS records.</p></div>
+        <a href="/modules/animals" className="shrink-0 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700">Open visual animal manager</a>
+      </section>}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)]">
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
