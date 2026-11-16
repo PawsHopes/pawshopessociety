@@ -663,7 +663,7 @@ adminModuleRoutes.post('/purchase_orders/:id/cancel', async (c) => {
   const order = await c.env.DB.prepare('SELECT id, po_number, status FROM purchase_orders WHERE id = ?').bind(id).first<{ id: string; po_number: string; status: string }>();
   if (!order) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Purchase order not found.' } }, 404);
   if (!['draft', 'ordered'].includes(order.status)) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only draft or ordered purchase orders can be cancelled.' } }, 409);
-  const posted = await c.env.DB.prepare("SELECT COUNT(*) AS count FROM stock_movements WHERE purchase_order_id = ? AND approval_status = 'approved'").bind(id).first<{ count: number }>();
+  const posted = await c.env.DB.prepare("SELECT COUNT(*) AS count FROM stock_movements WHERE purchase_order_id = ? AND approval_status IN ('pending','approved')").bind(id).first<{ count: number }>();
   if ((posted?.count ?? 0) > 0) return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'A purchase order with posted stock receipts cannot be cancelled.' } }, 409);
   const result = await c.env.DB.prepare("UPDATE purchase_orders SET status = 'cancelled', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN ('draft','ordered')").bind(id).run();
   if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Purchase order changed before cancellation.' } }, 409);
@@ -678,7 +678,7 @@ adminModuleRoutes.post('/purchase_orders/:id/receive', async (c) => {
   const order = await c.env.DB.prepare('SELECT id, po_number, status FROM purchase_orders WHERE id = ?').bind(id).first<{ id: string; po_number: string; status: string }>();
   if (!order) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Purchase order not found.' } }, 404);
   if (order.status !== 'ordered') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only ordered purchase orders can be received.' } }, 409);
-  const movements = await c.env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved FROM stock_movements WHERE purchase_order_id = ?").bind(id).first<{ total: number; approved: number | null }>();
+  const movements = await c.env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved FROM stock_movements WHERE purchase_order_id = ? AND approval_status <> 'rejected'").bind(id).first<{ total: number; approved: number | null }>();
   if (!movements || movements.total < 1 || movements.approved !== movements.total) {
     return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Record and approve every stock receipt linked to this purchase order before marking it received.' } }, 409);
   }
@@ -695,9 +695,13 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
 
   if (resource === 'stock_movements') {
     if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
-    const row = await c.env.DB.prepare('SELECT id, item_id, movement_type, quantity_delta, approval_status, recorded_by FROM stock_movements WHERE id = ?').bind(id).first<{id:string;item_id:string;movement_type:string;quantity_delta:number;approval_status:string;recorded_by:string}>();
+    const row = await c.env.DB.prepare('SELECT id, item_id, movement_type, quantity_delta, approval_status, recorded_by, purchase_order_id FROM stock_movements WHERE id = ?').bind(id).first<{id:string;item_id:string;movement_type:string;quantity_delta:number;approval_status:string;recorded_by:string;purchase_order_id:string|null}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
     if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot approve your own stock movement.' } }, 403);
+    if (row.purchase_order_id) {
+      const purchaseOrder = await c.env.DB.prepare('SELECT status FROM purchase_orders WHERE id = ?').bind(row.purchase_order_id).first<{ status: string }>();
+      if (!purchaseOrder || purchaseOrder.status !== 'ordered') return c.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'The linked purchase order must remain ordered before stock receipt approval.' } }, 409);
+    }
     if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending stock movements can be approved.' } }, 409);
     try {
       const result = await c.env.DB.prepare("UPDATE stock_movements SET approval_status = 'approved', approved_by = ? WHERE id = ? AND approval_status = 'pending'").bind(actor.id, id).run();
@@ -709,6 +713,18 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
     }
     await appendAuditLog(c, { action: 'STOCK_MOVEMENT_APPROVED', entityType: 'stock_movements', entityId: id, after: { approval_status: 'approved', item_id: row.item_id, quantity_delta: row.quantity_delta } });
     return c.json({ success: true, data: { id, approved: true } });
+  }
+
+  if (resource === 'stock_movements') {
+    if (!actor.permissions.includes('inventory:approve')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Inventory approval permission required.' } }, 403);
+    const row = await c.env.DB.prepare('SELECT id, recorded_by, approval_status FROM stock_movements WHERE id = ?').bind(id).first<{ id: string; recorded_by: string; approval_status: string }>();
+    if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Stock movement not found.' } }, 404);
+    if (row.recorded_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot reject your own stock movement.' } }, 403);
+    if (row.approval_status !== 'pending') return c.json({ success: false, error: { code: 'CONFLICT', message: 'Only pending stock movements can be rejected.' } }, 409);
+    const result = await c.env.DB.prepare("UPDATE stock_movements SET approval_status = 'rejected', approved_by = ?, review_notes = ? WHERE id = ? AND approval_status = 'pending'").bind(actor.id, reason, id).run();
+    if ((result.meta?.changes ?? 0) !== 1) return c.json({ success: false, error: { code: 'CONFLICT', message: 'Stock movement was already reviewed.' } }, 409);
+    await appendAuditLog(c, { action: 'STOCK_MOVEMENT_REJECTED', entityType: 'stock_movements', entityId: id, after: { approval_status: 'rejected', reason } });
+    return c.json({ success: true, data: { id, status: 'rejected' } });
   }
 
   if (resource === 'expenses') {
