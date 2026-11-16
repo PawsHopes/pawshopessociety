@@ -40,8 +40,8 @@ vars = { ENVIRONMENT = "staging", PUBLIC_SITE_ORIGIN = "https://pawshopessociety
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "pawshopes-erp-db-development"
-database_id = "93b67f22-db38-4fdc-95ab-16a41e5492f7"
+database_name = "pawshopes-erp-db-staging-isolated"
+database_id = "1392b845-8635-45b4-82a8-09b53e7403f1"
 migrations_dir = "../../database/migrations"
 migrations_table = "d1_migrations"
 
