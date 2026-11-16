@@ -53,7 +53,7 @@ adminUsersRoutes.get(
         u.phone, u.status, u.last_login_at as lastLoginAt,
         u.created_at as createdAt,
         r.code as roleCode,
-        CASE WHEN r.code = 'super_admin' AND lower(u.email) NOT IN ('hopezpaws@gmail.com', 'infosecayush@gmail.com') THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
+        CASE WHEN r.code = 'super_admin' AND lower(trim(u.email)) <> 'hopezpaws@gmail.com' THEN 'Super Admin (Read-Only)' ELSE r.name END as roleName
       FROM users u
       JOIN roles r ON r.id = u.role_id
       ORDER BY u.created_at DESC
@@ -87,7 +87,7 @@ adminUsersRoutes.post(
       }, 403);
     }
 
-    if (!FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim())) {
+    if (!actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can create users and assign initial roles.' } }, 403);
     }
 
@@ -177,7 +177,7 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
-    if (!FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim())) {
+    if (!actor.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL) {
       return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the Paw\'s Hopez Society primary administrator can modify ERP user accounts.' } }, 403);
     }
 
