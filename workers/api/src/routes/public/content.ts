@@ -7,7 +7,7 @@ publicContentRoutes.get('/', async (c) => {
   const result = await c.env.DB.prepare(`
     SELECT wc.id, wc.page_slug AS pageSlug, wc.section_key AS sectionKey,
       wc.title, wc.body_json AS bodyJson, wc.seo_title AS seoTitle,
-      wc.seo_description AS seoDescription, wc.published_at AS publishedAt,
+      wc.seo_description AS seoDescription, wc.published_at AS publishedAt, wc.sort_order AS sortOrder,
       ma.public_url AS mediaUrl
     FROM website_content wc
     LEFT JOIN media_assets ma ON ma.id = wc.media_asset_id
