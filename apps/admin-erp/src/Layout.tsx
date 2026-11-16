@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import type { AuthUser } from './lib/api';
+import { NotificationCenter } from './components/NotificationCenter';
 
 interface LayoutProps {
   user: AuthUser;
@@ -86,7 +87,7 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
         </div>
       </aside>
 
-      <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
+      <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto"><div className="mb-4 flex justify-end"><NotificationCenter /></div>{children}</main>
     </div>
   );
 };
