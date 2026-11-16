@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   { to: '/modules/finance', label: 'Donations & Ledger', icon: IndianRupee, perm: 'finance:read', phase: 'Active' },
   { to: '/modules/inventory', label: 'Inventory', icon: Package, perm: 'inventory:read', phase: 'Phase 5' },
   { to: '/modules/volunteers', label: 'Volunteers', icon: Users, perm: 'volunteers:read', phase: 'Phase 5' },
-  { to: '/modules/cms', label: 'Website CMS', icon: Globe, perm: 'cms:read', phase: 'Active' },
+  { to: '/website-builder', label: 'Visual Website Builder', icon: Globe, perm: 'cms:read', phase: 'Active' },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ user, children }) => {

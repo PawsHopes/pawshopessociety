@@ -8,6 +8,7 @@ import { JoinManagementPage } from './pages/JoinManagementPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { ModulePreviewPage } from './pages/ModulePreviewPage';
 import { ModuleWorkspacePage } from './pages/ModuleWorkspacePage';
+import { WebsiteBuilderPage } from './pages/WebsiteBuilderPage';
 
 type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
 
@@ -98,6 +99,7 @@ export const App: React.FC = () => {
           <Route path="/users" element={<PermissionGate user={user} permission="users:manage"><UsersPage /></PermissionGate>} />
           <Route path="/join-requests" element={<PermissionGate user={user} permission="users:manage"><JoinManagementPage /></PermissionGate>} />
           <Route path="/audit-logs" element={<PermissionGate user={user} permission="audit:read"><AuditLogsPage /></PermissionGate>} />
+          <Route path="/website-builder" element={<PermissionGate user={user} permission="cms:read"><WebsiteBuilderPage user={user} /></PermissionGate>} />
           <Route path="/modules/:moduleKey" element={<ModuleWorkspacePage user={user} />} />
           <Route path="/roadmap/:moduleKey" element={<ModulePreviewPage user={user} />} />
         </Routes>

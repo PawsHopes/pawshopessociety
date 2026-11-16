@@ -102,6 +102,7 @@ describe('untrusted test-account user-management restrictions', () => {
       '/modules/foster_applications/application-id/approve',
       '/modules/animals/animal-id/publish',
       '/modules/cms/content-id/publish',
+      '/modules/cms/content-id/draft',
       '/modules/purchase_orders/po-id/order',
       '/modules/purchase_orders/po-id/cancel',
       '/modules/purchase_orders/po-id/receive',
@@ -137,6 +138,13 @@ describe('untrusted test-account user-management restrictions', () => {
       }
     }
     expect(failures).toEqual([]);
+
+    const reorderResponse = await app.request('/modules/cms/reorder', {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ pageSlug: 'index.html', items: [{ id: 'cms-id', sortOrder: 0 }] }),
+    });
+    expect(reorderResponse.status).toBe(403);
   });
 });
 
