@@ -100,6 +100,31 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
     [rows, pageSlug],
   );
 
+  const previewRows = useMemo<ContentRow[]>(() => {
+    const draftRow: ContentRow = {
+      id: editingId || '__preview__',
+      page_slug: form.pageSlug,
+      section_key: form.sectionKey,
+      title: form.title || 'Your heading will appear here',
+      body_json: JSON.stringify({
+        content: form.content,
+        buttonLabel: form.buttonLabel,
+        buttonUrl: form.buttonUrl,
+        imageAlt: form.imageAlt,
+      }),
+      block_type: form.blockType,
+      sort_order: editingId
+        ? Number(pageRows.find((row) => row.id === editingId)?.sort_order || 0)
+        : pageRows.reduce((max, row) => Math.max(max, Number(row.sort_order || 0)), -10) + 10,
+      status: 'draft',
+    };
+    const next = [...pageRows];
+    const existingIndex = editingId ? next.findIndex((row) => row.id === editingId) : -1;
+    if (existingIndex >= 0) next[existingIndex] = draftRow;
+    else next.push(draftRow);
+    return next.sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+  }, [pageRows, editingId, form]);
+
   const load = async () => {
     const result = await apiFetch<{ items: ContentRow[] }>('/api/v1/admin/modules/website_content?limit=200');
     if (!result.success || !result.data) {
@@ -329,7 +354,7 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
           <form onSubmit={save} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div><h2 className="font-bold text-slate-900">{editingId ? 'Edit section draft' : 'Create page section'}</h2><p className="text-xs text-slate-500">Changes stay in draft until published.</p></div>
-              <button type="button" onClick={() => setPreviewMode(!previewMode)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700">{previewMode ? 'Hide preview' : 'Preview'}</button>
+              <button type="button" onClick={() => setPreviewMode(!previewMode)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700">{previewMode ? 'Hide page preview' : 'Preview page'}</button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="sm:col-span-2"><span className="mb-1 block text-xs font-bold text-slate-600">Section type</span><select value={form.blockType} onChange={(event) => setForm((v) => ({ ...v, blockType: event.target.value as BlockType }))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="hero">Hero banner</option><option value="text">Text section</option><option value="image">Image + text</option><option value="cta">Call to action</option><option value="content">Simple content</option></select></label>
@@ -350,12 +375,29 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
             </div>
           </form>
 
-          {previewMode && <div className={`rounded-2xl border p-6 shadow-sm ${form.blockType === 'hero' ? 'border-slate-800 bg-slate-900 text-white' : form.blockType === 'cta' ? 'border-orange-600 bg-orange-600 text-white' : 'border-slate-200 bg-white'}`}>
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Draft preview · {PAGES.find(([value]) => value === form.pageSlug)?.[1]}</p>
-            <h2 className="text-2xl font-extrabold">{form.title || 'Your heading will appear here'}</h2>
-            {form.content && <p className="mt-3 whitespace-pre-line text-sm leading-7 opacity-85">{form.content}</p>}
-            {previewImage && <img src={previewImage} alt={form.imageAlt || form.title} className="mt-4 max-h-64 w-full rounded-xl object-cover" />}
-            {form.buttonLabel && <span className="mt-5 inline-block rounded-full bg-orange-600 px-5 py-2.5 text-sm font-bold text-white">{form.buttonLabel}</span>}
+          {previewMode && <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-600">Page preview</p><h3 className="font-bold text-slate-900">{PAGES.find(([value]) => value === form.pageSlug)?.[1]}</h3></div>
+              <span className="text-xs text-slate-500">{previewRows.length} sections</span>
+            </div>
+            {previewRows.map((row) => {
+              const body = parseBody(row.body_json);
+              const type = row.block_type || 'content';
+              const current = row.id === (editingId || '__preview__');
+              const surface = type === 'hero' ? 'bg-slate-900 text-white border-slate-800' : type === 'cta' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-slate-900 border-slate-200';
+              return <article key={row.id} className={`rounded-xl border p-4 shadow-sm ${surface}`}>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{type} · {row.section_key.replaceAll('_', ' ')}</span>
+                  {row.id !== '__preview__' && <button type="button" onClick={() => { const actual = pageRows.find((item) => item.id === row.id); if (actual) void editRow(actual); }} disabled={!canWrite || busy} className="rounded-md border border-current/30 px-2 py-1 text-[10px] font-bold disabled:opacity-50">Edit</button>}
+                  {current && <span className="rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800">Current draft</span>}
+                </div>
+                <h4 className="text-lg font-extrabold">{row.title}</h4>
+                {body.content && <p className="mt-2 whitespace-pre-line text-sm leading-6 opacity-85">{body.content}</p>}
+                {current && previewImage && <img src={previewImage} alt={form.imageAlt || form.title} className="mt-3 max-h-48 w-full rounded-lg object-cover" />}
+                {row.media_asset_id && !current && <p className="mt-2 text-xs opacity-60">R2 image attached</p>}
+                {body.buttonLabel && <span className="mt-3 inline-block rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-orange-700">{body.buttonLabel}</span>}
+              </article>;
+            })}
           </div>}
         </section>
       </div>
