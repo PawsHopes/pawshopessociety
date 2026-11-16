@@ -308,7 +308,7 @@ adminModuleRoutes.get('/:resource', async (c) => {
   const sql = resource === 'donations'
     ? `SELECT d.*, dr.id AS receipt_id, dr.receipt_number FROM donations d LEFT JOIN donation_receipts dr ON dr.donation_id = d.id${whereSql} ORDER BY d.${config.order} DESC LIMIT ? OFFSET ?`
     : resource === 'website_content'
-      ? `SELECT * FROM website_content${whereSql} ORDER BY page_slug ASC, section_key ASC, sort_order ASC, version_number DESC LIMIT ? OFFSET ?`
+      ? `SELECT wc.*, ma.public_url AS media_url FROM website_content wc LEFT JOIN media_assets ma ON ma.id = wc.media_asset_id${whereSql.replaceAll('page_slug','wc.page_slug').replaceAll('section_key','wc.section_key').replaceAll('title','wc.title')} ORDER BY wc.page_slug ASC, wc.section_key ASC, wc.sort_order ASC, wc.version_number DESC LIMIT ? OFFSET ?`
       : `SELECT * FROM ${config.table}${whereSql} ORDER BY ${config.order} DESC LIMIT ? OFFSET ?`;
   const result = await c.env.DB.prepare(sql).bind(...searchParams, limit, offset).all();
   return c.json({
