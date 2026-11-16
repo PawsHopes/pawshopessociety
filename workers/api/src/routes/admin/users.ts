@@ -235,6 +235,13 @@ adminUsersRoutes.patch(
       }, 403);
     }
 
+    if (parsed.data.roleCode === 'super_admin' && !isTrustedSuperAdmin(existing.email)) {
+      return c.json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Super Admin role can only be assigned to the two explicitly trusted Society administrator accounts.' }
+      }, 403);
+    }
+
     if (
       targetId === actor.id &&
       (parsed.data.roleCode !== undefined || parsed.data.status !== undefined)
