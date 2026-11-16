@@ -42,10 +42,10 @@ adminUsersRoutes.get(
   async (c) => {
     const actor = c.get('authUser');
 
-    if (actor.roleCode !== 'super_admin') {
+    if (actor.roleCode !== 'super_admin' || actor.email.toLowerCase().trim() !== PRIMARY_ADMIN_EMAIL) {
       return c.json({
         success: false,
-        error: { code: 'FORBIDDEN', message: 'Only a Super Admin can manage users.' }
+        error: { code: 'FORBIDDEN', message: 'Only the primary Society administrator can view and manage ERP user accounts.' }
       }, 403);
     }
 
