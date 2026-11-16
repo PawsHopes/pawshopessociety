@@ -1,11 +1,14 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+const FULL_SUPER_ADMIN_EMAILS = new Set([
+  'hopezpaws@gmail.com',
+  'infosecayush@gmail.com',
+]);
 
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
   // Full Super Admin privileges are limited to the explicitly designated Society accounts.
-  if (roleCode === 'super_admin' && email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+  if (roleCode === 'super_admin' && !FULL_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim())) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
   return allPermissions;
