@@ -6,12 +6,14 @@ import type { Bindings, AppVariables } from '../src/types/env';
 function makeBootstrapApp(authEmail: string) {
   const batches: unknown[][] = [];
   const db = {
-    prepare: (sql: string) => ({
-      bind: (..._values: unknown[]) => ({
+    prepare: (sql: string) => {
+      const statement = {
         first: async () => sql.includes("role_id = 'role_super_admin'") ? null : null,
         all: async () => ({ results: [] }),
-      }),
-    }),
+        bind: (..._values: unknown[]) => statement,
+      };
+      return statement;
+    },
     batch: async (statements: unknown[]) => { batches.push(statements); return []; },
   };
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
