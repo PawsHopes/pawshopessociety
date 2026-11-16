@@ -15,6 +15,11 @@ on:
         required: true
         type: boolean
         default: false
+      confirm_production_deploy:
+        description: 'Explicitly approve applying production D1 migrations and deploying the live ERP Worker'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -410,7 +415,7 @@ jobs:
       - database
       - public-site
     # Never deploy pull requests or branches other than erp-development.
-    if: github.ref == 'refs/heads/erp-development' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.confirm_staging_deploy == true))
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'workflow_dispatch' && inputs.confirm_staging_deploy == true
     environment:
       name: staging
     steps:
@@ -453,7 +458,7 @@ jobs:
       - database
       - public-site
     # Production is isolated from the public website and runs only after every validation job passes.
-    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'workflow_dispatch' && inputs.confirm_production_deploy == true
     environment:
       name: production
     steps:
