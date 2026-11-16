@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch, type AuthUser } from '../lib/api';
+import { AnimalVisualManager } from './AnimalVisualManager';
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email' | 'textarea' | 'select' | 'checkbox'; required?: boolean; options?: string[]; optionLabels?: Record<string, string>; relationResource?: string };
 type Resource = { key: string; label: string; permission: string; writePermission?: string; fields: Field[] };
@@ -143,6 +144,7 @@ interface Props { user: AuthUser; }
 
 export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
   const { moduleKey = '' } = useParams();
+  const navigate = useNavigate();
   const resources = RESOURCES[moduleKey] || [];
   const available = useMemo(() => resources.filter((r) => user.permissions.includes(r.permission)), [resources, user.permissions]);
   const [resourceKey, setResourceKey] = useState('');
@@ -443,6 +445,10 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
       <div><p className="text-xs font-bold uppercase tracking-wider text-orange-700">Paw&apos;s Hopez Society · NGO ERP</p><h1 className="mt-1 text-2xl font-extrabold text-slate-900">{TITLES[moduleKey] || 'ERP Module'}</h1><p className="mt-1 text-sm text-slate-600">Operational records, workflows and history.</p></div>
       <div className="sm:w-72"><label className="mb-1 block text-xs font-bold uppercase text-slate-500">Workspace</label><select value={resource?.key || ''} onChange={(e) => { setResourceKey(e.target.value); setPage(0); setTotal(0); reset(); }} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">{available.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</select></div>
     </header>
+    {moduleKey === 'adoptions' && user.permissions.includes('animals:read') && <section className="flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div><p className="text-sm font-bold text-slate-900">Public adoption listings</p><p className="mt-1 text-sm text-slate-600">Open the visual animal page to add dogs, update profiles and photos, archive records, and control public publishing.</p></div>
+      <button type="button" onClick={() => navigate('/modules/animals')} className="shrink-0 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700">Manage adoption listings</button>
+    </section>}
     {feedback && <div role="status" className="rounded-xl bg-slate-900 px-4 py-3 text-sm text-white">{feedback}</div>}
     {moduleKey === 'inventory' && inventoryAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Inventory alerts</strong><p className="mt-1">Low stock: {inventoryAlerts.lowStock.length} · Expired batches: {inventoryAlerts.expired.length} · Expiring in 30 days: {inventoryAlerts.expiring.length}</p></section>}
     {moduleKey === 'medical' && medicalAlerts && <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Vaccination reminders</strong><p className="mt-1">Overdue: {medicalAlerts.overdue.length} · Due within 30 days: {medicalAlerts.due.length}</p></section>}
@@ -463,11 +469,33 @@ export const ModuleWorkspacePage: React.FC<Props> = ({ user }) => {
           {attachments.length > 0 && <div className="mt-3 border-t border-slate-200 pt-3"><p className="mb-2 text-xs font-bold text-slate-700">Already attached</p><ul className="space-y-1">{attachments.map((item) => <li key={String(item.id)} className="flex flex-wrap items-center gap-2 text-xs">
             {item.public_url ? <a className="text-blue-700 underline" href={String(item.public_url)} target="_blank" rel="noreferrer">{String(item.media_file_name || item.label || 'Open image')}</a> : <button type="button" className="text-blue-700 underline" onClick={() => void openPrivateAttachment(String(item.document_id))}>{String(item.document_file_name || item.label || 'Open private document')}</button>}
             <span className="text-slate-500">{String(item.doc_category || item.media_mime_type || item.document_mime_type || '')}</span>
+            {resource?.key === 'animals' && canWrite && item.media_asset_id && editingId && <button type="button" onClick={async () => {
+              if (!window.confirm('Remove this photo from the animal profile? The stored R2 image will be retained.')) return;
+              const removed = await apiFetch(`/api/v1/admin/modules/attachments/animals/${editingId}/${String(item.id)}`, { method: 'DELETE' });
+              setFeedback(removed.success ? 'Photo removed from this animal profile.' : removed.error?.message || 'Could not remove photo.');
+              if (removed.success && editingId) await loadAttachments(editingId);
+            }} className="rounded border border-red-200 px-2 py-1 text-[11px] font-semibold text-red-700 hover:bg-red-50">Remove photo</button>}
           </li>)}</ul></div>}
         </div>}
         <div className="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-3">{resource.key === 'website_content' && <button type="button" onClick={() => setCmsPreviewOpen(true)} className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Preview content</button>}<button disabled={busy} className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create record'}</button></div>
       </form>
     </section>}
+    {resource?.key === 'animals' && <AnimalVisualManager rows={rows} canEdit={canEdit} canDelete={canWrite} canPublish={user.permissions.includes('animals:publish')} onEdit={beginEdit} onDelete={async (row) => {
+      const id = String(row.id || '');
+      const animalName = String(row.name || row.animal_code || 'this animal');
+      if (!id || !window.confirm(`Archive ${animalName}? It will be removed from the public website, but its medical and audit history will be retained.`)) return;
+      const result = await apiFetch(`/api/v1/admin/modules/animals/${id}`, { method: 'DELETE' });
+      setFeedback(result.success ? 'Animal archived safely. Its history and media have been retained.' : result.error?.message || 'Unable to archive this animal.');
+      if (result.success) await load();
+    }} onPublish={async (row) => {
+      const id = String(row.id || '');
+      const published = !Boolean(Number(row.is_published_public || 0));
+      const animalName = String(row.name || row.animal_code || 'this animal');
+      if (!id || !window.confirm(`${published ? 'Publish' : 'Unpublish'} ${animalName} ${published ? 'on' : 'from'} the public adoption/rescue website?`)) return;
+      const result = await apiFetch(`/api/v1/admin/modules/animals/${id}/publish`, { method: 'POST', body: JSON.stringify({ published }) });
+      setFeedback(result.success ? (published ? 'Animal published to the public website.' : 'Animal unpublished from the public website.') : result.error?.message || 'Publishing failed. Check the animal status, eligibility and public description.');
+      if (result.success) await load();
+    }} />}
     {viewingAttachments && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div><h2 className="font-bold text-slate-900">Files: {viewingAttachments.label}</h2><p className="text-xs text-slate-500">{viewingAttachments.items.length} attachment(s)</p></div>
