@@ -4,6 +4,7 @@ import { effectivePermissions, isTrustedSuperAdmin, requirePermission } from '..
 import { adminUsersRoutes } from '../src/routes/admin/users';
 import { adminJoinRoutes } from '../src/routes/admin/join';
 import { adminModuleRoutes } from '../src/routes/admin/modules';
+import { adminDocumentRoutes } from '../src/routes/admin/documents';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 import { canUploadDocumentCategory } from '../src/services/documentAccess';
 
@@ -28,6 +29,7 @@ function makeUsersApp(user: AuthUser) {
   app.route('/users', adminUsersRoutes);
   app.route('/join', adminJoinRoutes);
   app.route('/modules', adminModuleRoutes);
+  app.route('/', adminDocumentRoutes);
   return app;
 }
 
@@ -84,19 +86,43 @@ describe('untrusted test-account user-management restrictions', () => {
     const app = makeUsersApp(user);
     const headers = { 'Content-Type': 'application/json' };
 
+    const writeResources = [
+      'animals', 'rescue_cases', 'medical_records', 'vaccinations', 'veterinarians',
+      'adoption_applications', 'foster_applications', 'adoption_agreements', 'donors',
+      'donations', 'expenses', 'compliance_registrations', 'inventory_items',
+      'stock_movements', 'suppliers', 'purchase_orders', 'volunteers',
+      'volunteer_tasks', 'website_content'
+    ];
+    const protectedActions = [
+      '/join/applications/application-id/approve',
+      '/join/applications/application-id/access-sync',
+      '/modules/foster_applications/application-id/activate',
+      '/modules/foster_applications/application-id/complete',
+      '/modules/animals/animal-id/publish',
+      '/modules/cms/content-id/publish',
+      '/modules/purchase_orders/po-id/order',
+      '/modules/purchase_orders/po-id/cancel',
+      '/modules/purchase_orders/po-id/receive',
+      '/modules/expenses/expense-id/approve',
+      '/modules/expenses/expense-id/reject',
+      '/modules/expenses/expense-id/mark-paid',
+      '/modules/stock_movements/movement-id/approve',
+      '/modules/donations/donation-id/verify',
+      '/modules/attachments/animals/animal-id',
+      '/documents/private-doc-id/signed-url',
+    ];
+
     const responses = await Promise.all([
       app.request('/users'),
       app.request('/users', { method: 'POST', headers, body: JSON.stringify({ email: 'new@example.org', fullName: 'New User', roleCode: 'auditor' }) }),
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'active' }) }),
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ status: 'suspended' }) }),
       app.request('/users/target-user', { method: 'PATCH', headers, body: JSON.stringify({ roleCode: 'super_admin' }) }),
-      app.request('/join/applications/application-id/approve', { method: 'POST', headers, body: JSON.stringify({ roleCode: 'auditor' }) }),
-      app.request('/join/applications/application-id/access-sync', { method: 'POST' }),
-      app.request('/modules/animals', { method: 'GET' }),
-      app.request('/modules/animals', { method: 'POST', headers, body: JSON.stringify({ animal_code: 'X', name: 'Test', species: 'Dog' }) }),
+      ...writeResources.map((resource) => app.request('/modules/' + resource, { method: 'POST', headers, body: '{}' })),
+      ...protectedActions.map((path) => app.request(path, { method: 'POST', headers, body: '{}' })),
     ]);
 
-    expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403, 403, 403, 403, 403, 403]);
+    expect(responses.every((response) => response.status === 403)).toBe(true);
   });
 });
 
