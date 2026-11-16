@@ -225,13 +225,6 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    if (existing.email.toLowerCase() === PRIMARY_ADMIN_EMAIL && actor.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
-      return c.json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: 'The Paw\'s Hopez Society primary administrator account is protected from secondary-user changes.' }
-      }, 403);
-    }
-
     if (
       targetId === actor.id &&
       (parsed.data.roleCode !== undefined || parsed.data.status !== undefined)
