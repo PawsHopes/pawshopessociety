@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
 import { requirePermission } from '../../middleware/rbac';
 import { appendAuditLog } from '../../services/audit';
+import { revokeEmailFromCloudflareAccess, syncApprovedEmailToCloudflareAccess } from '../../services/cloudflareAccess';
 
 export const adminUsersRoutes = new Hono<{
   Bindings: Bindings;
@@ -314,8 +315,17 @@ adminUsersRoutes.patch(
       }, 500);
     }
 
+    let accessSync: { status: 'synced' | 'pending' | 'failed'; message: string } | null = null;
+    if (existing.status !== saved.status) {
+      accessSync = saved.status === 'active'
+        ? await syncApprovedEmailToCloudflareAccess(c.env, existing.email)
+        : await revokeEmailFromCloudflareAccess(c.env, existing.email);
+    }
+
     await appendAuditLog(c, {
-      action: parsed.data.roleCode !== undefined && existing.role_code !== nextRoleCode ? 'USER_ROLE_CHANGED' : 'USER_UPDATED',
+      action: parsed.data.roleCode !== undefined && existing.role_code !== nextRoleCode
+        ? 'USER_ROLE_CHANGED'
+        : existing.status !== saved.status ? 'USER_STATUS_CHANGED' : 'USER_UPDATED',
       entityType: 'users',
       entityId: targetId,
       before: {
@@ -324,13 +334,16 @@ adminUsersRoutes.patch(
       },
       after: {
         roleCode: saved.role_code,
-        status: saved.status
+        status: saved.status,
+        accessSyncStatus: accessSync?.status ?? null,
+        accessSyncMessage: accessSync?.message ?? null
       }
     });
 
     return c.json({
       success: true,
-      data: { id: targetId, updated: true, roleCode: saved.role_code, status: saved.status }
+      data: { id: targetId, updated: true, roleCode: saved.role_code, status: saved.status,
+        accessSyncStatus: accessSync?.status ?? null, accessSyncMessage: accessSync?.message ?? null }
     });
   }
 );
