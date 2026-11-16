@@ -12,7 +12,7 @@ publicContentRoutes.get('/', async (c) => {
     FROM website_content wc
     LEFT JOIN media_assets ma ON ma.id = wc.media_asset_id
     WHERE wc.status = 'published'
-    ORDER BY wc.page_slug ASC, wc.section_key ASC
+    ORDER BY wc.page_slug ASC, wc.section_key ASC, wc.sort_order ASC
   `).all();
   c.header('Cache-Control', 'public, max-age=60, s-maxage=60');
   return c.json({ success: true, data: { items: result.results || [] } });
