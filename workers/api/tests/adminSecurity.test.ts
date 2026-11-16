@@ -5,7 +5,7 @@ import { adminJoinRoutes } from '../src/routes/admin/join';
 import { adminModuleRoutes } from '../src/routes/admin/modules';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 
-function makeApp() {
+function makeApp(user?: AuthUser) {
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
   const secondaryAdmin: AuthUser = {
     id: 'secondary-admin',
@@ -18,7 +18,7 @@ function makeApp() {
     permissions: ['users:manage', 'dashboard:read'],
   };
   app.use('*', async (c, next) => {
-    c.set('authUser', secondaryAdmin);
+    c.set('authUser', user ?? secondaryAdmin);
     await next();
   });
   app.route('/users', adminUsersRoutes);
@@ -83,4 +83,25 @@ describe('primary administrator-only controls', () => {
     expect(retry.status).toBe(403);
     expect(rejection.status).toBe(403);
   });
+  it('allows the second designated Society Super Admin to access user and join administration', async () => {
+    const designatedAdmin: AuthUser = {
+      id: 'equal-admin',
+      email: 'infosecayush@gmail.com',
+      fullName: 'Designated Super Admin',
+      roleCode: 'super_admin',
+      roleName: 'Super Admin',
+      permissions: ['users:manage'],
+    };
+    const app = makeApp(designatedAdmin);
+    const DB = {
+      prepare: () => ({
+        all: async () => ({ results: [] }),
+      }),
+    };
+    const users = await app.request('/users', {}, { DB } as unknown as Bindings);
+    const applications = await app.request('/join/applications?status=all', {}, { DB } as unknown as Bindings);
+    expect(users.status).toBe(200);
+    expect(applications.status).toBe(200);
+  });
+
 });
