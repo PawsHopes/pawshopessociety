@@ -25,7 +25,7 @@ describe('public animal publishing feed', () => {
     expect(response.status).toBe(200);
     const body = await response.json() as { data: { available: Array<{name:string;images:string[]}>; rescued: Array<{name:string}>; adopted: Array<{name:string}> } };
     expect(body.data.available.map((a) => a.name)).toEqual(['Milo']);
-    expect(body.data.available[0].images).toEqual(['https://media.example/milo.webp']);
+    expect(body.data.available[0]!.images).toEqual(['https://media.example/milo.webp']);
     expect(body.data.rescued.map((a) => a.name)).toEqual(['Bella']);
     expect(body.data.adopted.map((a) => a.name)).toEqual(['Rocky']);
     expect(sql[0]).toContain('is_published_public = 1');
