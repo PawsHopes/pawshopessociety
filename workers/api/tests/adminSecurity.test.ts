@@ -68,8 +68,12 @@ describe('primary administrator-only controls', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roleCode: 'volunteer' }),
     });
-    const retry = await app.request('/join/applications/app-123/retry-access-sync', { method: 'POST' });
+    const retry = await app.request('/join/applications/app-123/access-sync', { method: 'POST' });
+    const rejection = await app.request('/join/applications/app-123/reject', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'test' }),
+    });
     expect(approval.status).toBe(403);
     expect(retry.status).toBe(403);
+    expect(rejection.status).toBe(403);
   });
 });
