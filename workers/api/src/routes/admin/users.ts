@@ -12,7 +12,7 @@ export const adminUsersRoutes = new Hono<{
 }>();
 
 const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
-const isSocietySuperAdmin = (email: string) => FULL_ADMIN_EMAILS.has(email.toLowerCase().trim());
+const isSocietySuperAdmin = (email: string, roleCode: string) => roleCode === 'super_admin' && FULL_ADMIN_EMAILS.has(email.toLowerCase().trim());
 
 const ROLE_CODES = [
   'super_admin',
@@ -43,7 +43,7 @@ adminUsersRoutes.get(
   async (c) => {
     const actor = c.get('authUser');
 
-    if (actor.roleCode !== 'super_admin' || !isSocietySuperAdmin(actor.email)) {
+    if (actor.roleCode !== 'super_admin' || !isSocietySuperAdmin(actor.email, actor.roleCode)) {
       return c.json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can view and manage ERP user accounts.' }
