@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bindings } from '../src/types/env';
-import { syncApprovedEmailToCloudflareAccess } from '../src/services/cloudflareAccess';
+import { revokeEmailFromCloudflareAccess, syncApprovedEmailToCloudflareAccess } from '../src/services/cloudflareAccess';
 
 const env = (token?: string) => ({ CF_ACCESS_API_TOKEN: token } as Bindings);
 
@@ -88,5 +88,53 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     expect(result.status).toBe('synced');
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(1);
+  });
+});
+
+
+describe('revokeEmailFromCloudflareAccess', () => {
+  it('removes only the exact suspended email from both Access policies', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const target = policies.find((item) => url.includes(item.appId));
+      if (!target) throw new Error('Unexpected Access application');
+      if (init?.method === 'GET') {
+        return new Response(JSON.stringify({ success: true, result: makePolicy(target.policyId, [
+          { email: { email: 'hopezpaws@gmail.com' } },
+          { email: { email: 'member@example.com' } },
+          { email: { email: 'other@example.com' } },
+        ]) }), { status: 200 });
+      }
+      const body = JSON.parse(String(init?.body));
+      expect(body.include).toEqual([
+        { email: { email: 'hopezpaws@gmail.com' } },
+        { email: { email: 'other@example.com' } },
+      ]);
+      return new Response(JSON.stringify({ success: true, result: body }), { status: 200 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await revokeEmailFromCloudflareAccess(env('test-token'), 'Member@Example.com');
+    expect(result.status).toBe('synced');
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(2);
+  });
+
+  it('never removes the primary administrator Access rule', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await revokeEmailFromCloudflareAccess(env('test-token'), 'hopezpaws@gmail.com');
+    expect(result.status).toBe('failed');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not edit a policy containing a broad allow rule', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      success: true,
+      result: makePolicy(policies[0]!.policyId, [{ everyone: {} }, { email: { email: 'member@example.com' } }]),
+    }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await revokeEmailFromCloudflareAccess(env('test-token'), 'member@example.com');
+    expect(result.status).toBe('failed');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
