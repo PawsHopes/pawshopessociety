@@ -111,6 +111,12 @@ describe('untrusted test-account user-management restrictions', () => {
       '/modules/attachments/animals/animal-id',
     ];
 
+    const labels = [
+      'users:list', 'users:create', 'users:activate', 'users:suspend', 'users:assign-super-admin',
+      ...writeResources.map((resource) => 'module-write:' + resource),
+      ...protectedActions.map((path) => 'action:' + path),
+      'private-document:signed-url',
+    ];
     const responses = await Promise.all([
       app.request('/users'),
       app.request('/users', { method: 'POST', headers, body: JSON.stringify({ email: 'new@example.org', fullName: 'New User', roleCode: 'auditor' }) }),
@@ -122,7 +128,13 @@ describe('untrusted test-account user-management restrictions', () => {
       app.request('/documents/private-doc-id/signed-url'),
     ]);
 
-    expect(responses.every((response) => response.status === 403)).toBe(true);
+    const failures: Array<{ label: string; status: number; body: string }> = [];
+    for (let i = 0; i < responses.length; i += 1) {
+      if (responses[i].status !== 403) {
+        failures.push({ label: labels[i], status: responses[i].status, body: await responses[i].clone().text() });
+      }
+    }
+    expect(failures).toEqual([]);
   });
 });
 
