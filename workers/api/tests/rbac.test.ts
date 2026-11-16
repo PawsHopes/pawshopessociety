@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
-import { effectivePermissions, requirePermission } from '../src/middleware/rbac';
+import { effectivePermissions, isTrustedSuperAdmin, requirePermission } from '../src/middleware/rbac';
 import type { AuthUser, Bindings, AppVariables } from '../src/types/env';
 import { canUploadDocumentCategory } from '../src/services/documentAccess';
 
@@ -51,6 +51,14 @@ describe('API-side RBAC enforcement', () => {
 
 describe('trusted Super Admin permission boundary', () => {
   const all = ['dashboard:read', 'animals:read', 'animals:write', 'animals:publish', 'finance:approve', 'finance:ledger', 'donations:verify', 'inventory:approve', 'adoption:approve', 'cms:publish', 'rescue:write', 'volunteers:write', 'users:manage', 'documents:private_read'];
+
+  it('recognizes only the two explicitly configured trusted administrator emails', () => {
+    expect(isTrustedSuperAdmin('hopezpaws@gmail.com')).toBe(true);
+    expect(isTrustedSuperAdmin('INFOSE CAYUSH@gmail.com')).toBe(false);
+    expect(isTrustedSuperAdmin('infosecayush@gmail.com')).toBe(true);
+    expect(isTrustedSuperAdmin('yivam24770@jcaton.com')).toBe(false);
+    expect(isTrustedSuperAdmin('unlisted@example.org')).toBe(false);
+  });
 
   it('grants the same complete permission set to both explicitly trusted administrators', () => {
     expect(effectivePermissions('super_admin', 'hopezpaws@gmail.com', all)).toEqual(all);
