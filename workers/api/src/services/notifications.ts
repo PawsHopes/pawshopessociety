@@ -10,7 +10,7 @@ const add = (items: Notice[], type: NoticeType, dedupeKey: string, title: string
 export async function runDailyNotifications(env: Bindings): Promise<{ createdCandidates: number }> {
   const db = env.DB;
   const notices: Notice[] = [];
-  const [vaccinations, lowStock, expiringStock, expiringDocs, rescues, adoptions, pendingFinance] = await Promise.all([
+  const [vaccinations, lowStock, expiringStock, expiringDocs, rescues, adoptions, pendingFinance, pendingDonations, pendingStock] = await Promise.all([
     db.prepare(`SELECT v.id, v.vaccine_name, v.next_due_date, a.name AS animal_name
       FROM vaccinations v JOIN animals a ON a.id = v.animal_id
       WHERE v.next_due_date >= date('now') AND v.next_due_date <= date('now', '+30 days')
@@ -30,6 +30,11 @@ export async function runDailyNotifications(env: Bindings): Promise<{ createdCan
       WHERE status IN ('application','initial_review','verification') ORDER BY created_at DESC LIMIT 100`).all<{id:string;application_code:string;applicant_name:string}>(),
     db.prepare(`SELECT id, expense_code, vendor_payee, amount_paise FROM expenses
       WHERE approval_status = 'pending' ORDER BY created_at DESC LIMIT 100`).all<{id:string;expense_code:string;vendor_payee:string;amount_paise:number}>(),
+    db.prepare(`SELECT id, amount_paise, donation_date FROM donations
+      WHERE verification_status = 'pending' ORDER BY created_at DESC LIMIT 100`).all<{id:string;amount_paise:number;donation_date:string}>(),
+    db.prepare(`SELECT sm.id, sm.movement_type, sm.quantity_delta, i.name AS item_name FROM stock_movements sm
+      JOIN inventory_items i ON i.id = sm.item_id
+      WHERE sm.approval_status = 'pending' ORDER BY sm.created_at DESC LIMIT 100`).all<{id:string;movement_type:string;quantity_delta:number;item_name:string}>(),
   ]);
 
   for (const row of vaccinations.results || []) add(notices, 'vaccination_due', `vaccination_due:${row.id}:${row.next_due_date}`, 'Vaccination due soon', `${row.animal_name}: ${row.vaccine_name} is due by ${row.next_due_date}.`, '/modules/medical', ['vet_staff','super_admin']);
@@ -39,6 +44,8 @@ export async function runDailyNotifications(env: Bindings): Promise<{ createdCan
   for (const row of rescues.results || []) add(notices, 'new_rescue', `new_rescue:${row.id}`, 'Rescue case needs attention', `${row.case_code}: ${row.location_address}.`, '/modules/rescue', ['rescue_coord','super_admin']);
   for (const row of adoptions.results || []) add(notices, 'new_adoption', `new_adoption:${row.id}`, 'Adoption application awaiting review', `${row.application_code}: ${row.applicant_name}.`, '/modules/adoptions', ['adoption_coord','super_admin']);
   for (const row of pendingFinance.results || []) add(notices, 'approval_needed', `expense_approval:${row.id}`, 'Expense awaiting approval', `${row.expense_code}: ${row.vendor_payee} (₹${(Number(row.amount_paise || 0) / 100).toFixed(2)}).`, '/modules/finance', ['finance_manager','super_admin']);
+  for (const row of pendingDonations.results || []) add(notices, 'approval_needed', `donation_verification:${row.id}`, 'Donation awaiting verification', `Donation of ₹${(Number(row.amount_paise || 0) / 100).toFixed(2)} received on ${row.donation_date} needs verification.`, '/modules/finance', ['finance_manager','super_admin']);
+  for (const row of pendingStock.results || []) add(notices, 'approval_needed', `stock_approval:${row.id}`, 'Stock movement awaiting approval', `${row.item_name}: ${row.movement_type.replaceAll('_',' ')} (${row.quantity_delta}).`, '/modules/inventory', ['super_admin']);
 
   const statements = notices.flatMap((notice) => notice.roles.map((role) =>
     db.prepare(`INSERT OR IGNORE INTO notifications (id, target_role_code, dedupe_key, type, title, message, link)
