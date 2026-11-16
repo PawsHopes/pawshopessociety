@@ -8,7 +8,7 @@ const RESCUE_STORY_STATUSES = ['rescued', 'under_assessment', 'under_treatment',
 publicAnimalsRoutes.get('/', async (c) => {
   const animalsRes = await c.env.DB.prepare(
     `SELECT id, animal_code, legacy_slug, name, species, breed, gender,
-            estimated_age_text as age, health_summary as health,
+            estimated_age_text as age, health_summary as health, health_conditions as healthConditions, mobility_status as mobilityStatus, special_care_notes as specialCareNotes,
             public_description as description, adopted_note as adoptedNote,
             current_status
      FROM animals
@@ -30,6 +30,9 @@ publicAnimalsRoutes.get('/', async (c) => {
     gender: string;
     age: string | null;
     health: string | null;
+    healthConditions: string | null;
+    mobilityStatus: string | null;
+    specialCareNotes: string | null;
     description: string | null;
     adoptedNote: string | null;
     current_status: string;
@@ -63,6 +66,9 @@ publicAnimalsRoutes.get('/', async (c) => {
       gender: a.gender,
       age: a.age || '',
       health: a.health || '',
+      healthConditions: a.healthConditions || '',
+      mobilityStatus: a.mobilityStatus || 'unknown',
+      specialCareNotes: a.specialCareNotes || '',
       description: a.description || '',
       adoptedNote: a.adoptedNote || undefined,
       currentStatus: a.current_status,
