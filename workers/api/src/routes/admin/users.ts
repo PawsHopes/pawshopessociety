@@ -227,10 +227,6 @@ adminUsersRoutes.patch(
       }, 404);
     }
 
-    if (isSocietySuperAdmin(existing.email) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'The two designated Society Super Admin accounts cannot be demoted or suspended.' } }, 403);
-    }
-
     if (
       targetId === actor.id &&
       (parsed.data.roleCode !== undefined || parsed.data.status !== undefined)
@@ -261,6 +257,10 @@ adminUsersRoutes.patch(
     }
 
     const nextStatus = parsed.data.status ?? existing.status;
+
+    if (isSocietySuperAdmin(existing.email) && (nextRoleCode !== 'super_admin' || nextStatus !== 'active')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'The two designated Society Super Admin accounts cannot be demoted or suspended.' } }, 403);
+    }
 
     const removingLastAdmin =
       existing.role_code === 'super_admin' &&
