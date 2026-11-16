@@ -270,13 +270,15 @@ export const WebsiteBuilderPage: React.FC<Props> = ({ user }) => {
     const from = next.findIndex((row) => row.id === sourceId);
     const to = next.findIndex((row) => row.id === targetId);
     if (from < 0 || to < 0) return;
+    const targetSectionKey = next[to].section_key;
     const [moved] = next.splice(from, 1);
+    moved.section_key = targetSectionKey;
     next.splice(to, 0, moved);
     setRows((all) => [...all.filter((row) => row.page_slug !== pageSlug), ...next.map((row, index) => ({ ...row, sort_order: index * 10 }))]);
     setBusy(true);
     const result = await apiFetch('/api/v1/admin/modules/cms/reorder', {
       method: 'PATCH',
-      body: JSON.stringify({ pageSlug, items: next.map((row, index) => ({ id: row.id, sortOrder: index * 10 })) }),
+      body: JSON.stringify({ pageSlug, items: next.map((row, index) => ({ id: row.id, sortOrder: index * 10, sectionKey: row.section_key })) }),
     });
     if (!result.success) {
       setFeedback(result.error?.message || 'Could not save the new section order.');
