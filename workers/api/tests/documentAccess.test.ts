@@ -92,8 +92,8 @@ describe('Document access permissions', () => {
     expect(canUploadDocumentCategory(admin, 'other')).toBe(false);
   });
 
-  it('blocks secondary Super Admins from private document access', () => {
-    for (const email of ['infosecayush@gmail.com', 'yivam24770@jcaton.com']) {
+  it('grants both trusted Society Super Admins equal private document access', () => {
+    for (const email of ['hopezpaws@gmail.com', 'infosecayush@gmail.com']) {
       const permissions = effectivePermissions('super_admin', email, [
         'documents:private_read',
         'compliance:read',
@@ -102,9 +102,23 @@ describe('Document access permissions', () => {
       const admin = makeUser('super_admin', permissions);
       admin.email = email;
 
-      expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(false);
-      expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(false);
+      expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(true);
+      expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(true);
     }
+  });
+
+  it('blocks untrusted Super Admin identities from private document access', () => {
+    const email = 'yivam24770@jcaton.com';
+    const permissions = effectivePermissions('super_admin', email, [
+      'documents:private_read',
+      'compliance:read',
+      'compliance:write'
+    ]);
+    const admin = makeUser('super_admin', permissions);
+    admin.email = email;
+
+    expect(canUploadDocumentCategory(admin, 'compliance_cert')).toBe(false);
+    expect(canReadDocumentCategory(admin, 'compliance_cert')).toBe(false);
   });
 
 });
