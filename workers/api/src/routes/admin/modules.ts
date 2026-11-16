@@ -157,6 +157,16 @@ export const adminModuleRoutes = new Hono<{ Bindings: Bindings; Variables: AppVa
 
 const ATTACHMENT_RESOURCES = new Set(Object.keys(RESOURCES));
 
+adminModuleRoutes.get('/animals/summary', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:read')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal read permission is required.' } }, 403);
+  const [totals, statuses] = await Promise.all([
+    c.env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN is_currently_in_shelter = 1 THEN 1 ELSE 0 END) AS currentlyInShelter, SUM(CASE WHEN current_status = 'available_for_adoption' AND is_adoption_eligible = 1 THEN 1 ELSE 0 END) AS adoptionReady, SUM(CASE WHEN is_published_public = 1 AND current_status = 'available_for_adoption' AND is_adoption_eligible = 1 THEN 1 ELSE 0 END) AS publishedForAdoption FROM animals WHERE deleted_at IS NULL").first(),
+    c.env.DB.prepare("SELECT current_status AS status, COUNT(*) AS count FROM animals WHERE deleted_at IS NULL GROUP BY current_status ORDER BY current_status").all()
+  ]);
+  return c.json({ success: true, data: { ...totals, byStatus: statuses.results || [] } });
+});
+
 adminModuleRoutes.get('/attachments/:resource/:recordId', async (c) => {
   const resource = c.req.param('resource');
   const recordId = c.req.param('recordId');
