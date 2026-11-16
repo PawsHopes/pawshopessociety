@@ -154,6 +154,10 @@ jobs:
               ("ci-admin", "ci-admin@example.test", "CI Admin", "role_super_admin", "active"),
           )
           db.execute(
+              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+              ("ci-approver", "ci-approver@example.test", "CI Approver", "role_super_admin", "active"),
+          )
+          db.execute(
               "INSERT INTO inventory_items (id, sku, name, category, unit) VALUES (?, ?, ?, ?, ?)",
               ("ci-food", "CI-FOOD-001", "CI dog food", "dog_food", "kg"),
           )
@@ -327,27 +331,28 @@ jobs:
               except sqlite3.IntegrityError:
                   pass
 
-          # The primary administrator cannot be demoted, suspended, renamed to another identity, or deleted.
-          db.execute(
-              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
-              ("ci-primary", "hopezpaws@gmail.com", "CI Primary", "role_super_admin", "active"),
-          )
-          for statement in (
-              "UPDATE users SET status='suspended' WHERE id='ci-primary'",
-              "UPDATE users SET role_id='role_auditor' WHERE id='ci-primary'",
-              "UPDATE users SET email='attacker@example.test' WHERE id='ci-primary'",
-              "DELETE FROM users WHERE id='ci-primary'",
-          ):
-              try:
-                  db.execute(statement)
-                  raise SystemExit(f"Primary administrator protection unexpectedly allowed: {statement}")
-              except sqlite3.IntegrityError:
-                  pass
-          assert db.execute("SELECT email, role_id, status FROM users WHERE id='ci-primary'").fetchone() == (
-              "hopezpaws@gmail.com", "role_super_admin", "active"
-          )
+          # Both designated Society administrators are protected from demotion, suspension, identity changes, and deletion.
+          for admin_id, admin_email in (("ci-primary", "hopezpaws@gmail.com"), ("ci-secondary", "infosecayush@gmail.com")):
+              db.execute(
+                  "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+                  (admin_id, admin_email, "CI Society Admin", "role_super_admin", "active"),
+              )
+              for statement in (
+                  f"UPDATE users SET status='suspended' WHERE id='{admin_id}'",
+                  f"UPDATE users SET role_id='role_auditor' WHERE id='{admin_id}'",
+                  f"UPDATE users SET email='attacker-{admin_id}@example.test' WHERE id='{admin_id}'",
+                  f"DELETE FROM users WHERE id='{admin_id}'",
+              ):
+                  try:
+                      db.execute(statement)
+                      raise SystemExit(f"Society administrator protection unexpectedly allowed: {statement}")
+                  except sqlite3.IntegrityError:
+                      pass
+              assert db.execute("SELECT email, role_id, status FROM users WHERE id=?", (admin_id,)).fetchone() == (
+                  admin_email, "role_super_admin", "active"
+              )
 
-          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, foster lifecycle, and primary administrator protection.")
+          print("Workflow trigger tests passed: inventory, immutable finance, verified adoption handover, foster lifecycle, and dual Society administrator protection.")
           PY
 
   deploy-staging:
