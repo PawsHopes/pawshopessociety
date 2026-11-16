@@ -63,7 +63,7 @@ crons = ["30 2 * * *"]
 
 [env.production]
 name = "pawshopes-erp-api"
-vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://pha-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "b93203823e0d4aae22bc961e5d9d1451ca38605e48d788b4bddccdc7c5418316", PUBLIC_MEDIA_BASE_URL = "https://pha-phs.pages.dev/api/v1/files" }
+vars = { ENVIRONMENT = "production", PUBLIC_SITE_ORIGIN = "https://pawshopessociety.pages.dev", ADMIN_ERP_ORIGIN = "https://pha-phs.pages.dev", CF_ACCESS_TEAM_DOMAIN = "mute-pond-e3e6.cloudflareaccess.com", CF_ACCESS_AUD = "0fc8affe178933ffab2c4023015001041b3c90fd5fa1be69b02a6d431f5bfec4", PUBLIC_MEDIA_BASE_URL = "https://pha-phs.pages.dev/api/v1/files" }
 
 [[env.production.d1_databases]]
 binding = "DB"
