@@ -1,6 +1,7 @@
 name: ERP CI
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: [erp-secure-staging, erp-development, erp-phase1-5-hardening]
     paths:
       - "workers/api/**"
@@ -57,7 +58,7 @@ jobs:
     needs:
       - worker-api
       - admin-erp
-    if: github.event_name == 'push' && github.ref == 'refs/heads/erp-secure-staging'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/erp-secure-staging') || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'erp-secure-staging')
     defaults:
       run:
         working-directory: workers/api
