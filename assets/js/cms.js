@@ -41,18 +41,24 @@
   };
 
   const insertSection = (root, section, key) => {
+    const existing = Array.from(root.querySelectorAll(':scope > section[data-cms-section]'))
+      .filter((node) => node.dataset.cmsSection === key);
+    if (existing.length) {
+      existing[existing.length - 1].after(section);
+      return;
+    }
     if (key === 'top_of_page') {
       root.prepend(section);
       return;
     }
     if (key === 'after_intro') {
-      const first = root.querySelector(':scope > section, :scope > div');
+      const first = root.querySelector(':scope > section:not([data-cms-section]), :scope > div');
       if (first) first.after(section);
       else root.appendChild(section);
       return;
     }
     if (key === 'before_bottom_section') {
-      const last = root.lastElementChild;
+      const last = Array.from(root.children).reverse().find((node) => !node.hasAttribute('data-cms-section'));
       if (last) last.before(section);
       else root.appendChild(section);
       return;
