@@ -19,6 +19,9 @@ on:
       - "apps/admin-erp/**"
       - "database/migrations/**"
       - "database/seeds/**"
+      - "functions/api/**"
+      - "assets/js/**"
+      - "*.html"
       - ".github/workflows/erp-phase-ci.yml"
 permissions:
   contents: read
