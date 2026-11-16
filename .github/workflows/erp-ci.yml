@@ -138,7 +138,56 @@ jobs:
           if integrity != "ok":
               raise SystemExit(f"SQLite integrity check failed: {integrity}")
           print(f"Successfully applied {len(migrations)} migration files; foreign keys and integrity checks passed.")
-          
+
+          # Re-run the CMS table rebuild against legacy rows and verify data/version preservation.
+          legacy_db = sqlite3.connect(":memory:")
+          legacy_db.execute("PRAGMA foreign_keys = ON")
+          cms_migration = next((m for m in migrations if m.name == "0014_visual_website_builder.sql"), None)
+          if cms_migration is None:
+              raise SystemExit("CMS visual-builder migration 0014 is missing.")
+          for migration in migrations:
+              if migration.name == cms_migration.name:
+                  break
+              legacy_db.executescript(migration.read_text(encoding="utf-8"))
+          for seed_name in ("0001_roles_permissions.sql",):
+              seed_path = Path("database/seeds") / seed_name
+              legacy_db.executescript(seed_path.read_text(encoding="utf-8"))
+          legacy_db.execute(
+              "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, ?, ?, ?)",
+              ("cms-migration-user", "cms-migration@example.test", "CMS Migration User", "role_super_admin", "active"),
+          )
+          for row_id, version in (("cms-legacy-v1", 1), ("cms-legacy-v2", 2)):
+              legacy_db.execute(
+                  """INSERT INTO website_content
+                     (id, page_slug, section_key, title, body_json, status, version_number, updated_by)
+                     VALUES (?, 'index.html', 'top_of_page', ?, ?, 'draft', ?, 'cms-migration-user')""",
+                  (row_id, f"Legacy CMS version {version}", '{"content":"preserve this text"}', version),
+              )
+          legacy_db.executescript(cms_migration.read_text(encoding="utf-8"))
+          migrated_rows = legacy_db.execute(
+              "SELECT id, block_id, status, version_number, body_json FROM website_content ORDER BY version_number"
+          ).fetchall()
+          assert len(migrated_rows) == 2, f"CMS migration lost legacy rows: {migrated_rows}"
+          assert migrated_rows[0][1] == migrated_rows[1][1] == "index.html:top_of_page"
+          assert [row[3] for row in migrated_rows] == [1, 2]
+          assert all(row[2] == "draft" and "preserve this text" in row[4] for row in migrated_rows)
+          legacy_db.execute(
+              """INSERT INTO website_content
+                 (id, page_slug, section_key, block_id, title, body_json, status, version_number, updated_by)
+                 VALUES ('cms-new-block', 'index.html', 'top_of_page', 'cms-new-block', 'New block',
+                         '{"content":"multiple blocks allowed"}', 'draft', 1, 'cms-migration-user')"""
+          )
+          legacy_db.execute(
+              """INSERT INTO website_content
+                 (id, page_slug, section_key, block_id, title, body_json, status, version_number, updated_by)
+                 VALUES ('cms-legacy-v3', 'index.html', 'top_of_page', 'index.html:top_of_page', 'Legacy CMS version 3',
+                         '{"content":"new version allowed"}', 'draft', 3, 'cms-migration-user')"""
+          )
+          assert legacy_db.execute("SELECT COUNT(*) FROM website_content WHERE page_slug='index.html' AND section_key='top_of_page'").fetchone()[0] == 4
+          if legacy_db.execute("PRAGMA foreign_key_check").fetchall():
+              raise SystemExit("CMS migration caused foreign-key violations.")
+          print("CMS migration preserved legacy drafts and allows multiple independently versioned blocks per page position.")
+
           # Seed only deterministic reference data for workflow trigger tests.
           for seed_name in ("0001_roles_permissions.sql", "0002_chart_of_accounts_and_compliance.sql"):
               seed_path = Path("database/seeds") / seed_name
