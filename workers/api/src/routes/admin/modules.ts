@@ -287,11 +287,11 @@ adminModuleRoutes.patch('/cms/reorder', async (c) => {
   if (!actor.permissions.includes('cms:publish')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'CMS publishing permission required to reorder live sections.' } }, 403);
   const body = await c.req.json().catch(() => null) as { pageSlug?: unknown; items?: unknown } | null;
   const pageSlug = typeof body?.pageSlug === 'string' ? body.pageSlug : '';
-  const items = Array.isArray(body?.items) ? body.items as Array<{id?:unknown;sortOrder?:unknown}> : [];
+  const items = Array.isArray(body?.items) ? body.items as Array<{id?:unknown;sortOrder?:unknown;sectionKey?:unknown}> : [];
   if (!pageSlug || !Array.isArray(body?.items) || items.length < 1 || items.length > 200 ||
-      items.some((item) => typeof item.id !== 'string' || !Number.isInteger(item.sortOrder) || Number(item.sortOrder) < 0) ||
+      items.some((item) => typeof item.id !== 'string' || !Number.isInteger(item.sortOrder) || Number(item.sortOrder) < 0 || !['top_of_page','after_intro','before_bottom_section','bottom_of_page'].includes(String(item.sectionKey))) ||
       new Set(items.map((item) => String(item.id))).size !== items.length) {
-    return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide a page slug and 1–200 unique section IDs with non-negative integer sort orders.' } }, 400);
+    return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Provide a page slug and 1–200 unique section IDs with a valid page position and non-negative integer sort order.' } }, 400);
   }
   const ids = items.map((item) => String(item.id));
   const placeholders = ids.map(() => '?').join(',');
@@ -300,10 +300,10 @@ adminModuleRoutes.patch('/cms/reorder', async (c) => {
   ).bind(pageSlug, ...ids).all<{id:string}>();
   if ((found.results || []).length !== ids.length) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'One or more sections do not belong to this page.' } }, 404);
   const statements = items.map((item) => c.env.DB.prepare(
-    "UPDATE website_content SET sort_order = ?, updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND page_slug = ?"
-  ).bind(Number(item.sortOrder), actor.id, String(item.id), pageSlug));
+    "UPDATE website_content SET section_key = ?, sort_order = ?, updated_by = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND page_slug = ?"
+  ).bind(String(item.sectionKey), Number(item.sortOrder), actor.id, String(item.id), pageSlug));
   await c.env.DB.batch(statements);
-  await appendAuditLog(c, { action: 'CMS_PAGE_BLOCKS_REORDERED', entityType: 'website_content', entityId: pageSlug, after: { sectionIds: ids, order: items.map((item) => ({ id: String(item.id), sortOrder: Number(item.sortOrder) })) } });
+  await appendAuditLog(c, { action: 'CMS_PAGE_BLOCKS_REORDERED', entityType: 'website_content', entityId: pageSlug, after: { sectionIds: ids, order: items.map((item) => ({ id: String(item.id), sectionKey: String(item.sectionKey), sortOrder: Number(item.sortOrder) })) } });
   return c.json({ success: true, data: { pageSlug, reordered: ids.length } });
 });
 
