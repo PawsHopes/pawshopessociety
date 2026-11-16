@@ -6,7 +6,6 @@ const env = (token?: string) => ({ CF_ACCESS_API_TOKEN: token } as Bindings);
 
 const policies = [
   { appId: 'b63d3bd9-4aea-4618-8221-f13d26f9519e', policyId: '3fe62b03-bb97-47d3-8839-02001fee7ce0' },
-  { appId: '1dbcd4ff-450d-497c-abb4-d841f3904675', policyId: '2e71687b-0135-44cc-b3b9-d1c7ae1652f3' },
 ];
 
 const makePolicy = (policyId: string, include: Array<Record<string, unknown>> = [{ email: { email: 'hopezpaws@gmail.com' } }]) => ({
@@ -33,7 +32,7 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('adds only the exact approved email to both ERP and deployment policies', async () => {
+  it('adds only the exact approved email to the protected ERP policy', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       const target = policies.find((item) => url.includes(item.appId));
@@ -55,8 +54,8 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     vi.stubGlobal('fetch', fetchMock);
     const result = await syncApprovedEmailToCloudflareAccess(env('test-token'), ' Member@Example.com ');
     expect(result.status).toBe('synced');
-    expect(fetchMock).toHaveBeenCalledTimes(4);
-    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(2);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(0);
   });
 
   it('does not modify a policy containing a broad Everyone rule', async () => {
@@ -70,14 +69,12 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('does not duplicate an email already present in either policy', async () => {
+  it('does not duplicate an email already present in the ERP policy', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       const target = policies.find((item) => url.includes(item.appId));
       if (!target) throw new Error('Unexpected Access application');
-      const include = target === policies[0]
-        ? [{ email: { email: 'hopezpaws@gmail.com' } }, { email: { email: 'member@example.com' } }]
-        : [{ email: { email: 'hopezpaws@gmail.com' } }];
+      const include = [{ email: { email: 'hopezpaws@gmail.com' } }, { email: { email: 'member@example.com' } }];
       if (init?.method === 'GET') {
         return new Response(JSON.stringify({ success: true, result: makePolicy(target.policyId, include) }), { status: 200 });
       }
@@ -86,7 +83,7 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     vi.stubGlobal('fetch', fetchMock);
     const result = await syncApprovedEmailToCloudflareAccess(env('test-token'), 'member@example.com');
     expect(result.status).toBe('synced');
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(1);
   });
 });
