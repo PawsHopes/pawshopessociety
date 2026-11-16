@@ -1,7 +1,7 @@
 name: ERP CI
 on:
   pull_request:
-    branches: [erp-secure-staging, erp-development]
+    branches: [erp-secure-staging, erp-development, erp-phase1-5-hardening]
     paths:
       - "workers/api/**"
       - "apps/admin-erp/**"
@@ -33,8 +33,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: workers/api/package.json
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
@@ -50,7 +48,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: apps/admin-erp/package.json
       - run: npm install --no-audit --no-fund
       - run: npm run build
