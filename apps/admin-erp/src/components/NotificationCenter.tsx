@@ -13,7 +13,7 @@ type NotificationItem = {
   createdAt: string;
 };
 
-export const NotificationCenter: React.FC = () => {
+export const NotificationCenter: React.FC<{ canRun: boolean }> = ({ canRun }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -74,7 +74,7 @@ export const NotificationCenter: React.FC = () => {
         <header className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <div><h2 className="font-bold text-slate-900">Notifications</h2><p className="text-xs text-slate-500">{unreadCount} unread</p></div>
           <div className="flex items-center gap-2">
-            <button type="button" disabled={loading} onClick={() => void checkNow()} className="text-xs font-semibold text-orange-700 disabled:opacity-40">Check now</button><button type="button" disabled={!unreadCount} onClick={() => void markAllRead()} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 disabled:opacity-40"><CheckCheck className="h-3.5 w-3.5" />Read all</button>
+            {canRun && <button type="button" disabled={loading} onClick={() => void checkNow()} className="text-xs font-semibold text-orange-700 disabled:opacity-40">Check now</button>}<button type="button" disabled={!unreadCount} onClick={() => void markAllRead()} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 disabled:opacity-40"><CheckCheck className="h-3.5 w-3.5" />Read all</button>
             <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100">Close</button>
           </div>
         </header>
