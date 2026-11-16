@@ -104,4 +104,20 @@ describe('primary administrator-only controls', () => {
     expect(applications.status).toBe(200);
   });
 
+  it('does not elevate a designated email when its ERP role is not Super Admin', async () => {
+    const misconfiguredUser: AuthUser = {
+      id: 'misconfigured-admin',
+      email: 'infosecayush@gmail.com',
+      fullName: 'Misconfigured User',
+      roleCode: 'auditor',
+      roleName: 'Auditor',
+      permissions: ['users:manage'],
+    };
+    const app = makeApp(misconfiguredUser);
+    const users = await app.request('/users');
+    const applications = await app.request('/join/applications?status=all');
+    expect(users.status).toBe(403);
+    expect(applications.status).toBe(403);
+  });
+
 });
