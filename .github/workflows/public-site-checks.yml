@@ -14,9 +14,10 @@ on:
     branches: [main]
     paths:
       - "functions/api/animals.ts"
+      - "functions/api/content.ts"
       - "assets/js/rescue-animals.js"
-      - "rescue.html"
-      - "adopt.html"
+      - "assets/js/cms.js"
+      - "*.html"
       - ".github/workflows/public-site-checks.yml"
 
 permissions:
