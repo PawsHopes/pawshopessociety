@@ -1,11 +1,18 @@
 import { createMiddleware } from 'hono/factory';
 import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
-const PRIMARY_ADMIN_EMAIL = 'hopezpaws@gmail.com';
+export const TRUSTED_SUPER_ADMIN_EMAILS = new Set([
+  'hopezpaws@gmail.com',
+  'infosecayush@gmail.com',
+]);
+
+export function isTrustedSuperAdmin(email: string): boolean {
+  return TRUSTED_SUPER_ADMIN_EMAILS.has(email.toLowerCase().trim());
+}
 
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
-  // Only the Society primary administrator receives full Super Admin privileges.
-  if (roleCode === 'super_admin' && email.toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
+  // Only the two explicitly trusted Society administrators receive full Super Admin privileges.
+  if (roleCode === 'super_admin' && !isTrustedSuperAdmin(email)) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
   return allPermissions;
@@ -102,7 +109,7 @@ export const loadRbacUser = createMiddleware<{
     email: userRow.email,
     fullName: userRow.full_name,
     roleCode: userRow.role_code,
-    roleName: userRow.role_code === 'super_admin' && userRow.email.toLowerCase() !== PRIMARY_ADMIN_EMAIL ? 'Super Admin (Read-Only)' : userRow.role_name,
+    roleName: userRow.role_code === 'super_admin' && !isTrustedSuperAdmin(userRow.email) ? 'Super Admin (Read-Only)' : userRow.role_name,
     permissions,
   };
 
