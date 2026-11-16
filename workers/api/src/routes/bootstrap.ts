@@ -3,7 +3,7 @@ import type { Bindings, AppVariables } from '../types/env';
 
 export const bootstrapRoutes = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
-// Staging-only, identity-verified bootstrap for the two designated Society admins.
+// Identity-verified bootstrap for the two designated Society admins.
 // Cloudflare Access JWT verification happens in cfAccessAuth before this route.
 const DESIGNATED_SUPER_ADMINS = new Set([
   'hopezpaws@gmail.com',
@@ -11,7 +11,7 @@ const DESIGNATED_SUPER_ADMINS = new Set([
 ]);
 
 bootstrapRoutes.post('/super-admin', async (c) => {
-  if (c.env.ENVIRONMENT !== 'staging') {
+  if (c.env.ENVIRONMENT !== 'staging' && c.env.ENVIRONMENT !== 'production') {
     return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Bootstrap is disabled outside staging.' } }, 404);
   }
 
@@ -42,7 +42,7 @@ bootstrapRoutes.post('/super-admin', async (c) => {
         "INSERT INTO users (id, email, full_name, role_id, status) VALUES (?, ?, 'Paw''s Hopez Society Super Admin', 'role_super_admin', 'active')"
       ).bind(id, authenticatedEmail),
       c.env.DB.prepare(
-        "INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) VALUES (?, ?, ?, 'STAGING_SUPER_ADMIN_BOOTSTRAPPED', 'users', ?, ?, ?, ?)"
+        "INSERT INTO audit_logs (id, actor_user_id, actor_email, action, entity_type, entity_id, after_json, ip_address, user_agent) VALUES (?, ?, ?, c.env.ENVIRONMENT === 'production' ? 'PRODUCTION_SUPER_ADMIN_BOOTSTRAPPED' : 'STAGING_SUPER_ADMIN_BOOTSTRAPPED', 'users', ?, ?, ?, ?)"
       ).bind(crypto.randomUUID(), id, authenticatedEmail, id, JSON.stringify({ role: 'super_admin', status: 'active' }), ip, userAgent),
     ]);
   } catch {
