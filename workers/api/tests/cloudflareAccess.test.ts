@@ -55,7 +55,7 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     const result = await syncApprovedEmailToCloudflareAccess(env('test-token'), ' Member@Example.com ');
     expect(result.status).toBe('synced');
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(0);
+    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(1);
   });
 
   it('does not modify a policy containing a broad Everyone rule', async () => {
@@ -84,6 +84,6 @@ describe('syncApprovedEmailToCloudflareAccess', () => {
     const result = await syncApprovedEmailToCloudflareAccess(env('test-token'), 'member@example.com');
     expect(result.status).toBe('synced');
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(1);
+    expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'PUT')).toHaveLength(0);
   });
 });
