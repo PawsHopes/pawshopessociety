@@ -7,8 +7,10 @@ type Props = {
   rows: AnimalRow[];
   canEdit: boolean;
   canDelete: boolean;
+  canPublish: boolean;
   onEdit: (row: AnimalRow) => void;
   onDelete: (row: AnimalRow) => void | Promise<void>;
+  onPublish: (row: AnimalRow) => void | Promise<void>;
 };
 
 const label = (value: unknown, fallback = 'Not recorded') =>
@@ -16,7 +18,7 @@ const label = (value: unknown, fallback = 'Not recorded') =>
 
 const statusLabel = (value: unknown) => label(value, 'rescued').replaceAll('_', ' ');
 
-export const AnimalVisualManager: React.FC<Props> = ({ rows, canEdit, canDelete, onEdit, onDelete }) => {
+export const AnimalVisualManager: React.FC<Props> = ({ rows, canEdit, canDelete, canPublish, onEdit, onDelete, onPublish }) => {
   const [photos, setPhotos] = useState<Record<string, string>>({});
   const [loadingPhotos, setLoadingPhotos] = useState(false);
 
@@ -50,7 +52,10 @@ export const AnimalVisualManager: React.FC<Props> = ({ rows, canEdit, canDelete,
           <h2 className="mt-1 text-lg font-extrabold text-slate-900">Manage animals as website cards</h2>
           <p className="mt-1 text-sm text-slate-600">Select Edit to change the animal record, add photos and update its public description. Publishing remains a separate approval action.</p>
         </div>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{rows.length} records · {loadingPhotos ? 'Loading photos…' : 'Photo previews loaded'}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <a href="https://pawshopessociety.pages.dev/adopt.html" target="_blank" rel="noreferrer" className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">View public adoption page</a>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{rows.length} records · {loadingPhotos ? 'Loading photos…' : 'Photo previews loaded'}</span>
+        </div>
       </div>
       {rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-orange-300 bg-white p-8 text-center text-sm text-slate-500">
@@ -82,6 +87,7 @@ export const AnimalVisualManager: React.FC<Props> = ({ rows, canEdit, canDelete,
                   <p className="line-clamp-3 min-h-12 whitespace-pre-line text-sm leading-6 text-slate-600">{label(row.public_description, 'Add a public description so visitors can understand this animal’s story.')}</p>
                   <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
                     {canEdit && <button type="button" onClick={() => onEdit(row)} className="inline-flex items-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700"><Pencil className="h-3.5 w-3.5" />Edit details & photos</button>}
+                    {canPublish && <button type="button" onClick={() => void onPublish(row)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">{isPublished ? 'Unpublish' : 'Publish'}</button>}
                     {canDelete && <button type="button" onClick={() => void onDelete(row)} className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"><Archive className="h-3.5 w-3.5" />Archive</button>}
                   </div>
                 </div>
