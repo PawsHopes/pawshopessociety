@@ -93,7 +93,7 @@ describe('Document access permissions', () => {
   });
 
   it('grants both designated Super Admins the same private document access', () => {
-    for (const email of ['infosecayush@gmail.com', 'yivam24770@jcaton.com']) {
+    for (const email of ['infosecayush@gmail.com', 'hopezpaws@gmail.com']) {
       const permissions = effectivePermissions('super_admin', email, [
         'documents:private_read',
         'compliance:read',
