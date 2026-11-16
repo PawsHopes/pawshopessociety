@@ -183,6 +183,33 @@ adminModuleRoutes.get('/attachments/:resource/:recordId', async (c) => {
   return c.json({ success: true, data: { items } });
 });
 
+adminModuleRoutes.delete('/attachments/animals/:recordId/:attachmentId', async (c) => {
+  const actor = c.get('authUser');
+  if (!actor.permissions.includes('animals:write')) {
+    return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Animal write permission is required to remove animal photos.' } }, 403);
+  }
+  const recordId = c.req.param('recordId');
+  const attachmentId = c.req.param('attachmentId');
+  const attachment = await c.env.DB.prepare(
+    "SELECT id, media_asset_id FROM record_attachments WHERE id = ? AND resource = 'animals' AND record_id = ?"
+  ).bind(attachmentId, recordId).first<{id:string;media_asset_id:string|null}>();
+  if (!attachment) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Animal photo attachment not found.' } }, 404);
+  if (!attachment.media_asset_id) return c.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'This attachment is not a public animal photo.' } }, 400);
+
+  await c.env.DB.batch([
+    c.env.DB.prepare("DELETE FROM record_attachments WHERE id = ? AND resource = 'animals' AND record_id = ?").bind(attachmentId, recordId),
+    c.env.DB.prepare('DELETE FROM animal_media WHERE animal_id = ? AND media_asset_id = ?').bind(recordId, attachment.media_asset_id),
+    c.env.DB.prepare("UPDATE animal_media SET is_primary = 1 WHERE animal_id = ? AND id = (SELECT id FROM animal_media WHERE animal_id = ? ORDER BY sort_order ASC LIMIT 1) AND NOT EXISTS (SELECT 1 FROM animal_media WHERE animal_id = ? AND is_primary = 1)").bind(recordId, recordId, recordId)
+  ]);
+  await appendAuditLog(c, {
+    action: 'ANIMAL_PHOTO_UNLINKED',
+    entityType: 'animals',
+    entityId: recordId,
+    after: { attachmentId, mediaAssetId: attachment.media_asset_id, retainedInStorage: true }
+  });
+  return c.json({ success: true, data: { attachmentId, removed: true, storageObjectRetained: true } });
+});
+
 adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
   const resource = c.req.param('resource');
   const recordId = c.req.param('recordId');
