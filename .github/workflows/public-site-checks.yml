@@ -5,42 +5,69 @@ on:
     branches: [main]
     paths:
       - "functions/api/animals.ts"
+      - "functions/api/content.ts"
       - "assets/js/rescue-animals.js"
+      - "assets/js/cms-renderer.js"
+      - "index.html"
+      - "about.html"
       - "rescue.html"
+      - "gallery.html"
       - "adopt.html"
+      - "volunteer.html"
+      - "contact.html"
+      - "donate.html"
       - ".github/workflows/public-site-checks.yml"
   push:
     branches: [main]
     paths:
       - "functions/api/animals.ts"
+      - "functions/api/content.ts"
       - "assets/js/rescue-animals.js"
+      - "assets/js/cms-renderer.js"
+      - "index.html"
+      - "about.html"
       - "rescue.html"
+      - "gallery.html"
       - "adopt.html"
+      - "volunteer.html"
+      - "contact.html"
+      - "donate.html"
       - ".github/workflows/public-site-checks.yml"
 
 permissions:
   contents: read
 
 jobs:
-  public-animal-feed:
-    name: Validate public adoption and rescue feed
+  public-animal-and-cms:
+    name: Validate public animal and CMS integration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check rescue feed JavaScript syntax
-        run: node --check assets/js/rescue-animals.js
-      - name: Type-check the read-only animal feed function
-        run: npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/animals.ts
-      - name: Verify both public animal pages consume the API
+      - name: Check public JavaScript syntax
+        run: |
+          node --check assets/js/rescue-animals.js
+          node --check assets/js/cms-renderer.js
+      - name: Type-check public Pages Functions
+        run: |
+          npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/animals.ts
+          npx --yes --package typescript tsc --noEmit --target ES2022 --module ESNext --lib ES2022,DOM functions/api/content.ts
+      - name: Verify all public pages load the CMS renderer
         run: |
           node <<'NODE'
           const fs = require('fs');
+          const pages = ['index.html','about.html','rescue.html','gallery.html','adopt.html','volunteer.html','contact.html','donate.html'];
+          for (const page of pages) {
+            const html = fs.readFileSync(page, 'utf8');
+            if (!html.includes('assets/js/cms-renderer.js')) throw new Error(page + ' is missing the public CMS renderer');
+          }
+          const index = fs.readFileSync('index.html', 'utf8');
           const adopt = fs.readFileSync('adopt.html', 'utf8');
           const rescue = fs.readFileSync('rescue.html', 'utf8');
-          if (!adopt.includes('/api/animals')) throw new Error('Adoption page is not connected to /api/animals');
+          if (!index.includes("fetch('/api/animals'")) throw new Error('Homepage is not connected to live adoptable animals');
+          if (!adopt.includes("fetch('/api/animals'")) throw new Error('Adoption page is not connected to live animal listings');
           if (!rescue.includes('assets/js/rescue-animals.js') || !rescue.includes('id="rescue-animals-grid"')) throw new Error('Rescue page is missing the live animal feed');
-          console.log('Adoption and rescue pages are connected to the public animal API.');
+          console.log('Homepage, adoption, rescue and all eight CMS-enabled pages are connected.');
           NODE
