@@ -717,6 +717,9 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   }
 
   if (resource === 'expenses') {
+    if (!actor.permissions.includes('finance:approve')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Finance approval permission required.' } }, 403);
+    }
     const row = await c.env.DB.prepare('SELECT id, submitted_by, approval_status FROM expenses WHERE id = ?').bind(id).first<{id:string;submitted_by:string;approval_status:string}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Expense not found.' } }, 404);
     if (row.submitted_by === actor.id) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'You cannot approve your own expense claim.' } }, 403);
@@ -728,6 +731,9 @@ adminModuleRoutes.post('/:resource/:id/approve', async (c) => {
   }
 
   if (resource === 'adoption_applications' || resource === 'foster_applications') {
+    if (!actor.permissions.includes('adoption:approve')) {
+      return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Adoption approval permission required.' } }, 403);
+    }
     const table = resource;
     const row = await c.env.DB.prepare(`SELECT id, status, animal_id, ${resource === 'adoption_applications' ? 'home_check_status' : 'animal_id'} as gate FROM ${table} WHERE id = ?`).bind(id).first<{id:string;status:string;animal_id:string;gate:string|null}>();
     if (!row) return c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Application not found.' } }, 404);
