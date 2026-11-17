@@ -1,40 +1,30 @@
 interface PagesRequestContext {
   request: Request;
   env: {
-    ERP_API_ORIGIN?: string;
+    ERP_API?: {
+      fetch: (request: Request) => Promise<Response>;
+    };
   };
 }
 
-// The production API runs as its own Worker and owns the production D1/R2/KV
-// bindings and SIGNED_URL_SECRET. Proxy same-origin Pages API requests to it;
-// preserve the Cloudflare Access JWT so the API verifies the same session.
+// The production API Worker owns the production D1/R2/KV bindings and
+// SIGNED_URL_SECRET. Use a Cloudflare service binding so same-origin browser
+// requests reach that Worker without exposing database bindings to Pages.
 export const onRequest = async ({ request, env }: PagesRequestContext): Promise<Response> => {
-  let apiOrigin: URL;
-  try {
-    apiOrigin = new URL(env.ERP_API_ORIGIN || '');
-    if (apiOrigin.protocol !== 'https:' || apiOrigin.username || apiOrigin.password ||
-        apiOrigin.search || apiOrigin.hash || apiOrigin.pathname !== '/') {
-      throw new Error('Invalid ERP_API_ORIGIN');
-    }
-  } catch {
+  if (!env.ERP_API) {
     return Response.json(
-      { success: false, error: { code: 'API_CONFIGURATION_ERROR', message: 'The ERP API is not configured.' } },
+      { success: false, error: { code: 'API_CONFIGURATION_ERROR', message: 'The ERP API service binding is not configured.' } },
       { status: 503, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 
-  const incomingUrl = new URL(request.url);
-  apiOrigin.pathname = incomingUrl.pathname;
-  apiOrigin.search = incomingUrl.search;
-
   try {
-    const upstreamRequest = new Request(apiOrigin.toString(), request);
-    // The API uses the Access JWT assertion, not browser cookies. Do not send
-    // the Pages Access session cookie to the separate Worker hostname.
-    upstreamRequest.headers.delete('cookie');
-    upstreamRequest.headers.delete('host');
-
-    const upstreamResponse = await fetch(upstreamRequest, { redirect: 'manual' });
+    const forwardedHeaders = new Headers(request.headers);
+    // The API authenticates the Cloudflare Access JWT assertion. Its session
+    // cookie is not needed by the Worker and is not forwarded.
+    forwardedHeaders.delete('cookie');
+    const upstreamRequest = new Request(request, { headers: forwardedHeaders });
+    const upstreamResponse = await env.ERP_API.fetch(upstreamRequest);
     const response = new Response(upstreamResponse.body, upstreamResponse);
     response.headers.set('Cache-Control', 'no-store');
     return response;
