@@ -132,4 +132,8 @@ export default {
       return Response.json({ success: false, error: message }, { status: 500 });
     }
   },
+
+  async scheduled(_event: ScheduledController, env: BackupEnv, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(runBackup(env));
+  },
 };
