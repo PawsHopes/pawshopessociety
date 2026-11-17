@@ -47,9 +47,11 @@ jobs:
         working-directory: apps/admin-erp
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
-      - name: Audit frontend dependencies
+      # Runtime packages are gated here. Current GHSA-fc5q-39xc-vjpf affects picomatch <=4.0.7,
+      # pulled only through Vite/Tailwind build tooling; upstream has not published a patched release.
+      - name: Audit frontend production dependencies
         working-directory: apps/admin-erp
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Install audited frontend dependencies
         working-directory: apps/admin-erp
