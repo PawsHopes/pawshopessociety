@@ -18,3 +18,6 @@ bucket_name = "pawshopes-private-vault-production"
 [[env.production.r2_buckets]]
 binding = "BACKUPS"
 bucket_name = "pawshopes-erp-db-backups"
+
+[env.production.triggers]
+crons = ["30 3 * * *"]
