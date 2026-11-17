@@ -59,8 +59,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY" --file ../../backup-output/pawshopes-erp-production.sql
-          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY.sha256" --file ../../backup-output/pawshopes-erp-production.sql.sha256
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY" --file ../../backup-output/pawshopes-erp-production.sql --remote
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY.sha256" --file ../../backup-output/pawshopes-erp-production.sql.sha256 --remote
 
       - name: Verify backup object exists
         working-directory: workers/api
@@ -69,6 +69,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          npx wrangler r2 object get "pawshopes-erp-db-backups/$BACKUP_KEY" --file /tmp/backup-verification.sql
+          npx wrangler r2 object get "pawshopes-erp-db-backups/$BACKUP_KEY" --file /tmp/backup-verification.sql --remote
           cmp ../../backup-output/pawshopes-erp-production.sql /tmp/backup-verification.sql
           echo "Production D1 backup upload and byte-for-byte verification passed."
