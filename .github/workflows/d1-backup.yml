@@ -31,6 +31,10 @@ jobs:
         with:
           node-version: 22
 
+      - name: Generate dependency lockfile
+        working-directory: workers/api
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
       - name: Install Worker tooling
         working-directory: workers/api
         run: npm ci --no-audit --no-fund
