@@ -42,6 +42,8 @@ const NAV_ITEMS = [
 export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const visibleNav = NAV_ITEMS.filter((item) => user.permissions.includes(item.perm));
+  const canRunNotifications = user.roleCode === 'super_admin' &&
+    ['hopezpaws@gmail.com', 'infosecayush@gmail.com'].includes(user.email.toLowerCase().trim());
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#fdfbf7]">
@@ -87,7 +89,7 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
         </div>
       </aside>
 
-      <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto"><div className="mb-4 flex justify-end"><NotificationCenter canRun={user.roleCode === 'super_admin'} /></div>{children}</main>
+      <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto"><div className="mb-4 flex justify-end"><NotificationCenter canRun={canRunNotifications} /></div>{children}</main>
     </div>
   );
 };

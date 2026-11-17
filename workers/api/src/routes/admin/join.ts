@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { Bindings, AppVariables } from '../../types/env';
-import { requirePermission } from '../../middleware/rbac';
+import { isDesignatedSuperAdmin, requirePermission } from '../../middleware/rbac';
 import { appendAuditLog } from '../../services/audit';
 import { syncApprovedEmailToCloudflareAccess } from '../../services/cloudflareAccess';
 
@@ -9,8 +9,6 @@ export const adminJoinRoutes = new Hono<{
   Bindings: Bindings;
   Variables: AppVariables;
 }>();
-
-const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
 
 const ROLE_CODES = [
   'finance_manager',
@@ -34,9 +32,8 @@ const rejectSchema = z.object({
   reason: z.string().trim().max(500).optional().default(''),
 });
 
-function isPrimaryAdmin(c: any) {
-  const actor = c.get('authUser');
-  return actor?.roleCode === 'super_admin' && Boolean(actor?.email) && FULL_ADMIN_EMAILS.has(actor.email.toLowerCase().trim());
+function isDesignatedAdmin(c: any) {
+  return isDesignatedSuperAdmin(c.get('authUser'));
 }
 
 function createRawToken(): string {
@@ -57,7 +54,7 @@ async function hashToken(token: string): Promise<string> {
 adminJoinRoutes.use('*', requirePermission('users:manage'));
 
 adminJoinRoutes.post('/links', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can create join links.' } }, 403);
   }
 
@@ -93,7 +90,7 @@ adminJoinRoutes.post('/links', async (c) => {
 });
 
 adminJoinRoutes.get('/links', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can view join links.' } }, 403);
   }
 
@@ -111,7 +108,7 @@ adminJoinRoutes.get('/links', async (c) => {
 });
 
 adminJoinRoutes.post('/links/:id/revoke', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can revoke join links.' } }, 403);
   }
 
@@ -136,7 +133,7 @@ adminJoinRoutes.post('/links/:id/revoke', async (c) => {
 });
 
 adminJoinRoutes.get('/applications', async (c) => {
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can review applications.' } }, 403);
   }
 
@@ -173,7 +170,7 @@ adminJoinRoutes.get('/applications', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/approve', async (c) => {
   const actor = c.get('authUser');
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can approve applicants and assign ERP roles.' } }, 403);
   }
 
@@ -274,7 +271,7 @@ adminJoinRoutes.post('/applications/:id/approve', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
   const actor = c.get('authUser');
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can grant Cloudflare Access to approved users.' } }, 403);
   }
 
@@ -315,7 +312,7 @@ adminJoinRoutes.post('/applications/:id/access-sync', async (c) => {
 
 adminJoinRoutes.post('/applications/:id/reject', async (c) => {
   const actor = c.get('authUser');
-  if (!isPrimaryAdmin(c)) {
+  if (!isDesignatedAdmin(c)) {
     return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can reject applicants.' } }, 403);
   }
 

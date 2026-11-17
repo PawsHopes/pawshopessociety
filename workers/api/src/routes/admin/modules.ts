@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Bindings, AppVariables } from '../../types/env';
 import { appendAuditLog } from '../../services/audit';
 import { canReadDocumentCategory } from '../../services/documentAccess';
+import { isDesignatedSuperAdmin } from '../../middleware/rbac';
 
 type ResourceConfig = {
   table: string;
@@ -236,10 +237,10 @@ adminModuleRoutes.post('/attachments/:resource/:recordId', async (c) => {
 
   if (mediaAssetId) {
     const asset = await c.env.DB.prepare('SELECT id, uploaded_by FROM media_assets WHERE id = ?').bind(mediaAssetId).first<{id:string;uploaded_by:string|null}>();
-    if (!asset || (asset.uploaded_by !== actor.id && actor.email.toLowerCase() !== 'hopezpaws@gmail.com')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Image not found or not uploaded by your account.' } }, 403);
+    if (!asset || (asset.uploaded_by !== actor.id && !isDesignatedSuperAdmin(actor))) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Image not found or not uploaded by your account.' } }, 403);
   } else {
     const doc = await c.env.DB.prepare('SELECT id, uploaded_by FROM documents WHERE id = ?').bind(documentId).first<{id:string;uploaded_by:string|null}>();
-    if (!doc || (doc.uploaded_by !== actor.id && actor.email.toLowerCase() !== 'hopezpaws@gmail.com')) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Document not found or not uploaded by your account.' } }, 403);
+    if (!doc || (doc.uploaded_by !== actor.id && !isDesignatedSuperAdmin(actor))) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Document not found or not uploaded by your account.' } }, 403);
   }
 
   const attachmentId = crypto.randomUUID();

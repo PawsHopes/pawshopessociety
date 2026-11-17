@@ -3,9 +3,15 @@ import type { Bindings, AppVariables, AuthUser, RoleCode } from '../types/env';
 
 const FULL_ADMIN_EMAILS = new Set(['hopezpaws@gmail.com', 'infosecayush@gmail.com']);
 
+export function isDesignatedSuperAdmin(
+  user: Pick<AuthUser, 'roleCode' | 'email'> | null | undefined
+): boolean {
+  return user?.roleCode === 'super_admin' && FULL_ADMIN_EMAILS.has(user.email.toLowerCase().trim());
+}
+
 export function effectivePermissions(roleCode: RoleCode, email: string, allPermissions: string[]): string[] {
   // Both designated Society Super Admins receive identical full permissions.
-  if (roleCode === 'super_admin' && !FULL_ADMIN_EMAILS.has(email.toLowerCase().trim())) {
+  if (roleCode === 'super_admin' && !isDesignatedSuperAdmin({ roleCode, email })) {
     return allPermissions.filter((code) => code.endsWith(':read') || code === 'dashboard:read');
   }
   return allPermissions;
@@ -102,7 +108,7 @@ export const loadRbacUser = createMiddleware<{
     email: userRow.email,
     fullName: userRow.full_name,
     roleCode: userRow.role_code,
-    roleName: userRow.role_code === 'super_admin' && !FULL_ADMIN_EMAILS.has(userRow.email.toLowerCase().trim()) ? 'Super Admin (Read-Only)' : userRow.role_name,
+    roleName: userRow.role_code === 'super_admin' && !isDesignatedSuperAdmin(userRow) ? 'Super Admin (Read-Only)' : userRow.role_name,
     permissions,
   };
 

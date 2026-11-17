@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import type { Bindings, AppVariables } from '../../types/env';
 import { runDailyNotifications } from '../../services/notifications';
+import { isDesignatedSuperAdmin } from '../../middleware/rbac';
 
 export const adminNotificationsRoutes = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
 adminNotificationsRoutes.post('/run', async (c) => {
   const actor = c.get('authUser');
-  if (actor.roleCode !== 'super_admin') return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a Society Super Admin can trigger a manual notification check.' } }, 403);
+  if (!isDesignatedSuperAdmin(actor)) return c.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only a designated Society Super Admin can trigger a manual notification check.' } }, 403);
   const result = await runDailyNotifications(c.env);
   return c.json({ success: true, data: result });
 });
