@@ -523,7 +523,7 @@ jobs:
           for attempt in $(seq 1 12); do
             curl -fsS --max-time 15 https://pawshopes-public-staging.pages.dev/api/animals -o /tmp/staging-animals.json || true
             curl -fsS --max-time 15 https://pawshopes-public-staging.pages.dev/api/content -o /tmp/staging-content.json || true
-            if node -e "const a=require('/tmp/staging-animals.json'); const c=require('/tmp/staging-content.json'); const all=[...(a.data?.available||[]),...(a.data?.rescued||[]),...(a.data?.adopted||[])]; if(a.success!==true || !all.some(x=>x.animalCode==='\${animal_code}') || c.success!==true || !c.data?.items?.some(x=>x.id==='\${cms_id}' && x.sortOrder===987654)) process.exit(1)"; then
+            if node -e "const a=require('/tmp/staging-animals.json'); const c=require('/tmp/staging-content.json'); const all=[...(a.data?.available||[]),...(a.data?.rescued||[]),...(a.data?.adopted||[])]; if(a.success!==true || !all.some(x=>x.animalCode==='${animal_code}') || c.success!==true || !c.data?.items?.some(x=>x.id==='${cms_id}' && x.sortOrder===987654)) process.exit(1)"; then
               echo "Synthetic animal and published CMS section both appeared on the isolated public staging website."
               exit 0
             fi
