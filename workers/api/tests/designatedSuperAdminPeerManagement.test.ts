@@ -23,11 +23,8 @@ function makeApp(actor: AuthUser, peer: { id: string; email: string }) {
   const updates: Array<{ sql: string; values: unknown[] }> = [];
   const DB = {
     prepare(sql: string) {
-      return {
-        bind(...values: unknown[]) {
-          return {
-            first: async () => {
-              if (sql.includes('SELECT u.id, u.email, u.full_name, u.phone')) {
+      const first = async () => {
+        if (sql.includes('SELECT u.id, u.email, u.full_name, u.phone')) {
                 return {
                   id: peer.id,
                   email: peer.email,
@@ -38,12 +35,17 @@ function makeApp(actor: AuthUser, peer: { id: string; email: string }) {
                   role_code: 'super_admin',
                 };
               }
-              if (sql.includes('SELECT COUNT(*) AS count')) return { count: 2 };
-              if (sql.includes('SELECT u.role_id, u.status, r.code as role_code')) {
-                return { role_id: 'role_super_admin', role_code: 'super_admin', status: 'suspended' };
-              }
-              return null;
-            },
+        if (sql.includes('SELECT COUNT(*) AS count')) return { count: 2 };
+        if (sql.includes('SELECT u.role_id, u.status, r.code as role_code')) {
+          return { role_id: 'role_super_admin', role_code: 'super_admin', status: 'suspended' };
+        }
+        return null;
+      };
+      return {
+        first,
+        bind(...values: unknown[]) {
+          return {
+            first,
             run: async () => {
               updates.push({ sql, values });
               return { success: true, meta: { changes: 1 } };
