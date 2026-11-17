@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - erp-development
+      - main
     paths:
       - .github/workflows/d1-backup.yml
   workflow_dispatch:
