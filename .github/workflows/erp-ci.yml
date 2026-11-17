@@ -462,7 +462,7 @@ jobs:
           set -euo pipefail
           healthy=0
           for attempt in $(seq 1 18); do
-            status=$(curl -sS --max-time 10 -o /tmp/public-animals.json -w '%{http_code}' https://phs-phs.pages.dev/api/v1/public/animals/ || true)
+            status=$(curl -sS --max-time 10 -o /tmp/public-animals.json -w '%{http_code}' https://phs-phs.pages.dev/api/v1/public/animals || true)
             if [ "$status" = "200" ] && node -e "const data=require('/tmp/public-animals.json'); if (data.success !== true || !data.data) process.exit(1)"; then
               healthy=1
               break
