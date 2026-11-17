@@ -27,21 +27,27 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check out ERP deployment branch containing Worker configuration
+        uses: actions/checkout@v4
+        with:
+          ref: erp-development
+          path: erp-development
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Generate dependency lockfile
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Install Worker tooling
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         run: npm ci --no-audit --no-fund
 
       - name: Export production D1 database
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -54,7 +60,7 @@ jobs:
           echo "BACKUP_KEY=production/$(date -u +%Y/%m/%d/%H%M%S)/pawshopes-erp-production.sql" >> "$GITHUB_ENV"
 
       - name: Upload SQL and checksum to private R2 bucket
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -65,7 +71,7 @@ jobs:
 
       - name: Rehearse restore into a disposable D1 database
         if: github.event_name != 'schedule'
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -83,7 +89,7 @@ jobs:
           echo "Production D1 restore rehearsal: passed" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify backup object exists
-        working-directory: workers/api
+        working-directory: erp-development/workers/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
