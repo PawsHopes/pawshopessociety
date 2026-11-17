@@ -1,0 +1,94 @@
+name: D1 encrypted-offsite backup
+
+on:
+  push:
+    branches:
+      - erp-development
+      - main
+    paths:
+      - .github/workflows/d1-backup.yml
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: paws-hopes-d1-backup
+  cancel-in-progress: false
+
+jobs:
+  production-d1-backup:
+    name: Export production ERP D1 and store private R2 backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate dependency lockfile
+        working-directory: workers/api
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install Worker tooling
+        working-directory: workers/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Export production D1 database
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p ../../backup-output
+          npx wrangler d1 export pawshopes-erp-db-production --remote --env production --output ../../backup-output/pawshopes-erp-production.sql --skip-confirmation
+          test -s ../../backup-output/pawshopes-erp-production.sql
+          sha256sum ../../backup-output/pawshopes-erp-production.sql > ../../backup-output/pawshopes-erp-production.sql.sha256
+          echo "BACKUP_KEY=production/$(date -u +%Y/%m/%d/%H%M%S)/pawshopes-erp-production.sql" >> "$GITHUB_ENV"
+
+      - name: Upload SQL and checksum to private R2 bucket
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY" --file ../../backup-output/pawshopes-erp-production.sql --remote
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY.sha256" --file ../../backup-output/pawshopes-erp-production.sql.sha256 --remote
+
+      - name: Rehearse restore into a disposable D1 database
+        if: github.event_name != 'schedule'
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          restore_db="pawshopes-restore-test-${GITHUB_RUN_ID}"
+          cleanup() {
+            npx wrangler d1 delete "$restore_db" --skip-confirmation >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          npx wrangler d1 create "$restore_db" --location apac
+          npx wrangler d1 execute "$restore_db" --remote --file ../../backup-output/pawshopes-erp-production.sql --yes
+          npx wrangler d1 execute "$restore_db" --remote --command "SELECT COUNT(*) AS restored_users FROM users; SELECT COUNT(*) AS restored_animals FROM animals; SELECT COUNT(*) AS restored_cms_sections FROM website_content;"
+          echo "Fresh D1 restore rehearsal completed; expected core tables were readable."
+          echo "Production D1 restore rehearsal: passed" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify backup object exists
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object get "pawshopes-erp-db-backups/$BACKUP_KEY" --file /tmp/backup-verification.sql --remote
+          cmp ../../backup-output/pawshopes-erp-production.sql /tmp/backup-verification.sql
+          echo "Production D1 backup upload and byte-for-byte verification passed."
