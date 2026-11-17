@@ -59,17 +59,10 @@ jobs:
             https://pawshopes-r2-backup.hopezpaws.workers.dev/run \
             -o /tmp/r2-backup-result.json
           cat /tmp/r2-backup-result.json
-          static_media_count=$(find assets/images -type f | grep -Eci '\.(webp|jpe?g|png|gif)
+          static_media_count=$(find assets/images -type f -name '*.webp' | wc -l)
           if [ "$static_media_count" -lt 1 ]; then
             echo "::error::The legacy public media files are not present in the versioned Git repository."
             exit 1
           fi
           node -e "const r=require('/tmp/r2-backup-result.json'); const media=r.results?.find(x=>x.bucket==='pawshopes-public-media-production'); const vault=r.results?.find(x=>x.bucket==='pawshopes-private-vault-production'); if(r.success!==true || r.verified!==true || !media || !vault) process.exit(1); console.log('R2 snapshot verified: '+media.objects+' public media objects and '+vault.objects+' private vault objects.');"
-          echo "Version-controlled static image files: $static_media_count"
- || true)
-          if [ "$static_media_count" -lt 1 ]; then
-            echo "::error::The legacy public media files are not present in the versioned Git repository."
-            exit 1
-          fi
-          node -e "const r=require('/tmp/r2-backup-result.json'); const media=r.results?.find(x=>x.bucket==='pawshopes-public-media-production'); const vault=r.results?.find(x=>x.bucket==='pawshopes-private-vault-production'); if(r.success!==true || r.verified!==true || !media || !vault) process.exit(1); console.log('R2 snapshot verified: '+media.objects+' public media objects and '+vault.objects+' private vault objects.');"
-          echo "Version-controlled static image files: $static_media_count"
+          echo "Version-controlled WebP image files: $static_media_count"
