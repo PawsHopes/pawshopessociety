@@ -96,8 +96,8 @@ function makeApp() {
     batch: async (prepared: Array<{ sql: string; values: unknown[] }>) => {
       for (const statement of prepared) {
         statements.push(statement);
-        if (statement.sql.startsWith('INSERT INTO animals')) {
-          const columnList = statement.sql.match(/\\(([^)]+)\\) VALUES/)?.[1] || '';
+        if (statement.sql.includes('INSERT INTO animals')) {
+          const columnList = statement.sql.match(/\\(([\\s\\S]*?)\\)\\s*VALUES/i)?.[1] || '';
           const columns = columnList.split(', ').map((column) => column.trim());
           animal = Object.fromEntries(columns.map((column, index) => [column, statement.values[index]])) as AnimalRow;
           animal.is_published_public = Number(animal.is_published_public || 0);
