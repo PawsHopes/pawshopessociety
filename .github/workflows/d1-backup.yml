@@ -1,0 +1,65 @@
+name: D1 encrypted-offsite backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: paws-hopes-d1-backup
+  cancel-in-progress: false
+
+jobs:
+  production-d1-backup:
+    name: Export production ERP D1 and store private R2 backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker tooling
+        working-directory: workers/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Export production D1 database
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p ../../backup-output
+          npx wrangler d1 export pawshopes-erp-db-production --remote --env production --output ../../backup-output/pawshopes-erp-production.sql --skip-confirmation
+          test -s ../../backup-output/pawshopes-erp-production.sql
+          sha256sum ../../backup-output/pawshopes-erp-production.sql > ../../backup-output/pawshopes-erp-production.sql.sha256
+          echo "BACKUP_KEY=production/$(date -u +%Y/%m/%d/%H%M%S)/pawshopes-erp-production.sql" >> "$GITHUB_ENV"
+
+      - name: Upload SQL and checksum to private R2 bucket
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY" --file ../../backup-output/pawshopes-erp-production.sql
+          npx wrangler r2 object put "pawshopes-erp-db-backups/$BACKUP_KEY.sha256" --file ../../backup-output/pawshopes-erp-production.sql.sha256
+
+      - name: Verify backup object exists
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object get "pawshopes-erp-db-backups/$BACKUP_KEY" --file /tmp/backup-verification.sql
+          cmp ../../backup-output/pawshopes-erp-production.sql /tmp/backup-verification.sql
+          echo "Production D1 backup upload and byte-for-byte verification passed."
