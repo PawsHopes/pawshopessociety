@@ -59,7 +59,7 @@ jobs:
             https://pawshopes-r2-backup.hopezpaws.workers.dev/run \
             -o /tmp/r2-backup-result.json
           cat /tmp/r2-backup-result.json
-          static_media_count=$(find assets/images -type f \\( -iname '*.webp' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' \\) | wc -l)
+          static_media_count=$(find assets/images -type f \( -iname '*.webp' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' \) | wc -l)
           if [ "$static_media_count" -lt 1 ]; then
             echo "::error::The legacy public media files are not present in the versioned Git repository."
             exit 1
