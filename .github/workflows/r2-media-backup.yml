@@ -1,0 +1,62 @@
+name: Production R2 media and private-vault backup
+
+on:
+  push:
+    branches:
+      - erp-development
+    paths:
+      - "workers/r2-backup/**"
+      - ".github/workflows/r2-media-backup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: paws-hopes-r2-production-backup
+  cancel-in-progress: false
+
+jobs:
+  backup-production-r2:
+    name: Snapshot production public media and private vault to private R2
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy isolated R2 backup worker
+        working-directory: workers/r2-backup
+        run: npx --yes wrangler@4.164.0 deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set one-run backup trigger credential
+        working-directory: workers/r2-backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$(openssl rand -hex 32)"
+          printf '%s' "$token" | npx --yes wrangler@4.164.0 secret put BACKUP_TRIGGER_TOKEN --env production
+          echo "BACKUP_TRIGGER_TOKEN=$token" >> "$GITHUB_ENV"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Run and verify production R2 snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 8 --retry-delay 5 --retry-all-errors --max-time 180 \
+            -X POST \
+            -H "Authorization: Bearer $BACKUP_TRIGGER_TOKEN" \
+            https://pawshopes-r2-backup.hopezpaws.workers.dev/run \
+            -o /tmp/r2-backup-result.json
+          cat /tmp/r2-backup-result.json
+          node -e "const r=require('/tmp/r2-backup-result.json'); const media=r.results?.find(x=>x.bucket==='pawshopes-public-media-production'); const vault=r.results?.find(x=>x.bucket==='pawshopes-private-vault-production'); if(r.success!==true || r.verified!==true || !media || media.objects<1 || !vault) process.exit(1); console.log('Verified '+media.objects+' public media objects ('+media.bytes+' bytes) and '+vault.objects+' private vault objects.');"
