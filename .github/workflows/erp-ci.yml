@@ -89,6 +89,8 @@ jobs:
           if (!animalFeed.includes('is_published_public = 1') || !animalFeed.includes('deleted_at IS NULL')) throw new Error('Public animal feed must exclude drafts and archived animals');
           if (!contentFeed.includes("WHERE wc.status = 'published'") || !contentFeed.includes('wc.sort_order')) throw new Error('Public CMS feed must expose published, ordered sections only');
           if (!contentFeed.includes('wc.sort_order AS sortOrder') || !contentFeed.includes('ORDER BY wc.page_slug ASC, wc.sort_order ASC')) throw new Error('Public CMS feed must expose the exact editor ordering to the live renderer');
+          const workerContentFeed = fs.readFileSync('workers/api/src/routes/public/content.ts', 'utf8');
+          if (!workerContentFeed.includes('wc.sort_order AS sortOrder') || !workerContentFeed.includes('ORDER BY wc.page_slug ASC, wc.sort_order ASC')) throw new Error('Worker public CMS feed must expose the same saved editor ordering.');
           const visualEditor = fs.readFileSync('apps/admin-erp/src/pages/VisualSiteEditor.tsx', 'utf8');
           if (!visualEditor.includes('pawshopes-public-staging.pages.dev') || visualEditor.includes('https://pawshopessociety.pages.dev/index.html')) throw new Error('CMS visual editor preview must target the isolated public staging site, not production.');
           if (!cmsJs.includes('data-cms-section') || !cmsJs.includes('existing[existing.length - 1].after(section)')) throw new Error('CMS section insertion does not preserve editor order');
@@ -483,6 +485,54 @@ jobs:
             302|401|403) echo "Admin endpoint correctly rejects unauthenticated requests (HTTP $admin_status)." ;;
             *) echo "::error::Expected Access/auth protection on /api/v1/admin/me, got HTTP $admin_status."; exit 1 ;;
           esac
+
+      - name: Smoke-test public CMS feed and private-file Access gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          content_status=$(curl -sS --max-time 15 -o /tmp/public-content.json -w '%{http_code}' https://phs-phs.pages.dev/api/v1/public/content || true)
+          if [ "$content_status" != "200" ] || ! node -e "const d=require('/tmp/public-content.json'); if (d.success !== true || !Array.isArray(d.data?.items)) process.exit(1)"; then
+            echo "::error::Staging public CMS API did not return a valid published-content feed."
+            cat /tmp/public-content.json || true
+            exit 1
+          fi
+          private_status=$(curl -sS --max-time 10 -o /tmp/private-file.json -w '%{http_code}' https://phs-phs.pages.dev/api/v1/files/private/not-a-valid-token || true)
+          case "$private_status" in
+            302|401|403) echo "Private-file route correctly rejects unauthenticated or invalid-token requests (HTTP $private_status)." ;;
+            *) echo "::error::Private-file route did not enforce authentication/token validation (HTTP $private_status)."; exit 1 ;;
+          esac
+
+      - name: Verify animal and CMS publishing reach the isolated public staging website
+        working-directory: workers/api
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          animal_id="ci-uat-animal-${GITHUB_RUN_ID}"
+          cms_id="ci-uat-cms-${GITHUB_RUN_ID}"
+          animal_code="CI-UAT-${GITHUB_RUN_ID}"
+          cleanup() {
+            npx wrangler d1 execute pawshopes-erp-db-staging-isolated --remote --env staging --yes --command "DELETE FROM animals WHERE id='$animal_id'; DELETE FROM website_content WHERE id='$cms_id';" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          sql="INSERT INTO animals (id, animal_code, name, species, gender, is_adoption_eligible, is_published_public, public_description, current_status) VALUES ('$animal_id', '$animal_code', 'Synthetic UAT Dog', 'Dog', 'Unknown', 1, 1, 'Synthetic staging-only adoption listing.', 'available_for_adoption'); INSERT INTO website_content (id, page_slug, section_key, block_id, title, body_json, status, version_number, updated_by, block_type, sort_order, published_at) VALUES ('$cms_id', 'adopt.html', 'ci-uat-${GITHUB_RUN_ID}', '$cms_id', 'Synthetic UAT CMS Section', '{\"content\":\"Synthetic staging-only CMS publication.\"}', 'published', 1, (SELECT id FROM users WHERE lower(email)='hopezpaws@gmail.com' LIMIT 1), 'content', 987654, strftime('%Y-%m-%dT%H:%M:%fZ','now'));"
+          npx wrangler d1 execute pawshopes-erp-db-staging-isolated --remote --env staging --yes --command "$sql"
+
+          for attempt in $(seq 1 12); do
+            curl -fsS --max-time 15 https://pawshopes-public-staging.pages.dev/api/animals -o /tmp/staging-animals.json || true
+            curl -fsS --max-time 15 https://pawshopes-public-staging.pages.dev/api/content -o /tmp/staging-content.json || true
+            if node -e "const a=require('/tmp/staging-animals.json'); const c=require('/tmp/staging-content.json'); const all=[...(a.data?.available||[]),...(a.data?.rescued||[]),...(a.data?.adopted||[])]; if(a.success!==true || !all.some(x=>x.animalCode==='\${animal_code}') || c.success!==true || !c.data?.items?.some(x=>x.id==='\${cms_id}' && x.sortOrder===987654)) process.exit(1)"; then
+              echo "Synthetic animal and published CMS section both appeared on the isolated public staging website."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Staging public website did not reflect the synthetic published animal and CMS section."
+          cat /tmp/staging-animals.json || true
+          cat /tmp/staging-content.json || true
+          exit 1
 
   deploy-production:
     name: Deploy live Admin ERP API and database
