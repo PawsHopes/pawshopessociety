@@ -1,6 +1,11 @@
 name: D1 encrypted-offsite backup
 
 on:
+  push:
+    branches:
+      - erp-development
+    paths:
+      - .github/workflows/d1-backup.yml
   workflow_dispatch:
   schedule:
     - cron: "30 2 * * *"
