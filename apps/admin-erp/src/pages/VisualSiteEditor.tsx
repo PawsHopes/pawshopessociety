@@ -31,14 +31,14 @@ const PAGES = [
 ] as const;
 type PageSlug = (typeof PAGES)[number][0];
 const PAGE_PREVIEW_URLS: Record<PageSlug, string> = {
-  'index.html': 'https://pawshopessociety.pages.dev/index.html',
-  'about.html': 'https://pawshopessociety.pages.dev/about.html',
-  'rescue.html': 'https://pawshopessociety.pages.dev/rescue.html',
-  'gallery.html': 'https://pawshopessociety.pages.dev/gallery.html',
-  'adopt.html': 'https://pawshopessociety.pages.dev/adopt.html',
-  'volunteer.html': 'https://pawshopessociety.pages.dev/volunteer.html',
-  'contact.html': 'https://pawshopessociety.pages.dev/contact.html',
-  'donate.html': 'https://pawshopessociety.pages.dev/donate.html',
+  'index.html': 'https://pawshopes-public-staging.pages.dev/index.html',
+  'about.html': 'https://pawshopes-public-staging.pages.dev/about.html',
+  'rescue.html': 'https://pawshopes-public-staging.pages.dev/rescue.html',
+  'gallery.html': 'https://pawshopes-public-staging.pages.dev/gallery.html',
+  'adopt.html': 'https://pawshopes-public-staging.pages.dev/adopt.html',
+  'volunteer.html': 'https://pawshopes-public-staging.pages.dev/volunteer.html',
+  'contact.html': 'https://pawshopes-public-staging.pages.dev/contact.html',
+  'donate.html': 'https://pawshopes-public-staging.pages.dev/donate.html',
 };
 const SLOT_KEYS = ['top_of_page', 'after_intro', 'before_bottom_section', 'bottom_of_page'];
 const SLOT_LABELS = ['Top of page', 'Below introduction', 'Before final section', 'Bottom of page'];
