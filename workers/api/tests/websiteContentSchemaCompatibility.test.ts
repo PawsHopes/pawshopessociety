@@ -90,17 +90,17 @@ describe('website_content schema compatibility', () => {
     const insert = statements.find((statement) => statement.sql.includes('INSERT INTO website_content'));
 
     expect(response.status).toBe(201);
-    expect(insert).toBeDefined();
-    expect(insert?.sql).toContain('block_id');
-    expect(insert?.sql).toContain('block_type');
+    if (!insert) throw new Error('CMS insert statement was not captured');
+    expect(insert.sql).toContain('block_id');
+    expect(insert.sql).toContain('block_type');
 
-    const columns = insert?.sql.match(/\(([^)]+)\) VALUES/)?.[1].split(', ').map((value) => value.trim()) || [];
+    const columns = insert.sql.match(/\(([^)]+)\) VALUES/)?.[1].split(', ').map((value) => value.trim()) || [];
     const blockIdIndex = columns.indexOf('block_id');
     const blockTypeIndex = columns.indexOf('block_type');
     expect(blockIdIndex).toBeGreaterThanOrEqual(0);
     expect(blockTypeIndex).toBeGreaterThanOrEqual(0);
-    expect(String(insert?.values[blockIdIndex] || '')).not.toBe('');
-    expect(insert?.values[blockTypeIndex]).toBe('content');
+    expect(String(insert.values[blockIdIndex] || '')).not.toBe('');
+    expect(insert.values[blockTypeIndex]).toBe('content');
   });
 
   it('does not reference legacy columns when they are absent from production schema', async () => {
