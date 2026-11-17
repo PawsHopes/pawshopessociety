@@ -416,6 +416,14 @@ adminModuleRoutes.post('/:resource', async (c) => {
   if (resource === 'donations') values.verification_status = 'pending';
   if (resource === 'expenses') values.approval_status = 'pending';
   if (resource === 'website_content') {
+    // The staging database may still have the visual-builder columns from an older
+    // schema. Populate them when present, while remaining compatible with production
+    // databases that have not received those legacy columns.
+    const schemaInfo = await c.env.DB.prepare('PRAGMA table_info(website_content)').all<{ name: string }>();
+    const schemaColumns = new Set((schemaInfo.results || []).map((column) => column.name));
+    if (schemaColumns.has('block_id')) values.block_id = crypto.randomUUID();
+    if (schemaColumns.has('block_type')) values.block_type = 'content';
+
     values.status = 'draft';
     const version = await c.env.DB.prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM website_content WHERE page_slug = ? AND section_key = ?').bind(String(values.page_slug), String(values.section_key)).first<{ next_version: number }>();
     values.version_number = version?.next_version ?? 1;
