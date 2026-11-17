@@ -23,7 +23,8 @@ describe('public CMS content feed', () => {
     const payload = await response.json() as { data: { items: Array<{ id: string }> } };
     expect(payload.data.items.map((item) => item.id)).toEqual(['c1', 'c2']);
     expect(sql).toContain("WHERE wc.status = 'published'");
-    expect(sql).toContain('ORDER BY wc.page_slug ASC, wc.section_key ASC, wc.sort_order ASC');
+    expect(sql).toContain('wc.sort_order AS sortOrder');
+    expect(sql).toContain('ORDER BY wc.page_slug ASC, wc.sort_order ASC, wc.section_key ASC');
     expect(response.headers.get('cache-control')).toContain('max-age=60');
   });
 });
