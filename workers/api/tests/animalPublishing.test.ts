@@ -75,8 +75,11 @@ function makeApp() {
           } else if (sql.startsWith('UPDATE animals SET')) {
             if (animal) {
               const setClause = sql.slice('UPDATE animals SET '.length).split(' WHERE ')[0] || '';
-              const fields = setClause.split(', ').filter((part) => !part.includes('strftime')).map((part) => part.split(' = ')[0]);
-              fields.forEach((field, index) => { if (animal) animal[field] = statement.values[index]; });
+              const fields = setClause.split(', ').filter((part) => !part.includes('strftime'));
+              fields.forEach((part, index) => {
+                const field = part.split(' = ')[0];
+                if (animal && field) animal[field] = statement.values[index];
+              });
             }
           }
           return { success: true, meta: { changes: 1 } };
