@@ -94,7 +94,8 @@ describe('website_content schema compatibility', () => {
     expect(insert.sql).toContain('block_id');
     expect(insert.sql).toContain('block_type');
 
-    const columns = insert.sql.match(/\(([^)]+)\) VALUES/)?.[1].split(', ').map((value) => value.trim()) || [];
+    const columnList = insert.sql.match(/\(([^)]+)\) VALUES/)?.[1];
+    const columns = columnList ? columnList.split(', ').map((value) => value.trim()) : [];
     const blockIdIndex = columns.indexOf('block_id');
     const blockTypeIndex = columns.indexOf('block_type');
     expect(blockIdIndex).toBeGreaterThanOrEqual(0);
