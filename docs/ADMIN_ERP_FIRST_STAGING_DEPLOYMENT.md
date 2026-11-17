@@ -1,116 +1,109 @@
 # Paws Hopes Society Admin ERP — staging deployment runbook
 
-This runbook is staging-only. It must not change the public website, the existing public Pages project, the `main` branch, or production data.
+This document describes the staging-only ERP setup and its verification procedure. It is not evidence that Cloudflare dashboard settings or interactive login have been verified today. Confirm live Cloudflare configuration independently before operational use.
 
-## Current verified staging state (15 November 2026)
+## Safety boundary
 
-- Admin Pages project: `phs-phs`
-- Admin URL: `https://phs-phs.pages.dev`
-- Source: `PawsHopes/pawshopessociety`, branch `erp-development`
-- Pages root: `apps/admin-erp`
-- Build command: `npm install --prefix ../../workers/api --no-save --no-package-lock --omit=dev && npm run build`
-- Output directory: `dist`
-- Latest verified application-code deployment: commit `6ed04ebce52aa5d0434b84124040185832d00af8` (`https://d4e56253.phs-phs.pages.dev`)
-- ERP CI and Security Analysis passed for that application-code commit: frontend build, Worker API checks, migration validation, CodeQL and secret scanning.
-- Cloudflare Access app protects `phs-phs.pages.dev` and currently allows only `hopezpaws@gmail.com`.
-- Zero Trust team: `mute-pond-e3e6.cloudflareaccess.com`
-- Staging D1: `pawshopes-erp-db-staging` (`a6fd7136-b618-4072-af6a-5373f4e727d1`)
-- Staging KV: `pawshopes-erp-rate-limit-staging` (`1156cf04f6b9496dabc7d580457f0c53`)
-- Staging D1 schema objects through migrations `0001`–`0008` are present. The standard `d1_migrations` history table was reconciled and now records all eight migration files. D1 SQL export snapshots were generated before the metadata repair and adoption-reservation migration. The database has 17 animal records, 2 volunteer records and 3 stock movements; 21 synthetic QA records were added for testing. The adoption-reservation trigger was verified with a temporary animal and two applications: the first approval reserved the animal, the second was blocked, and all temporary test records were removed. Review existing records before operational use; do not delete or overwrite records without confirming their origin.
-- `SIGNED_URL_SECRET` is configured as a Pages secret. Its value is intentionally not exposed in this runbook; verify private-document signed-link behavior after deployment.
-- R2 is activated. The public staging bucket `pawshopes-public-media-staging` has its managed `r2.dev` domain enabled; `pawshopes-private-vault-staging` has no public domain. The latest verified application-code deployment includes the `PUBLIC_MEDIA` and `PRIVATE_VAULT` bindings. Application-level upload, record linking, signed access and download still need authenticated end-to-end verification.
-- The Pages Function at `apps/admin-erp/functions/api/[[path]].ts` serves the same Hono API on the Admin hostname. The latest Pages build and deployment completed successfully.
-- Interactive browser login and authenticated end-to-end smoke tests are not yet confirmed.
+- Work only on erp-development or an explicitly reviewed fix branch.
+- Do not merge the ERP PR into main, deploy production, change DNS, alter production resources, or enter real NGO data without separate approval.
+- Keep the existing public website and its production Pages project on main.
+- Use synthetic test records only in staging. Remove only records created by the test itself.
 
-## 1. R2 staging storage — provisioned
+## 1. Admin Pages request routing
 
-Cloudflare confirms that both staging buckets exist and are bound to the `phs-phs` Pages Function:
-- `pawshopes-public-media-staging` — public staging media; managed `r2.dev` domain enabled.
-- `pawshopes-private-vault-staging` — private documents; managed public domain disabled.
-- Pages bindings: `PUBLIC_MEDIA` and `PRIVATE_VAULT`.
-- `PUBLIC_MEDIA_BASE_URL` matches the public bucket domain.
+The Admin frontend makes same-origin requests under /api/v1/*. The Pages Functions implementation must route all API paths through the single catch-all function:
 
-The buckets are provisioned, but application-level upload, record attachment, signed-link access and download still need authenticated end-to-end verification. Do not enable a public domain on the private vault. Do not change public website DNS for this staging setup.
+apps/admin-erp/functions/api/[[path]].ts
 
-## 2. Admin Pages and API
+That function imports and invokes workers/api/src/index.ts with the Pages environment bindings. Do not add a more-specific functions/api/v1/* proxy that forwards requests to a production Worker. Cloudflare Pages file-based routing gives more-specific function routes precedence over catch-all routes; such a file can silently bypass the staging Hono API.
 
-The Git-connected Pages project is configured with:
-- Production branch: `erp-development` (this Pages project's production deployment is still the ERP staging environment).
-- Root directory: `apps/admin-erp`
-- Build command: `npm install --prefix ../../workers/api --no-save --no-package-lock --omit=dev && npm run build`
-- Output directory: `dist`
-- Preview deployments disabled.
+Before deploying staging, verify:
+1. /api/v1/admin/me is handled by the same-origin Pages Function and staging D1.
+2. The Access JWT audience configured for the Admin Pages hostname is accepted by the API.
+3. A staging request cannot reach the production Worker or production D1.
+4. Unauthenticated requests are denied by Access; public exceptions are limited to explicitly documented public/health paths.
 
-The Admin frontend uses same-origin `/api/v1/*` requests. The Pages Function imports the tested Hono API from `workers/api/src/index.ts`. D1 and KV are bound. R2 bindings `PUBLIC_MEDIA` and `PRIVATE_VAULT` are configured for this Pages project; end-to-end use still requires testing.
+## 2. Code-declared staging resources
 
-Pages Function variables include:
-- `ENVIRONMENT=staging`
-- `PUBLIC_SITE_ORIGIN=https://pawshopessociety.pages.dev`
-- `ADMIN_ERP_ORIGIN=https://phs-phs.pages.dev`
-- `CF_ACCESS_TEAM_DOMAIN=mute-pond-e3e6.cloudflareaccess.com`
-- `CF_ACCESS_AUD`: the Admin Pages Access app audience tag.
-- `STAGING_BOOTSTRAP_ADMIN_EMAIL=hopezpaws@gmail.com`
-- `SIGNED_URL_SECRET`: stored as a random secret of at least 32 bytes.
-- `PUBLIC_MEDIA_BASE_URL=https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`.
+The source configuration is workers/api/wrangler.toml. Its env.staging declares:
 
-Never commit or paste secrets into chat or Git.
+- Worker: pawshopes-erp-api-staging
+- D1 binding: DB → pawshopes-erp-db-staging-isolated
+- R2 binding: PUBLIC_MEDIA → pawshopes-public-media-staging
+- R2 binding: PRIVATE_VAULT → pawshopes-private-vault-staging
+- KV binding: RATE_LIMIT_KV → staging rate-limit namespace
+- Access team and audience variables for staging
+- Public media base URL for the staging public-media bucket
 
-## 3. Cloudflare Access and first Super Admin
+These are repository-declared values, not proof that a Pages project or Worker currently has matching Cloudflare bindings. In Cloudflare, compare the actual Pages Function bindings, Worker bindings, environment variables and secret names with this file. Never print, commit or paste secret values.
 
-The Access app allows only `hopezpaws@gmail.com`. Public path overrides are limited to `/api/v1/public/*`, nested public paths and `/api/v1/health`; admin paths remain protected.
+Required secret names include CF_ACCESS_API_TOKEN (for approved-member Access-policy synchronisation where enabled) and SIGNED_URL_SECRET (private document signed links). Verify presence and configuration without exposing values.
 
-First-login bootstrap endpoint:
-`POST /api/v1/admin/bootstrap/super-admin`
+Keep the private R2 vault private; do not enable a public bucket domain for it.
 
-It is staging-only, requires a verified Cloudflare Access JWT with the exact owner email, creates only the first active Super Admin, and records an audit entry. The frontend attempts this bootstrap when `/api/v1/admin/me` reports that the authenticated email has no ERP user record.
+## 3. Designated Super Admin accounts
 
-Owner verification:
-1. Open [https://phs-phs.pages.dev](https://phs-phs.pages.dev).
-2. Sign in through Cloudflare Access using `hopezpaws@gmail.com` and complete the email verification challenge.
-3. Confirm that the dashboard opens and displays the Super Admin role.
-4. Report any error text or screenshot with tokens, codes and personal data hidden.
+The two designated Society Super Admin identities are:
 
-The staging D1 database currently has two active Super Admin accounts, including the configured owner email. The owner already has the required ERP role, so first-admin bootstrap is not required for that account. Do not create a public registration path or create duplicate Super Admin accounts.
+- hopezpaws@gmail.com
+- infosecayush@gmail.com
 
-## 4. Approved-member Cloudflare Access synchronisation
+Both must receive the same active role_super_admin role and the same full permission set. Neither account is a read-only or secondary administrator. Preserve equal permissions in backend authorization, account-management routes, UI controls, bootstrap logic and regression tests.
 
-The Join Management API now attempts to add only the exact email of an approved applicant to both existing Allow policies: the stable Admin hostname policy and the wildcard Pages deployment/preview hostname policy. It reads each current policy, preserves existing narrow email rules, refuses to modify a non-Allow policy or a policy containing broad Everyone/domain/service-token rules, and records sync status. A Super Admin can retry failed/pending syncs from Join Management. ERP approval remains separate from Access synchronisation: if Access sync is unavailable, the ERP account is active but the person cannot sign in until the Access step succeeds.
+The bootstrap route must accept only a verified Cloudflare Access identity matching one of these exact email addresses, and must be repeatable without changing an existing account with a conflicting role or status. It must not grant Super Admin to arbitrary applicants.
 
-To enable automatic synchronisation on staging:
-1. Create a Cloudflare API token restricted to this account with **Access: Apps and Policies Edit** permission. Do not use the Global API Key.
-2. In Cloudflare Pages → `phs-phs` → Settings → Environment variables → Production (the Pages project's production deployment is the ERP staging environment), add `CF_ACCESS_API_TOKEN` as an encrypted secret.
-3. Redeploy the `erp-development` branch so the Pages Function receives the secret.
-4. Test with a controlled test applicant email. Verify the exact email is appended to both policies `3fe62b03-bb97-47d3-8839-02001fee7ce0` and `2e71687b-0135-44cc-b3b9-d1c7ae1652f3`, the existing owner email remains in both, and Join Management reports `synced`.
-5. Remove the test member from the Access policy and disable/revoke the temporary test account after verification.
+For each account, verify:
+1. Cloudflare Access login succeeds for the intended email.
+2. GET /api/v1/admin/me returns that same email, roleCode=super_admin, active identity and full permissions.
+3. Dashboard and user-management actions work.
+4. Both accounts can manage the peer according to the same permission policy, while safeguards prevent removal/suspension of the last active designated administrator.
+5. Audit events identify the actor correctly.
 
-Never paste the API token into chat, GitHub, source code, plain-text variables, or logs. If the secret is absent or the API token lacks permission, the UI will retain a pending/failed status and provide the manual fallback.
+Do not infer successful interactive login from a D1 row or an Access policy alone.
 
-Migration `0009_access_sync_status.sql` adds persistent sync status/error/timestamp fields. It has been applied to staging D1 after a SQL export snapshot.
+## 4. Required staging browser acceptance tests
 
-## 5. Smoke tests required before operational use
+Run the following with synthetic data after API routing and Access configuration are aligned:
 
-1. Unauthenticated Admin requests redirect to Cloudflare Access.
-2. Public animal/join/health endpoints bypass Access only on explicit public path overrides.
-3. Admin API rejects missing, invalid, expired and wrong-audience Access JWTs.
-4. Owner login bootstraps exactly one Super Admin and `/api/v1/admin/me` returns `roleCode=super_admin`.
-5. A different email is denied by Access and the API.
-6. D1, KV, public-media and private-vault bindings report their actual readiness.
-7. Animal, rescue, medical, adoption, finance, inventory, volunteer and CMS workspaces load with correct permissions.
-8. Donation verification and expense posting create one balanced ledger transaction only.
-9. Stock approval updates on-hand quantity; insufficient stock is rejected.
-10. Audit events, document upload/download, CORS, rate limits, backups and restore are tested.
-11. Public website and its existing animal listings remain unchanged.
+1. Open the stable Admin hostname in a clean browser session; verify Access login and denial for an unapproved identity.
+2. Sign in separately as each designated Super Admin; verify /api/v1/admin/me identity and permissions.
+3. Open the dashboard and all enabled workspaces.
+4. Create, edit, view, publish, unpublish and archive a synthetic animal; verify adoption and rescue public feeds show only eligible published records.
+5. Upload a synthetic public animal image and verify the record/media link.
+6. Upload a synthetic private document; verify signed access and download are authorized and expiry is enforced.
+7. Create and edit CMS drafts; publish/unpublish; verify the public content feed exposes published records only and ordering is preserved.
+8. Exercise donation receipt immutability, financial ledger balancing, inventory approval/negative-stock prevention, adoption handover and foster lifecycle triggers.
+9. Verify Join Management approval and Access synchronisation with a controlled test identity; remove that test identity afterwards.
+10. Check audit logs, rate limits, CORS, error handling, and backup/restore rehearsal.
 
-Do not enter real donor, medical, financial or volunteer records until staging UAT, security checks and backup/restore rehearsal pass.
+A successful build, Worker test suite, migration validation or deployment does not substitute for these authenticated browser tests.
 
-## 6. R2 bucket configuration now in place
+## 5. Migration and deployment procedure
 
-- `pawshopes-public-media-staging` — APAC, Standard; managed `r2.dev` URL enabled for staging testing only.
-- `pawshopes-private-vault-staging` — APAC, Standard; remains private with no public endpoint.
-- Pages bindings: `PUBLIC_MEDIA` and `PRIVATE_VAULT` configured on the `phs-phs` production deployment environment (which is the staging environment for this project).
-- Public media base URL: `https://pub-3819e5d7af12440f8b190b69723b4dc4.r2.dev`.
-- Bucket bindings take effect only after a new Pages deployment. Test actual upload and private signed download after deployment.
+- Review every pending SQL migration and its compatibility with both the clean SQLite CI database and the isolated staging D1 schema.
+- Run migration validation, foreign-key checks, integrity checks and workflow-trigger regression tests.
+- Confirm the staging D1 target from workers/api/wrangler.toml before any remote migration.
+- Take/verify an export or backup before applying staging migrations.
+- Deploy only through an explicitly approved staging workflow. Do not use the production workflow input.
+- Re-run the browser acceptance tests after deployment.
 
-## 7. Production remains out of scope
+## 6. Public website publishing boundary
 
-No production D1, KV, R2, production Access app, production secret set or production deployment has been approved. Do not merge the ERP PR, deploy production, change DNS, or point the public website at the staging API without separate explicit approval.
+The live public website must remain on its existing production Pages project and main branch. Admin ERP publication must not be assumed to update the live adoption, rescue or CMS pages until the public feeds are proven to read from the intended data source.
+
+Use a staging public-site preview or an explicitly controlled publishing/synchronisation mechanism for UAT. Verify animal and CMS visibility with synthetic records before considering any production publishing path.
+
+## 7. Go-live gate
+
+The Admin ERP is not approved for operational use until all of the following are verified:
+
+- Separate Admin Pages URL responds and is protected by the intended Cloudflare Access policy.
+- Both designated Super Admins can complete interactive Access login.
+- /api/v1/admin/me returns the correct identity and full permissions for each account.
+- Dashboard and critical module smoke tests pass.
+- Private document upload/download and signed URL checks pass.
+- Public adoption, rescue and CMS publishing paths are verified without changing existing production data.
+- Current ERP CI, migration validation, CodeQL and secret scanning pass.
+- Backup/restore and security review are complete.
+
+Record the tested commit, deployment ID, workflow links, test evidence and unresolved limitations here after each approved staging UAT. Do not mark the portal usable based only on a successful Pages build or deployment.
