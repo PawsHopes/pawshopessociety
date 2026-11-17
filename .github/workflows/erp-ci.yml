@@ -534,6 +534,47 @@ jobs:
           cat /tmp/staging-content.json || true
           exit 1
 
+  production-readonly-smoke:
+    name: Read-only production website and ERP smoke test
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-staging
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'push'
+    steps:
+      - name: Verify public live website and animal/CMS feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 20 https://pawshopessociety.pages.dev/ -o /tmp/live-home.html
+          animals_status=$(curl -sS --max-time 20 -o /tmp/live-animals.json -w '%{http_code}' https://pawshopessociety.pages.dev/api/animals || true)
+          content_status=$(curl -sS --max-time 20 -o /tmp/live-content.json -w '%{http_code}' https://pawshopessociety.pages.dev/api/content || true)
+          if [ "$animals_status" != "200" ] || ! node -e "const d=require('/tmp/live-animals.json'); if(d.success!==true || !Array.isArray(d.data?.available) || !Array.isArray(d.data?.rescued) || !Array.isArray(d.data?.adopted)) process.exit(1)"; then
+            echo "::error::Live public animal feed failed (HTTP $animals_status)."
+            cat /tmp/live-animals.json || true
+            exit 1
+          fi
+          if [ "$content_status" != "200" ] || ! node -e "const d=require('/tmp/live-content.json'); if(d.success!==true || !Array.isArray(d.data?.items)) process.exit(1)"; then
+            echo "::error::Live public CMS feed failed (HTTP $content_status)."
+            cat /tmp/live-content.json || true
+            exit 1
+          fi
+          echo "Live public website, published animal feed and CMS feed returned valid read-only responses."
+
+      - name: Verify live Admin ERP and private document routes remain protected
+        shell: bash
+        run: |
+          set -euo pipefail
+          admin_status=$(curl -sS --max-time 15 -o /tmp/live-admin-me.json -w '%{http_code}' https://pha-phs.pages.dev/api/v1/admin/me || true)
+          case "$admin_status" in
+            302|401|403) echo "Live Admin ERP rejects unauthenticated access (HTTP $admin_status)." ;;
+            *) echo "::error::Live Admin ERP auth gate returned unexpected HTTP $admin_status."; cat /tmp/live-admin-me.json || true; exit 1 ;;
+          esac
+          private_status=$(curl -sS --max-time 15 -o /tmp/live-private-file.json -w '%{http_code}' https://pha-phs.pages.dev/api/v1/files/private/not-a-valid-token || true)
+          case "$private_status" in
+            302|401|403) echo "Live private-document route rejects unauthenticated/invalid-token access (HTTP $private_status)." ;;
+            *) echo "::error::Live private-document route returned unexpected HTTP $private_status."; cat /tmp/live-private-file.json || true; exit 1 ;;
+          esac
+
   deploy-production:
     name: Deploy live Admin ERP API and database
     runs-on: ubuntu-latest
