@@ -31,11 +31,11 @@ export const onRequestGet = async (context: PagesContext): Promise<Response> => 
       SELECT wc.id, wc.page_slug AS pageSlug, wc.section_key AS sectionKey,
         wc.title, wc.body_json AS bodyJson, wc.seo_title AS seoTitle,
         wc.seo_description AS seoDescription, wc.published_at AS publishedAt,
-        ma.public_url AS mediaUrl
+        wc.sort_order AS sortOrder, ma.public_url AS mediaUrl
       FROM website_content wc
       LEFT JOIN media_assets ma ON ma.id = wc.media_asset_id
       WHERE wc.status = 'published'
-      ORDER BY wc.page_slug ASC, wc.section_key ASC, wc.sort_order ASC
+      ORDER BY wc.page_slug ASC, wc.sort_order ASC, wc.section_key ASC
     `).all();
 
     return Response.json(
