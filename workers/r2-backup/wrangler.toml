@@ -1,0 +1,20 @@
+name = "pawshopes-r2-backup"
+main = "src/index.ts"
+compatibility_date = "2026-11-17"
+workers_dev = true
+
+[env.production]
+name = "pawshopes-r2-backup"
+workers_dev = true
+
+[[env.production.r2_buckets]]
+binding = "PUBLIC_MEDIA"
+bucket_name = "pawshopes-public-media-production"
+
+[[env.production.r2_buckets]]
+binding = "PRIVATE_VAULT"
+bucket_name = "pawshopes-private-vault-production"
+
+[[env.production.r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "pawshopes-erp-db-backups"
