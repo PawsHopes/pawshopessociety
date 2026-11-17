@@ -88,6 +88,9 @@ jobs:
           if (!rescueJs.includes("fetch('/api/animals'")) throw new Error('Rescue cards do not use the public animal feed');
           if (!animalFeed.includes('is_published_public = 1') || !animalFeed.includes('deleted_at IS NULL')) throw new Error('Public animal feed must exclude drafts and archived animals');
           if (!contentFeed.includes("WHERE wc.status = 'published'") || !contentFeed.includes('wc.sort_order')) throw new Error('Public CMS feed must expose published, ordered sections only');
+          if (!contentFeed.includes('wc.sort_order AS sortOrder') || !contentFeed.includes('ORDER BY wc.page_slug ASC, wc.sort_order ASC')) throw new Error('Public CMS feed must expose the exact editor ordering to the live renderer');
+          const visualEditor = fs.readFileSync('apps/admin-erp/src/pages/VisualSiteEditor.tsx', 'utf8');
+          if (!visualEditor.includes('pawshopes-public-staging.pages.dev') || visualEditor.includes('https://pawshopessociety.pages.dev/index.html')) throw new Error('CMS visual editor preview must target the isolated public staging site, not production.');
           if (!cmsJs.includes('data-cms-section') || !cmsJs.includes('existing[existing.length - 1].after(section)')) throw new Error('CMS section insertion does not preserve editor order');
           console.log('Public pages, published-only animal feeds and ordered CMS integration checks passed.');
           NODE
