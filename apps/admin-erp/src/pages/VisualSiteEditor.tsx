@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, GripVertical, Monitor, RefreshCw, Save } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 
@@ -29,11 +29,22 @@ const PAGES = [
   ['gallery.html', 'Gallery'], ['adopt.html', 'Adoption'], ['volunteer.html', 'Volunteer'],
   ['contact.html', 'Contact'], ['donate.html', 'Donate'],
 ] as const;
+type PageSlug = (typeof PAGES)[number][0];
+const PAGE_PREVIEW_URLS: Record<PageSlug, string> = {
+  'index.html': 'https://pawshopessociety.pages.dev/index.html',
+  'about.html': 'https://pawshopessociety.pages.dev/about.html',
+  'rescue.html': 'https://pawshopessociety.pages.dev/rescue.html',
+  'gallery.html': 'https://pawshopessociety.pages.dev/gallery.html',
+  'adopt.html': 'https://pawshopessociety.pages.dev/adopt.html',
+  'volunteer.html': 'https://pawshopessociety.pages.dev/volunteer.html',
+  'contact.html': 'https://pawshopessociety.pages.dev/contact.html',
+  'donate.html': 'https://pawshopessociety.pages.dev/donate.html',
+};
 const SLOT_KEYS = ['top_of_page', 'after_intro', 'before_bottom_section', 'bottom_of_page'];
 const SLOT_LABELS = ['Top of page', 'Below introduction', 'Before final section', 'Bottom of page'];
 
 export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditDraft, onRefresh }) => {
-  const [pageSlug, setPageSlug] = useState('index.html');
+  const [pageSlug, setPageSlug] = useState<PageSlug>('index.html');
   const [items, setItems] = useState<CmsItem[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,7 +53,7 @@ export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditD
   const [previewKey, setPreviewKey] = useState(0);
   const [pendingArchiveIds, setPendingArchiveIds] = useState<string[]>([]);
 
-  const publicPageUrl = useMemo(() => 'https://pawshopessociety.pages.dev/' + pageSlug, [pageSlug]);
+  const publicPageUrl = PAGE_PREVIEW_URLS[pageSlug];
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -187,7 +198,7 @@ export const VisualSiteEditor: React.FC<Props> = ({ canEdit, canPublish, onEditD
           <p className="mt-1 max-w-2xl text-sm text-slate-600">Drag sections to change their placement on a page. Saving creates versioned drafts; publishing is a separate, confirmed action.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <select aria-label="Choose website page" value={pageSlug} onChange={(event) => setPageSlug(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select aria-label="Choose website page" value={pageSlug} onChange={(event) => { const selected = event.target.value; if (Object.prototype.hasOwnProperty.call(PAGE_PREVIEW_URLS, selected)) setPageSlug(selected as PageSlug); }} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             {PAGES.map(([slug, label]) => <option key={slug} value={slug}>{label}</option>)}
           </select>
           <button type="button" onClick={() => void load()} disabled={loading || saving} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"><RefreshCw className="h-4 w-4" />Refresh</button>
