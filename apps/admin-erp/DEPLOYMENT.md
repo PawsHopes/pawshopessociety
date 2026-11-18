@@ -10,3 +10,8 @@ The `pha-phs` Pages project serves the production Admin ERP.
 - Production access is restricted by Cloudflare Access to the two designated Society Super Admin accounts.
 
 Do not bind the Pages Function directly to the production database or storage. Keep production data resources on the API Worker.
+
+
+## Controlled production release
+
+The ERP CI workflow runs staging deployment, same-origin API/Access smoke tests, private-file protection checks, and synthetic animal/CMS publishing verification before it can deploy the production ERP Worker and apply production migrations. A release commit on `erp-development` must include `[deploy-production]` in its commit message to authorize that one-time production rollout. The read-only production website and ERP smoke tests run after the production deployment.
