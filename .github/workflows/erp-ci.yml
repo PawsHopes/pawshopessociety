@@ -606,10 +606,13 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Update production Cloudflare Access sync token when configured
-        if: ${{ secrets.CF_ACCESS_API_TOKEN != '' }}
         working-directory: workers/api
         run: |
-          printf '%s' "$CF_ACCESS_API_TOKEN" | npx wrangler secret put CF_ACCESS_API_TOKEN --env production
+          if [ -n "${CF_ACCESS_API_TOKEN:-}" ]; then
+            printf '%s' "$CF_ACCESS_API_TOKEN" | npx wrangler secret put CF_ACCESS_API_TOKEN --env production
+          else
+            echo "CF_ACCESS_API_TOKEN was not supplied; retaining the existing Worker secret configuration."
+          fi
         env:
           CF_ACCESS_API_TOKEN: ${{ secrets.CF_ACCESS_API_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
