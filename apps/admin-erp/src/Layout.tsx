@@ -15,6 +15,7 @@ import {
   UserPlus,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
 import type { AuthUser } from './lib/api';
 import { NotificationCenter } from './components/NotificationCenter';
@@ -22,6 +23,7 @@ import { NotificationCenter } from './components/NotificationCenter';
 interface LayoutProps {
   user: AuthUser;
   children: React.ReactNode;
+  onLogout: () => void;
 }
 
 const NAV_ITEMS = [
@@ -39,7 +41,7 @@ const NAV_ITEMS = [
   { to: '/modules/cms', label: 'Website CMS', icon: Globe, perm: 'cms:read', phase: 'Active' },
 ];
 
-export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
+export const Layout: React.FC<LayoutProps> = ({ user, children, onLogout }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const visibleNav = NAV_ITEMS.filter((item) => user.permissions.includes(item.perm));
   const canRunNotifications = user.roleCode === 'super_admin' &&
@@ -86,6 +88,13 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
           <p className="font-semibold text-white truncate">{user?.fullName || 'Unauthenticated'}</p>
           <p className="text-slate-400 truncate">{user?.email || 'Configure Cloudflare Access'}</p>
           <span className="inline-block mt-1.5 px-2 py-0.5 rounded bg-brandGreen/20 text-green-300 font-medium">{user?.roleName || 'No Active Session'}</span>
+          <button type="button" onClick={onLogout}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 px-3 py-2.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400"
+            aria-label="Log out of Paw's Hopez ERP">
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
+          <p className="mt-2 text-[10px] leading-relaxed text-slate-500">Automatic sign-out after 15 minutes of inactivity. Maximum app session: 8 hours.</p>
         </div>
       </aside>
 
