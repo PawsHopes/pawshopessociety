@@ -97,6 +97,40 @@ jobs:
           console.log('Public pages, published-only animal feeds and ordered CMS integration checks passed.');
           NODE
 
+  staging-reachability:
+    name: Public staging Admin and API reachability
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify stable Admin hostname is reachable and Access-protected
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS --max-time 20 -D /tmp/admin-headers -o /tmp/admin-body -w '%{http_code}' https://phs-phs.pages.dev/)
+          location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/^[^:]+:[[:space:]]*/, ""); gsub(/\r/, ""); print}' /tmp/admin-headers | tail -1)
+          if [ "$status" != "302" ] || [[ "$location" != *"/cdn-cgi/access/login"* ]]; then
+            echo "::error::Staging Admin hostname did not redirect unauthenticated traffic to Cloudflare Access (HTTP $status)."
+            cat /tmp/admin-headers || true
+            exit 1
+          fi
+          echo "Staging Admin hostname is publicly reachable and redirects unauthenticated sessions to Cloudflare Access."
+
+      - name: Verify staging API health and schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 20 https://pawshopes-erp-api-staging.hopezpaws.workers.dev/api/v1/health/ -o /tmp/staging-health.json
+          node -e "const d=require('/tmp/staging-health.json'); if(d.success!==true || d.data?.environment!=='staging' || d.data?.database!=='ok' || d.data?.schema?.ready!==true) { console.error(d); process.exit(1); } console.log('Staging API health, D1 schema and environment checks passed.');"
+
+      - name: Verify Admin API route remains behind Access
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS --max-time 20 -D /tmp/admin-me-headers -o /tmp/admin-me-body -w '%{http_code}' https://phs-phs.pages.dev/api/v1/admin/me)
+          case "$status" in
+            302) echo "Unauthenticated /api/v1/admin/me is redirected to Cloudflare Access." ;;
+            *) echo "::error::Unauthenticated Admin API route returned unexpected HTTP $status."; cat /tmp/admin-me-headers || true; exit 1 ;;
+          esac
+
   worker:
     name: Worker API checks
     runs-on: ubuntu-latest
