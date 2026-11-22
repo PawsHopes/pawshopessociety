@@ -109,9 +109,9 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Worker dependencies
+      - name: Generate Worker dependency lockfile
         working-directory: workers/api
-        run: npm install --no-save --no-package-lock --include=dev --no-audit --no-fund
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       # Gate runtime packages. Current GHSA-fc5q-39xc-vjpf affects picomatch <=4.0.7,
       # a transitive dev-tool dependency (Vitest/Vite); the advisory currently has no patched release.
@@ -441,7 +441,11 @@ jobs:
 
       - name: Install Worker dependencies
         working-directory: workers/api
-        run: npm install --no-save --no-package-lock --include=dev --no-audit --no-fund
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install Worker dependencies
+        working-directory: workers/api
+        run: npm install --no-audit --no-fund
 
       - name: Apply verified staging D1 migrations
         working-directory: workers/api
