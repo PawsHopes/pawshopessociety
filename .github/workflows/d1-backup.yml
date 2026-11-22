@@ -38,9 +38,13 @@ jobs:
         with:
           node-version: 22
 
+      - name: Generate Worker dependency lockfile
+        working-directory: erp-development/workers/api
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
       - name: Install Worker tooling
         working-directory: erp-development/workers/api
-        run: npm install --no-save --no-package-lock --include=dev --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Export production D1 database
         working-directory: erp-development/workers/api
