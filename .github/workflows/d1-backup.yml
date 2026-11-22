@@ -5,6 +5,7 @@ on:
     branches:
       - erp-development
       - main
+      - erp-readiness-safety-fixes
     paths:
       - .github/workflows/d1-backup.yml
   workflow_dispatch:
