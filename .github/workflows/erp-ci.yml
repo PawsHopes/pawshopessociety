@@ -118,8 +118,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --max-time 20 https://pawshopes-erp-api-staging.hopezpaws.workers.dev/api/v1/health/ -o /tmp/staging-health.json
-          node -e "const d=require('/tmp/staging-health.json'); if(d.success!==true || d.data?.environment!=='staging' || d.data?.database!=='ok' || d.data?.schema?.ready!==true) { console.error(d); process.exit(1); } console.log('Staging API health, D1 schema and environment checks passed.');"
+          base=https://pawshopes-erp-api-staging.hopezpaws.workers.dev
+          passed=false
+          for path in /api/v1/health /api/v1/health/; do
+            status=$(curl -sS --max-time 20 -o /tmp/staging-health.json -w '%{http_code}' "$base$path")
+            echo "Staging API health probe $path returned HTTP $status"
+            if [ "$status" = "200" ] && node -e "const d=require('/tmp/staging-health.json'); if(d.success!==true || d.data?.environment!=='staging' || d.data?.database!=='ok' || d.data?.schema?.ready!==true) process.exit(1)"; then
+              echo "Staging API health, D1 schema and environment checks passed."
+              passed=true
+              break
+            fi
+          done
+          if [ "$passed" != true ]; then
+            cat /tmp/staging-health.json || true
+            echo "::error::Neither canonical health route returned a healthy staging API response."
+            exit 1
+          fi
 
       - name: Verify Admin API route remains behind Access
         shell: bash
