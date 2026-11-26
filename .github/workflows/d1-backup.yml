@@ -5,6 +5,7 @@ on:
     branches:
       - erp-development
       - main
+      - erp-readiness-safety-fixes
     paths:
       - .github/workflows/d1-backup.yml
   workflow_dispatch:
@@ -38,13 +39,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Generate dependency lockfile
+      - name: Generate Worker dependency lockfile
         working-directory: erp-development/workers/api
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Install Worker tooling
         working-directory: erp-development/workers/api
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Export production D1 database
         working-directory: erp-development/workers/api

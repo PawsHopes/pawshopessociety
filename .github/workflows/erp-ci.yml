@@ -97,6 +97,54 @@ jobs:
           console.log('Public pages, published-only animal feeds and ordered CMS integration checks passed.');
           NODE
 
+  staging-reachability:
+    name: Public staging Admin and API reachability
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify stable Admin hostname is reachable and Access-protected
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS --max-time 20 -D /tmp/admin-headers -o /tmp/admin-body -w '%{http_code}' https://phs-phs.pages.dev/)
+          location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/^[^:]+:[[:space:]]*/, ""); gsub(/\r/, ""); print}' /tmp/admin-headers | tail -1)
+          if [ "$status" != "302" ] || [[ "$location" != *"/cdn-cgi/access/login"* ]]; then
+            echo "::error::Staging Admin hostname did not redirect unauthenticated traffic to Cloudflare Access (HTTP $status)."
+            cat /tmp/admin-headers || true
+            exit 1
+          fi
+          echo "Staging Admin hostname is publicly reachable and redirects unauthenticated sessions to Cloudflare Access."
+
+      - name: Verify staging API health and schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://pawshopes-erp-api-staging.hopezpaws.workers.dev
+          passed=false
+          for path in /api/v1/health /api/v1/health/; do
+            status=$(curl -sS --max-time 20 -o /tmp/staging-health.json -w '%{http_code}' "$base$path")
+            echo "Staging API health probe $path returned HTTP $status"
+            if [ "$status" = "200" ] && node -e "const d=require('/tmp/staging-health.json'); if(d.success!==true || d.data?.environment!=='staging' || d.data?.database!=='ok' || d.data?.schema?.ready!==true) process.exit(1)"; then
+              echo "Staging API health, D1 schema and environment checks passed."
+              passed=true
+              break
+            fi
+          done
+          if [ "$passed" != true ]; then
+            cat /tmp/staging-health.json || true
+            echo "::error::Neither canonical health route returned a healthy staging API response."
+            exit 1
+          fi
+
+      - name: Verify Admin API route remains behind Access
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS --max-time 20 -D /tmp/admin-me-headers -o /tmp/admin-me-body -w '%{http_code}' https://phs-phs.pages.dev/api/v1/admin/me)
+          case "$status" in
+            302) echo "Unauthenticated /api/v1/admin/me is redirected to Cloudflare Access." ;;
+            *) echo "::error::Unauthenticated Admin API route returned unexpected HTTP $status."; cat /tmp/admin-me-headers || true; exit 1 ;;
+          esac
+
   worker:
     name: Worker API checks
     runs-on: ubuntu-latest
@@ -109,7 +157,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Worker dependencies
+      - name: Generate Worker dependency lockfile
         working-directory: workers/api
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
@@ -122,7 +170,7 @@ jobs:
 
       - name: Install audited Worker dependencies
         working-directory: workers/api
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Type-check Worker API
         working-directory: workers/api
@@ -443,9 +491,9 @@ jobs:
         working-directory: workers/api
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
-      - name: Install audited Worker dependencies
+      - name: Install Worker dependencies
         working-directory: workers/api
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Apply verified staging D1 migrations
         working-directory: workers/api
@@ -539,7 +587,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - deploy-production
-    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-production]')
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'workflow_dispatch' && inputs.confirm_production_deploy == true
     steps:
       - name: Verify public live website and animal/CMS feeds
         shell: bash
@@ -585,7 +633,7 @@ jobs:
       - public-site
       - deploy-staging
     # Production is isolated from the public website and runs only after staging smoke/UAT checks pass.
-    if: (github.ref == 'refs/heads/erp-development' && github.event_name == 'workflow_dispatch' && inputs.confirm_production_deploy == true) || (github.ref == 'refs/heads/erp-development' && github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy-production]'))
+    if: github.ref == 'refs/heads/erp-development' && github.event_name == 'workflow_dispatch' && inputs.confirm_production_deploy == true
     environment:
       name: production
     steps:
@@ -603,7 +651,7 @@ jobs:
 
       - name: Install audited Worker dependencies
         working-directory: workers/api
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Update production Cloudflare Access sync token when configured
         working-directory: workers/api
