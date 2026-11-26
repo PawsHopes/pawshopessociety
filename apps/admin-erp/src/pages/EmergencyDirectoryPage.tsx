@@ -43,7 +43,7 @@ export const EmergencyDirectoryPage: React.FC = () => {
       </div>
 
       <div role="note" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        <strong>Important:</strong> These 85 entries were imported from contact cards in the supplied WhatsApp export. Phone numbers and availability have not been independently verified. Districts are only assigned where the contact card explicitly indicates a location; otherwise they appear under “Unverified”. Confirm the person, service and current number before dispatching a rescue.
+        <strong>Important:</strong> These 85 entries were imported from contact cards in the supplied WhatsApp export. This first import does not yet include every number mentioned only in free-text chat messages. Phone numbers and availability have not been independently verified. Districts are only assigned where the contact card explicitly indicates a location; otherwise they appear under “Unverified”. Confirm the person, service and current number before dispatching a rescue.
       </div>
 
       <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-[minmax(0,1fr)_220px_240px]">
